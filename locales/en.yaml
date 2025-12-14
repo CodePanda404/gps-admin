@@ -1,0 +1,172 @@
+buttons:
+  pureLoginOut: LoginOut
+  pureLogin: Login
+  pureOpenSystemSet: Open System Configs
+  pureReload: Reload
+  pureCloseCurrentTab: Close CurrentTab
+  pureCloseLeftTabs: Close LeftTabs
+  pureCloseRightTabs: Close RightTabs
+  pureCloseOtherTabs: Close OtherTabs
+  pureCloseAllTabs: Close AllTabs
+  pureContentFullScreen: Content FullScreen
+  pureContentExitFullScreen: Content ExitFullScreen
+  pureClickCollapse: Collapse
+  pureClickExpand: Expand
+  pureConfirm: Confirm
+  pureSwitch: Switch
+  pureClose: Close
+  pureBackTop: BackTop
+  pureOpenText: Open
+  pureCloseText: Close
+search:
+  pureTotal: Total
+  pureHistory: History
+  pureCollect: Collect
+  pureDragSort: （Drag Sort）
+  pureEmpty: Empty
+  purePlaceholder: Search Menu
+panel:
+  pureSystemSet: System Configs
+  pureCloseSystemSet: Close System Configs
+  pureClearCacheAndToLogin: Clear cache and return to login page
+  pureClearCache: Clear Cache
+  pureOverallStyle: Overall Style
+  pureOverallStyleLight: Light
+  pureOverallStyleLightTip: Set sail freshly and light up the comfortable work interface
+  pureOverallStyleDark: Dark
+  pureOverallStyleDarkTip: Moonlight Overture, indulge in the tranquility and elegance of the night
+  pureOverallStyleSystem: Auto
+  pureOverallStyleSystemTip: Synchronize time, the interface naturally responds to morning and dusk
+  pureThemeColor: Theme Color
+  pureLayoutModel: Layout Model
+  pureVerticalTip: The menu on the left is familiar and friendly
+  pureHorizontalTip: Top menu, concise overview
+  pureMixTip: Mixed menu, flexible
+  pureStretch: Stretch Page
+  pureStretchFixed: Fixed
+  pureStretchFixedTip: Compact pages make it easy to find the information you need
+  pureStretchCustom: Custom
+  pureStretchCustomTip: Minimum 1280, maximum 1600
+  pureTagsStyle: Tags Style
+  pureTagsStyleSmart: Smart
+  pureTagsStyleSmartTip: Smart tags add fun and brilliance
+  pureTagsStyleCard: Card
+  pureTagsStyleCardTip: Card tags for efficient browsing
+  pureTagsStyleChrome: Chrome
+  pureTagsStyleChromeTip: Chrome style is classic and elegant
+  pureInterfaceDisplay: Interface Display
+  pureGreyModel: Grey Model
+  pureWeakModel: Weak Model
+  pureHiddenTags: Hidden Tags
+  pureHiddenFooter: Hidden Footer
+  pureMultiTagsCache: MultiTags Cache
+menus:
+  home: Home
+  dashboard: Dashboard,
+  player: Player,
+  transfer: transfer
+  single: single
+  depositAndWithdrawalDetails: depositAndWithdrawalDetails
+home:
+  todayData: Today's Data
+  updateTime: Update Time
+  newAgents: New Agents
+  newMerchants: New Merchants
+  newPlayers: New Players
+  activePlayers: Active Players
+  platformOverview: Platform Data Overview
+  betCount: Bet Count
+  validBetAmount: Valid Bet Amount
+  payoutAmount: Payout Amount
+  profitLoss: Profit/Loss
+  selectDate: Select Date
+  pureLogin: Login
+  pureAbnormal: Abnormal Page
+  purePageNotFound: "404"
+  pureAccessDenied: "403"
+  pureServerError: "500"
+  purePermission: Permission Manage
+  purePermissionPage: Page Permission
+  purePermissionButton: Button Permission
+  purePermissionButtonRouter: Route return button permission
+  purePermissionButtonLogin: Login interface return button permission
+status:
+  pureLoad: Loading...
+  pureMessage: Message
+  pureNotify: Notify
+  pureTodo: Todo
+  pureNoMessage: No Message
+  pureNoNotify: No Notify
+  pureNoTodo: No Todo
+login:
+  username: Username
+  password: Password
+  login: Login
+  loginSuccess: Login Success
+  loginFail: Login Fail
+  usernameReg: Please enter username
+  passwordReg: Please enter password
+  googleVerifyCodeReg: Please enter the Google Verification Code
+  passwordRuleReg: The password format should be any combination of 8-18 digits
+  remember: 5 days no need to login
+  forget: Forget Password
+  passwordRecovery:
+    title: Recover Password
+    tip: Please enter the account for which you need to retrieve the password
+    accountPlaceholder: Please enter account
+    accountNotExist: This account does not exist
+    accountDisabled: This account is abnormal, please contact the administrator
+    cancel: Cancel
+    nextStep: Next Step
+    emailVerificationTitle: Enter Email Verification Code
+    emailVerificationTip: Verification code sent to
+    emailPlaceholder: email address
+    validityPeriod: valid for 10 minutes
+    emailCodePlaceholder: Please enter verification code
+    googleCodePlaceholder: Please enter Google verification code
+    countdownUnit: seconds
+    countdownText: before you can re-obtain the verification code
+    resendCode: Re-obtain verification code
+    back: Back
+    accountRequired: Account information lost, please start over
+    codeSent: Verification code sent
+    sendCodeFailed: Failed to send verification code
+    verifyFailed: Verification code verification failed
+    setNewPasswordTitle: Set New Password
+    passwordRequirement: Password must contain at least two of the following, numbers, English letters, or symbols; and the length must be no less than 8 characters
+    newPasswordPlaceholder: Enter New Password
+    confirmPasswordPlaceholder: Re-enter New Password
+    passwordRule: At least two of numbers, English letters, or symbols
+    passwordMismatch: The two password entries do not match
+    confirm: Confirm
+    resetSuccess: Password reset successful
+    resetFailed: Password reset failed
+player:
+  transfer:
+    idPlaceholder: Please enter the id
+    namePlaceholder: Please enter the name
+    userIdPlaceholder: Please enter the userId
+    statusPlaceholder: Please select the status
+    registerTimePlaceholder: Please select
+    reset: Reset
+    search: Search
+    id: ID
+    name: name
+    userId: userId
+    all: all
+    disabled: disabled
+    normal: normal
+    balance: balance
+    currency: currency
+    merchantID: merchantID
+    totalBet: totalBet
+    totalPet: totalPet
+    totalWinLoss: totalWinLoss
+    loginTime: loginTime
+    loginIP: loginIP
+    registerTime: registerTime
+    registerIP: registerIP
+    status: status
+    depWithDrawDetail: depWithDrawDetail
+    betDetail: betDetail
+    action: action
