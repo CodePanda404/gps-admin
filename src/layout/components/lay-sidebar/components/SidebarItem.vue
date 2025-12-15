@@ -8,6 +8,7 @@ import { transformI18n } from "@/plugins/i18n";
 import SidebarLinkItem from "./SidebarLinkItem.vue";
 import SidebarExtraIcon from "./SidebarExtraIcon.vue";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
+import { useRouter } from "vue-router";
 import {
   type PropType,
   type CSSProperties,
@@ -23,7 +24,25 @@ import ArrowLeft from "~icons/ep/arrow-left-bold";
 import ArrowRight from "~icons/ep/arrow-right-bold";
 
 const attrs = useAttrs();
+const router = useRouter();
 const { layout, isCollapse, tooltipEffect, getDivStyle } = useNav();
+
+// 处理菜单项点击跳转
+const handleMenuClick = (item: menuType) => {
+  if (item.path && item.path !== "" && !item.path.includes("#")) {
+    const { name, path } = item;
+    if (name) {
+      router.push({ name });
+    } else if (path) {
+      router.push({ path });
+    }
+  }
+};
+
+// 判断菜单项是否可以跳转（有路径且不是纯目录）
+const canNavigate = (item: menuType) => {
+  return item.path && item.path !== "" && !item.path.includes("#") && item.name;
+};
 
 const props = defineProps({
   item: {
@@ -189,32 +208,67 @@ function resolvePath(routePath) {
   >
     <template #title>
       <div
-        v-if="toRaw(item.meta.icon)"
-        :style="getSubMenuIconStyle"
-        class="sub-menu-icon"
+        v-if="canNavigate(item)"
+        @click.stop="handleMenuClick(item)"
+        style="cursor: pointer; width: 100%; display: flex; align-items: center;"
       >
-        <component :is="useRenderIcon(item.meta && toRaw(item.meta.icon))" />
+        <div
+          v-if="toRaw(item.meta.icon)"
+          :style="getSubMenuIconStyle"
+          class="sub-menu-icon"
+        >
+          <component :is="useRenderIcon(item.meta && toRaw(item.meta.icon))" />
+        </div>
+        <ReText
+          v-if="
+            layout === 'mix' && toRaw(item.meta.icon)
+              ? !isCollapse || item?.pathList?.length !== 2
+              : !(
+                  layout === 'vertical' &&
+                  isCollapse &&
+                  toRaw(item.meta.icon) &&
+                  item.parentId === null
+                )
+          "
+          :tippyProps="{
+            offset: [0, -10],
+            theme: tooltipEffect
+          }"
+          :class="textClass"
+        >
+          {{ transformI18n(item.meta.title) }}
+        </ReText>
+        <SidebarExtraIcon v-if="!isCollapse" :extraIcon="item.meta.extraIcon" />
       </div>
-      <ReText
-        v-if="
-          layout === 'mix' && toRaw(item.meta.icon)
-            ? !isCollapse || item?.pathList?.length !== 2
-            : !(
-                layout === 'vertical' &&
-                isCollapse &&
-                toRaw(item.meta.icon) &&
-                item.parentId === null
-              )
-        "
-        :tippyProps="{
-          offset: [0, -10],
-          theme: tooltipEffect
-        }"
-        :class="textClass"
-      >
-        {{ transformI18n(item.meta.title) }}
-      </ReText>
-      <SidebarExtraIcon v-if="!isCollapse" :extraIcon="item.meta.extraIcon" />
+      <div v-else style="width: 100%; display: flex; align-items: center;">
+        <div
+          v-if="toRaw(item.meta.icon)"
+          :style="getSubMenuIconStyle"
+          class="sub-menu-icon"
+        >
+          <component :is="useRenderIcon(item.meta && toRaw(item.meta.icon))" />
+        </div>
+        <ReText
+          v-if="
+            layout === 'mix' && toRaw(item.meta.icon)
+              ? !isCollapse || item?.pathList?.length !== 2
+              : !(
+                  layout === 'vertical' &&
+                  isCollapse &&
+                  toRaw(item.meta.icon) &&
+                  item.parentId === null
+                )
+          "
+          :tippyProps="{
+            offset: [0, -10],
+            theme: tooltipEffect
+          }"
+          :class="textClass"
+        >
+          {{ transformI18n(item.meta.title) }}
+        </ReText>
+        <SidebarExtraIcon v-if="!isCollapse" :extraIcon="item.meta.extraIcon" />
+      </div>
     </template>
 
     <sidebar-item

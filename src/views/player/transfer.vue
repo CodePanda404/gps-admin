@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from "vue";
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
 import {
   type PlusColumn,
-  PlusSearch,
-  FormChangeCallBackParams
+  PlusSearch
 } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
 import { useI18n } from "vue-i18n";
@@ -12,29 +12,34 @@ import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import { switchPlayerStatus } from "@/api/player";
 import { type TransferPlayerItem } from "@/api/player";
-import { TableColumn } from "@pureadmin/table";
 import Upload from "~icons/ep/upload";
+import Monitor from "~icons/ep/monitor";
+import Grid from "~icons/ep/grid";
+import Filter from "~icons/ep/filter";
 
-const { t, locale } = useI18n();
+// 路由
+const router = useRouter();
 
-// 加载状态
-const loading = ref(false);
+// 国际化
+const { t } = useI18n();
 
-/*-----搜索表单相关-----*/
-// 表单数据
-const state = ref({
+/*  -----搜索表单相关-----  */
+// 搜索表单数据
+const searchData = ref({
   id: "",
   name: "",
   userId: "",
   status: "",
   registerTime: null as string[] | null
 });
-// 表单配置
+
+// 搜索表单配置
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
     prop: "id",
     valueType: "copy",
+    // 国际化
     fieldProps: computed(() => ({
       placeholder: t("player.transfer.idPlaceholder")
     }))
@@ -95,22 +100,18 @@ const searchColumns: PlusColumn[] = [
     }))
   }
 ];
-// 处理搜索表单变化
-const handleChange = (values: any) => {
-  // 搜索条件变化时的处理
-};
 
-// 搜索处理
+// 点击搜索按钮
 const handleSearch = (values: any) => {
   // 重置到第一页
-  page.value.current = 1;
+  pageInfo.value.page = 1;
   // 重新获取数据
   getList();
 };
 
-// 重置搜索条件
+// 重置搜索表单
 const handleRest = () => {
-  state.value = {
+  searchData.value = {
     id: "",
     name: "",
     userId: "",
@@ -118,23 +119,19 @@ const handleRest = () => {
     registerTime: null
   };
   // 重置到第一页
-  page.value.current = 1;
+  pageInfo.value.page = 1;
   // 重新获取数据
   getList();
 };
 
-// /*----表格相关-----*/ */
+// /  *----表格相关-----  */ */
 // 表格数据类型
 type TableRow = TransferPlayerItem;
+// 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
-const { tableData, buttons } = useTable<TableRow[]>();
+// 表格相关数据和操作
+const { tableData, buttons, pageInfo, total, loadingStatus } = useTable<TableRow[]>();
 
-// 分页配置
-const page = ref({
-  current: 1,
-  pageSize: 10,
-  total: 0
-});
 // 表格配置
 const tableConfig: any = ref([
   {
@@ -214,12 +211,12 @@ const tableConfig: any = ref([
     renderHeader: () => t("player.transfer.status"),
     prop: "status",
     valueType: "switch",
-    width: "130",
+    width: "100",
     editable: true
   }
 ]);
 
-// 表格操作按钮定义
+// 表格操作栏按钮定义
 buttons.value = [
   {
     text: () => t("player.transfer.depWithDrawDetail"),
@@ -227,7 +224,17 @@ buttons.value = [
     props: {
       type: "primary"
     },
-    onClick: () => {}
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      // 跳转到存取款明细页面，传递玩家ID
+      router.push({
+        name: "DepositWithdrawalDetails",
+        query: {
+          playerId: row.id.toString(),
+          playerName: row.name
+        }
+      });
+    }
   },
   {
     text: () => t("player.transfer.betDetail"),
@@ -235,24 +242,34 @@ buttons.value = [
     props: {
       type: "primary"
     },
-    onClick: () => {}
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      // 跳转到投注明细页面，传递玩家ID
+      router.push({
+        name: "BettingDetails",
+        query: {
+          playerId: row.id.toString(),
+          playerName: row.name
+        }
+      });
+    }
   }
 ];
 
-// 选中数据变化处理
+// 表格选中数据
 const handleSelectionChange = (val: TableRow[]) => {
   multipleSelection.value = val;
 };
 
-// 状态切换处理
+// 玩家状态切换处理
 const handleStatusChange = async (params: {
   row: TableRow;
   prop: string;
   value: any;
 }) => {
   const { row, prop, value } = params;
-
-  // 只处理状态字段的变化
+  console.log("切换玩家状态", params.row);
+  // 只处理玩家状态字段的变化
   if (prop !== "status") {
     return;
   }
@@ -263,23 +280,22 @@ const handleStatusChange = async (params: {
     message("操作失败：无法找到对应的数据", { type: "error" });
     return;
   }
+  // 原始状态 => 新状态的反值
+  const originalStatus = !value; 
 
-  const newStatus = value; // 新状态
-  const originalStatus = !value; // 原始状态（新状态的反值）
-
+  // 是否是禁用操作
   const isDisabling = originalStatus === true;
 
-  // 构建提示文字
+  // 提示文字
   const confirmMessage = isDisabling
     ? `是否确定将玩家${row.name}禁用?`
     : `是否确定将玩家${row.name}恢复正常?`;
 
   try {
-    // 显示确认对话框
+    // 弹出确认对话框
     await ElMessageBox.confirm(confirmMessage, "切换状态", {
       confirmButtonText: "确认",
       cancelButtonText: "取消",
-      type: "warning",
       draggable: true
     });
 
@@ -290,9 +306,10 @@ const handleStatusChange = async (params: {
     // });
     const res = {
       success: false,
-      message: "状态切换成功"
+      message: "玩家状态切换成功"
     };
 
+    // 玩家状态切换成功
     if (res.success) {
       // 显示成功提示
       message(isDisabling ? "玩家已禁用" : "玩家已恢复正常", {
@@ -301,7 +318,7 @@ const handleStatusChange = async (params: {
       // 可选：刷新列表数据
       // getList();
     } else {
-      // 失败时恢复原状态
+      // 玩家状态失败 => 恢复原状态
       row.status = originalStatus;
       const tableRowIndex = tableData.value.findIndex(
         item => item.id === row.id
@@ -313,7 +330,7 @@ const handleStatusChange = async (params: {
           status: originalStatus
         };
       }
-      message("状态切换失败", { type: "error" });
+      message("玩家状态切换失败", { type: "error" });
     }
   } catch (error: any) {
     // 恢复 row.status（表格行对象）
@@ -326,7 +343,6 @@ const handleStatusChange = async (params: {
         status: originalStatus
       };
     }
-
     if (error !== "cancel") {
       // 不是用户取消，而是请求失败
       console.error("状态切换失败:", error);
@@ -335,94 +351,390 @@ const handleStatusChange = async (params: {
   }
 };
 
-const handleEdited = (params: {
-  row: TableRow;
-  prop: string;
-  value: any;
-  oldValue: any;
-}) => {
-  console.log("xxxx", params);
-};
-
-const handleCellClick = (params: { row: TableRow; column: any }) => {
-  console.log("yyyy", params.column);
-  return false;
-};
-
-// 生成模拟数据
+// 固定初始数据
 const generateMockData = (): TableRow[] => {
-  const currencies = ["PHP", "INR", "THB", "MYR", "USD"];
-  const names = [
-    "Slew",
-    "John",
-    "Alice",
-    "Bob",
-    "Charlie",
-    "David",
-    "Emma",
-    "Frank",
-    "Grace",
-    "Henry"
+  return [
+    {
+      id: 1,
+      name: "Slew1",
+      balance: 1250000,
+      currency: "PHP",
+      merchant: "abc123",
+      totalBet: 50000,
+      totalPet: 45000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-15 10:30:25",
+      loginIp: "192.168.1.100",
+      registerTime: "2024-01-01 08:15:30",
+      registerIP: "192.168.1.1",
+      status: true
+    },
+    {
+      id: 2,
+      name: "John2",
+      balance: 850000,
+      currency: "INR",
+      merchant: "xyz789",
+      totalBet: 30000,
+      totalPet: 28000,
+      totalWinLoss: 2000,
+      loginTime: "2024-01-16 14:20:10",
+      loginIp: "192.168.1.101",
+      registerTime: "2024-01-02 09:20:15",
+      registerIP: "192.168.1.2",
+      status: true
+    },
+    {
+      id: 3,
+      name: "Alice3",
+      balance: 2100000,
+      currency: "THB",
+      merchant: "merchant001",
+      totalBet: 80000,
+      totalPet: 75000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-17 16:45:30",
+      loginIp: "192.168.1.102",
+      registerTime: "2024-01-03 10:30:20",
+      registerIP: "192.168.1.3",
+      status: false
+    },
+    {
+      id: 4,
+      name: "Bob4",
+      balance: 950000,
+      currency: "MYR",
+      merchant: "merchant002",
+      totalBet: 40000,
+      totalPet: 35000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-18 11:15:45",
+      loginIp: "192.168.1.103",
+      registerTime: "2024-01-04 11:45:10",
+      registerIP: "192.168.1.4",
+      status: true
+    },
+    {
+      id: 5,
+      name: "Charlie5",
+      balance: 1500000,
+      currency: "USD",
+      merchant: "merchant003",
+      totalBet: 60000,
+      totalPet: 55000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-19 13:30:20",
+      loginIp: "192.168.1.104",
+      registerTime: "2024-01-05 14:20:30",
+      registerIP: "192.168.1.5",
+      status: true
+    },
+    {
+      id: 6,
+      name: "David6",
+      balance: 680000,
+      currency: "PHP",
+      merchant: "abc123",
+      totalBet: 25000,
+      totalPet: 22000,
+      totalWinLoss: 3000,
+      loginTime: "2024-01-20 09:25:15",
+      loginIp: "192.168.1.105",
+      registerTime: "2024-01-06 15:10:45",
+      registerIP: "192.168.1.6",
+      status: true
+    },
+    {
+      id: 7,
+      name: "Emma7",
+      balance: 3200000,
+      currency: "INR",
+      merchant: "xyz789",
+      totalBet: 95000,
+      totalPet: 88000,
+      totalWinLoss: 7000,
+      loginTime: "2024-01-21 11:40:30",
+      loginIp: "192.168.1.106",
+      registerTime: "2024-01-07 16:25:20",
+      registerIP: "192.168.1.7",
+      status: false
+    },
+    {
+      id: 8,
+      name: "Frank8",
+      balance: 1450000,
+      currency: "THB",
+      merchant: "merchant001",
+      totalBet: 55000,
+      totalPet: 50000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-22 14:15:50",
+      loginIp: "192.168.1.107",
+      registerTime: "2024-01-08 10:50:35",
+      registerIP: "192.168.1.8",
+      status: true
+    },
+    {
+      id: 9,
+      name: "Grace9",
+      balance: 780000,
+      currency: "MYR",
+      merchant: "merchant002",
+      totalBet: 35000,
+      totalPet: 32000,
+      totalWinLoss: 3000,
+      loginTime: "2024-01-23 16:30:25",
+      loginIp: "192.168.1.108",
+      registerTime: "2024-01-09 12:15:10",
+      registerIP: "192.168.1.9",
+      status: true
+    },
+    {
+      id: 10,
+      name: "Henry10",
+      balance: 2200000,
+      currency: "USD",
+      merchant: "merchant003",
+      totalBet: 70000,
+      totalPet: 65000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-24 08:45:40",
+      loginIp: "192.168.1.109",
+      registerTime: "2024-01-10 13:30:25",
+      registerIP: "192.168.1.10",
+      status: true
+    },
+    {
+      id: 11,
+      name: "Ivy11",
+      balance: 920000,
+      currency: "PHP",
+      merchant: "abc123",
+      totalBet: 42000,
+      totalPet: 38000,
+      totalWinLoss: 4000,
+      loginTime: "2024-01-25 10:20:15",
+      loginIp: "192.168.1.110",
+      registerTime: "2024-01-11 09:45:50",
+      registerIP: "192.168.1.11",
+      status: false
+    },
+    {
+      id: 12,
+      name: "Jack12",
+      balance: 1650000,
+      currency: "INR",
+      merchant: "xyz789",
+      totalBet: 65000,
+      totalPet: 60000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-26 12:35:30",
+      loginIp: "192.168.1.111",
+      registerTime: "2024-01-12 14:20:15",
+      registerIP: "192.168.1.12",
+      status: true
+    },
+    {
+      id: 13,
+      name: "Kate13",
+      balance: 580000,
+      currency: "THB",
+      merchant: "merchant001",
+      totalBet: 28000,
+      totalPet: 25000,
+      totalWinLoss: 3000,
+      loginTime: "2024-01-27 15:50:45",
+      loginIp: "192.168.1.112",
+      registerTime: "2024-01-13 11:10:30",
+      registerIP: "192.168.1.13",
+      status: true
+    },
+    {
+      id: 14,
+      name: "Leo14",
+      balance: 3100000,
+      currency: "MYR",
+      merchant: "merchant002",
+      totalBet: 100000,
+      totalPet: 92000,
+      totalWinLoss: 8000,
+      loginTime: "2024-01-28 09:15:20",
+      loginIp: "192.168.1.113",
+      registerTime: "2024-01-14 16:40:25",
+      registerIP: "192.168.1.14",
+      status: false
+    },
+    {
+      id: 15,
+      name: "Mia15",
+      balance: 1180000,
+      currency: "USD",
+      merchant: "merchant003",
+      totalBet: 48000,
+      totalPet: 43000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-29 13:25:35",
+      loginIp: "192.168.1.114",
+      registerTime: "2024-01-15 08:30:40",
+      registerIP: "192.168.1.15",
+      status: true
+    },
+    {
+      id: 16,
+      name: "Noah16",
+      balance: 750000,
+      currency: "PHP",
+      merchant: "abc123",
+      totalBet: 33000,
+      totalPet: 30000,
+      totalWinLoss: 3000,
+      loginTime: "2024-01-30 11:40:50",
+      loginIp: "192.168.1.115",
+      registerTime: "2024-01-16 10:15:20",
+      registerIP: "192.168.1.16",
+      status: true
+    },
+    {
+      id: 17,
+      name: "Olivia17",
+      balance: 2400000,
+      currency: "INR",
+      merchant: "xyz789",
+      totalBet: 75000,
+      totalPet: 70000,
+      totalWinLoss: 5000,
+      loginTime: "2024-01-31 14:55:25",
+      loginIp: "192.168.1.116",
+      registerTime: "2024-01-17 12:50:15",
+      registerIP: "192.168.1.17",
+      status: false
+    },
+    {
+      id: 18,
+      name: "Paul18",
+      balance: 980000,
+      currency: "THB",
+      merchant: "merchant001",
+      totalBet: 45000,
+      totalPet: 40000,
+      totalWinLoss: 5000,
+      loginTime: "2024-02-01 10:30:40",
+      loginIp: "192.168.1.117",
+      registerTime: "2024-01-18 15:25:30",
+      registerIP: "192.168.1.18",
+      status: true
+    },
+    {
+      id: 19,
+      name: "Quinn19",
+      balance: 1350000,
+      currency: "MYR",
+      merchant: "merchant002",
+      totalBet: 52000,
+      totalPet: 47000,
+      totalWinLoss: 5000,
+      loginTime: "2024-02-02 16:20:15",
+      loginIp: "192.168.1.118",
+      registerTime: "2024-01-19 09:40:45",
+      registerIP: "192.168.1.19",
+      status: true
+    },
+    {
+      id: 20,
+      name: "Ryan20",
+      balance: 1850000,
+      currency: "USD",
+      merchant: "merchant003",
+      totalBet: 68000,
+      totalPet: 63000,
+      totalWinLoss: 5000,
+      loginTime: "2024-02-03 08:45:30",
+      loginIp: "192.168.1.119",
+      registerTime: "2024-01-20 13:15:10",
+      registerIP: "192.168.1.20",
+      status: true
+    },
+    {
+      id: 21,
+      name: "Sophia21",
+      balance: 620000,
+      currency: "PHP",
+      merchant: "abc123",
+      totalBet: 29000,
+      totalPet: 26000,
+      totalWinLoss: 3000,
+      loginTime: "2024-02-04 12:10:25",
+      loginIp: "192.168.1.120",
+      registerTime: "2024-01-21 11:30:20",
+      registerIP: "192.168.1.21",
+      status: false
+    },
+    {
+      id: 22,
+      name: "Tom22",
+      balance: 2750000,
+      currency: "INR",
+      merchant: "xyz789",
+      totalBet: 88000,
+      totalPet: 82000,
+      totalWinLoss: 6000,
+      loginTime: "2024-02-05 15:35:50",
+      loginIp: "192.168.1.121",
+      registerTime: "2024-01-22 14:45:35",
+      registerIP: "192.168.1.22",
+      status: true
+    },
+    {
+      id: 23,
+      name: "Uma23",
+      balance: 1100000,
+      currency: "THB",
+      merchant: "merchant001",
+      totalBet: 50000,
+      totalPet: 45000,
+      totalWinLoss: 5000,
+      loginTime: "2024-02-06 09:50:40",
+      loginIp: "192.168.1.122",
+      registerTime: "2024-01-23 10:20:15",
+      registerIP: "192.168.1.23",
+      status: true
+    },
+    {
+      id: 24,
+      name: "Victor24",
+      balance: 4200000,
+      currency: "MYR",
+      merchant: "merchant002",
+      totalBet: 120000,
+      totalPet: 110000,
+      totalWinLoss: 10000,
+      loginTime: "2024-02-07 13:25:30",
+      loginIp: "192.168.1.123",
+      registerTime: "2024-01-24 16:10:50",
+      registerIP: "192.168.1.24",
+      status: false
+    },
+    {
+      id: 25,
+      name: "Wendy25",
+      balance: 1680000,
+      currency: "USD",
+      merchant: "merchant003",
+      totalBet: 72000,
+      totalPet: 67000,
+      totalWinLoss: 5000,
+      loginTime: "2024-02-08 11:15:45",
+      loginIp: "192.168.1.124",
+      registerTime: "2024-01-25 08:55:25",
+      registerIP: "192.168.1.25",
+      status: true
+    }
   ];
-  const merchants = [
-    "abc123",
-    "xyz789",
-    "merchant001",
-    "merchant002",
-    "merchant003"
-  ];
-
-  return Array.from({ length: 100 }).map((_, index) => {
-    const randomCurrency =
-      currencies[Math.floor(Math.random() * currencies.length)];
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const randomMerchant =
-      merchants[Math.floor(Math.random() * merchants.length)];
-    const randomDate = new Date(
-      2024,
-      Math.floor(Math.random() * 12),
-      Math.floor(Math.random() * 28) + 1
-    );
-
-    return {
-      id: index + 1,
-      name: `${randomName}${index + 1}`,
-      balance: Math.floor(Math.random() * 1000000000),
-      currency: randomCurrency,
-      merchant: randomMerchant,
-      totalBet: Math.floor(Math.random() * 100000),
-      totalPet: Math.floor(Math.random() * 100000),
-      totalWinLoss: Math.floor(Math.random() * 50000) - 25000,
-      loginTime: randomDate
-        .toLocaleString("zh-CN", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit"
-        })
-        .replace(/\//g, "-"),
-      loginIp: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-      registerTime: randomDate
-        .toLocaleString("zh-CN", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit"
-        })
-        .replace(/\//g, "-"),
-      registerIP: `${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-      status: Math.random() > 0.3 // 70% 概率为 true
-    };
-  });
 };
 
 // 获取列表数据
 const getList = async () => {
-  loading.value = true;
+  loadingStatus.value = true;
   try {
     // 模拟网络延迟
     await new Promise(resolve => setTimeout(resolve, 300));
@@ -434,40 +746,40 @@ const getList = async () => {
     let filteredData = [...allData];
 
     // ID 筛选
-    if (state.value.id) {
+    if (searchData.value.id) {
       filteredData = filteredData.filter(item =>
-        item.id.toString().includes(state.value.id.toString())
+        item.id.toString() === searchData.value.id.toString()
       );
     }
 
     // 用户名筛选
-    if (state.value.name) {
+    if (searchData.value.name) {
       filteredData = filteredData.filter(item =>
-        item.name.toLowerCase().includes(state.value.name.toLowerCase())
+        item.name.toLowerCase().includes(searchData.value.name.toLowerCase())
       );
     }
 
     // 用户ID筛选
-    if (state.value.userId) {
+    if (searchData.value.userId) {
       filteredData = filteredData.filter(item =>
-        item.id.toString().includes(state.value.userId.toString())
+        item.id.toString() === searchData.value.userId.toString()
       );
     }
 
     // 状态筛选
-    if (state.value.status !== "") {
-      const statusBool = state.value.status === "1";
+    if (searchData.value.status !== "") {
+      const statusBool = searchData.value.status === "1";
       filteredData = filteredData.filter(item => item.status === statusBool);
     }
 
     // 注册时间范围筛选
     if (
-      state.value.registerTime &&
-      Array.isArray(state.value.registerTime) &&
-      state.value.registerTime.length === 2
+      searchData.value.registerTime &&
+      Array.isArray(searchData.value.registerTime) &&
+      searchData.value.registerTime.length === 2
     ) {
-      const startTime = new Date(state.value.registerTime[0]).getTime();
-      const endTime = new Date(state.value.registerTime[1]).getTime();
+      const startTime = new Date(searchData.value.registerTime[0]).getTime();
+      const endTime = new Date(searchData.value.registerTime[1]).getTime();
       filteredData = filteredData.filter(item => {
         const itemTime = new Date(item.registerTime).getTime();
         return itemTime >= startTime && itemTime <= endTime;
@@ -475,32 +787,36 @@ const getList = async () => {
     }
 
     // 计算总数
-    const total = filteredData.length;
+    const totalCount = filteredData.length;
 
     // 分页处理
-    const start = (page.value.current - 1) * page.value.pageSize;
-    const end = start + page.value.pageSize;
+    const start = (pageInfo.value.page - 1) * pageInfo.value.pageSize;
+    const end = start + pageInfo.value.pageSize;
     const paginatedData = filteredData.slice(start, end);
 
     // 更新表格数据和分页信息
     tableData.value = paginatedData;
-    page.value.total = total;
+    total.value = totalCount;
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
     tableData.value = [];
   } finally {
-    loading.value = false;
+    loadingStatus.value = false;
   }
 };
 
-// 分页变化处理
-const handlePageChange = (current: number, pageSize?: number) => {
-  page.value.current = current;
-  if (pageSize) {
-    page.value.pageSize = pageSize;
-    page.value.current = 1; // 切换每页数量时重置到第一页
+// 记录上一次的 pageSize，用于检测 pageSize 是否改变
+const previousPageSize = ref(pageInfo.value.pageSize);
+
+// 分页处理
+const handlePageChange = () => {
+  if (pageInfo.value.pageSize !== previousPageSize.value) {
+    // pageSize 改变了，重置到第一页
+    pageInfo.value.page = 1;
+    previousPageSize.value = pageInfo.value.pageSize;
   }
+  // 重新加载数据
   getList();
 };
 
@@ -562,14 +878,13 @@ const exportJson = () => {
   <!-- 搜索表单 -->
   <el-card class="search-card" shadow="never" style="margin: 20px">
     <PlusSearch
-      v-model="state"
+      v-model="searchData"
       :columns="searchColumns"
       label-width="80"
       label-position="right"
       :has-unfold="false"
       :searchText="t('player.transfer.search')"
       :resetText="t('player.transfer.reset')"
-      @change="handleChange"
       @search="handleSearch"
       @reset="handleRest"
     />
@@ -577,7 +892,7 @@ const exportJson = () => {
   <!-- 表格 -->
   <el-card class="table-card" shadow="never" style="margin: 20px">
     <PlusTable
-      v-loading="loading"
+      v-loading="loadingStatus"
       :columns="tableConfig"
       :table-data="tableData"
       :is-selection="true"
@@ -589,37 +904,91 @@ const exportJson = () => {
       height="550px"
       @selection-change="handleSelectionChange"
       @formChange="handleStatusChange"
-      @edited="handleEdited"
-      @cell-click="handleCellClick"
     >
-      <template #toolbar>
-        <el-dropdown trigger="click" popper-class="custom-export-dropdown">
+      <template #density-icon>
+        <el-tooltip content="密度" placement="top">
           <el-icon
-            :size="20"
-            style="
-              margin-top: 3px;
-              margin-right: 15px;
-              cursor: pointer;
-              outline: none;
-            "
+            :size="18"
+            style="cursor: pointer; outline: none; margin-right: 15px;"
             color="#606266"
           >
-            <component :is="Upload" />
+            <component :is="Monitor" />
           </el-icon>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item class="export-active" @click="exportJson"
-                >Json</el-dropdown-item
+        </el-tooltip>
+      </template>
+      <template #column-settings-icon>
+        <el-tooltip content="列设置" placement="top">
+          <el-icon
+            :size="18"
+            style="cursor: pointer; outline: none; margin-right: 5px;"
+            color="#606266"
+          >
+            <component :is="Grid" />
+          </el-icon>
+        </el-tooltip>
+      </template>
+      <template #toolbar>
+        <!-- 导出下拉菜单 -->
+        <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <span style="display: inline-block;">
+            <el-dropdown trigger="click" popper-class="custom-export-dropdown">
+              <el-icon
+                :size="18"
+                style="
+                  margin-right: 15px;
+                  cursor: pointer;
+                  outline: none;
+                  display: inline-block;
+                "
+                color="#606266"
               >
-              <el-dropdown-item @click="exportExcel">Excel</el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
+                <component :is="Upload" />
+              </el-icon>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item class="export-active" @click="exportJson"
+                    >Json</el-dropdown-item
+                  >
+                  <el-dropdown-item @click="exportExcel">Excel</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </span>
+        </el-tooltip>
+        <!-- 筛选下拉菜单 -->
+        <el-tooltip content="筛选" placement="top" :trigger="'hover'">
+          <span style="display: inline-block;">
+            <el-dropdown trigger="click" popper-class="custom-filter-dropdown">
+              <el-icon
+                :size="18"
+                style="
+                  margin-right: 15px;
+                  cursor: pointer;
+                  outline: none;
+                  display: inline-block;
+                "
+                color="#606266"
+              >
+                <component :is="Filter" />
+              </el-icon>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item>全部</el-dropdown-item>
+                  <el-dropdown-item>图片</el-dropdown-item>
+                  <el-dropdown-item>视频</el-dropdown-item>
+                  <el-dropdown-item>文本</el-dropdown-item>
+                  <el-dropdown-item>应用包</el-dropdown-item>
+                  <el-dropdown-item>压缩包</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </span>
+        </el-tooltip>
       </template>
     </PlusTable>
     <PlusPagination
-      v-model="page"
-      :total="page.total"
+      v-model="pageInfo"
+      :total="total"
       :small="true"
       :page-sizes="[10, 20, 50, 100]"
       :layout="'total, sizes, prev, pager, next, jumper'"
@@ -659,6 +1028,27 @@ const exportJson = () => {
 
 /* 鼠标 hover 效果（可选） */
 .custom-export-dropdown .el-dropdown-item:not(.export-active):hover {
+  background-color: #f5f7fa !important;
+}
+
+.custom-filter-dropdown {
+  min-width: 120px !important;
+  padding: 0 !important;
+  border-radius: 4px;
+}
+
+/* 筛选下拉选项样式 */
+.custom-filter-dropdown .el-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px !important;
+  margin: 0 !important;
+  text-align: center;
+  border-radius: 0;
+}
+
+/* 鼠标 hover 效果 */
+.custom-filter-dropdown .el-dropdown-item:hover {
   background-color: #f5f7fa !important;
 }
 </style>

@@ -164,7 +164,7 @@ player:
     totalWinLoss: totalWinLoss
     loginTime: loginTime
     loginIP: loginIP
-    registerTime: registerTime
+    registerTime: regTime
     registerIP: registerIP
     status: status
     depWithDrawDetail: depWithDrawDetail

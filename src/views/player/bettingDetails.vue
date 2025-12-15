@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, h } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   type PlusColumn,
@@ -80,7 +80,7 @@ const searchColumns: PlusColumn[] = [
         value: "1"
       },
       {
-        label: "禁用",
+        label: "停用",
         value: "0"
       }
     ]
@@ -117,22 +117,24 @@ const handleRest = () => {
 };
 
 // 表格数据类型
-type DepositWithdrawalItem = {
+type BettingItem = {
   id: string;
-  userId: string;
-  name: string;
-  type: string; // 存款/取款
-  changedAmount: number;
-  beforeAmount: number;
-  afterAmount: number;
+  gameId: string;
+  supplier: string;
+  currency: string;
+  bet: number;
+  bonus: number;
+  winLoss: string;
+  transactionId: string;
+  betId: string;
   createTime: string;
-  remark: string;
+  status: string; // 正常/停用
 };
 
 // 多选选中数据
-const multipleSelection = ref<DepositWithdrawalItem[]>([]);
+const multipleSelection = ref<BettingItem[]>([]);
 // 表格相关数据和操作
-const { tableData, pageInfo, total, loadingStatus } = useTable<DepositWithdrawalItem[]>();
+const { tableData, buttons, pageInfo, total, loadingStatus } = useTable<BettingItem[]>();
 
 // 表格配置
 const tableConfig: any = ref([
@@ -142,34 +144,44 @@ const tableConfig: any = ref([
     width: "120"
   },
   {
-    label: "用户ID",
-    prop: "userId",
+    label: "游戏ID",
+    prop: "gameId",
     width: "120"
   },
   {
-    label: "用户名",
-    prop: "name",
-    width: "130"
+    label: "供应商",
+    prop: "supplier",
+    width: "150"
   },
   {
-    label: "类型",
-    prop: "type",
+    label: "币种",
+    prop: "currency",
     width: "100"
   },
   {
-    label: "变动游戏币",
-    prop: "changedAmount",
-    width: "130"
+    label: "投注",
+    prop: "bet",
+    width: "120"
   },
   {
-    label: "变动前",
-    prop: "beforeAmount",
-    width: "130"
+    label: "奖金",
+    prop: "bonus",
+    width: "120"
   },
   {
-    label: "变动后",
-    prop: "afterAmount",
-    width: "130"
+    label: "输赢",
+    prop: "winLoss",
+    width: "100"
+  },
+  {
+    label: "交易ID",
+    prop: "transactionId",
+    width: "120"
+  },
+  {
+    label: "投注ID",
+    prop: "betId",
+    width: "120"
   },
   {
     label: "创建时间",
@@ -177,41 +189,123 @@ const tableConfig: any = ref([
     width: "180"
   },
   {
-    label: "备注",
-    prop: "remark",
-    minWidth: "200"
+    label: "状态",
+    prop: "status",
+    width: "100",
+    cellRenderer: ({ row }: any) => {
+      return h("span", {
+        style: {
+          color: row.status === "正常" ? "#67c23a" : "#f56c6c"
+        }
+      }, row.status);
+    }
+  },
+  {
+    label: "操作",
+    prop: "action",
+    width: "120",
+    fixed: "right",
+    cellRenderer: ({ row }: any) => {
+      return h("el-link", {
+        type: "primary",
+        underline: false
+      }, () => "游戏数据");
+    }
   }
 ]);
 
+// 表格操作栏按钮定义
+buttons.value = [
+  {
+    text: () => "添加",
+    code: "add",
+    props: {
+      type: "primary"
+    },
+    onClick: () => {
+      message("添加功能", { type: "info" });
+    }
+  },
+  {
+    text: () => "编辑",
+    code: "edit",
+    props: {
+      type: "primary"
+    },
+    onClick: () => {
+      if (multipleSelection.value.length === 0) {
+        message("请先选择要编辑的数据！", { type: "warning" });
+        return;
+      }
+      message("编辑功能", { type: "info" });
+    }
+  },
+  {
+    text: () => "删除",
+    code: "delete",
+    props: {
+      type: "primary"
+    },
+    onClick: () => {
+      if (multipleSelection.value.length === 0) {
+        message("请先选择要删除的数据！", { type: "warning" });
+        return;
+      }
+      message("删除功能", { type: "info" });
+    }
+  },
+  {
+    text: () => "更多",
+    code: "more",
+    props: {
+      type: "primary"
+    },
+    onClick: () => {
+      message("更多功能", { type: "info" });
+    }
+  },
+  {
+    text: () => "Toggle All",
+    code: "toggleAll",
+    props: {
+      type: "primary"
+    },
+    onClick: () => {
+      message("Toggle All功能", { type: "info" });
+    }
+  }
+];
+
 // 表格选中数据
-const handleSelectionChange = (val: DepositWithdrawalItem[]) => {
+const handleSelectionChange = (val: BettingItem[]) => {
   multipleSelection.value = val;
 };
 
 // 生成模拟数据
-const generateMockData = (): DepositWithdrawalItem[] => {
-  const types = ["存款", "取款"];
-  const names = ["Siew", "John", "Alice", "Bob"];
+const generateMockData = (): BettingItem[] => {
+  const suppliers = ["Pragmatic Play", "Evolution", "NetEnt", "Microgaming"];
+  const currencies = ["PHP", "INR", "THB", "MYR", "USD"];
+  const statuses = ["正常", "停用"];
+  const winLossTypes = ["存款", "取款"];
   
   return Array.from({ length: 100 }).map((_, index) => {
-    const randomType = types[Math.floor(Math.random() * types.length)];
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const changedAmount = Math.floor(Math.random() * 10000) + 1000;
-    const beforeAmount = Math.floor(Math.random() * 50000) + 10000;
-    const afterAmount = randomType === "存款" 
-      ? beforeAmount + changedAmount 
-      : beforeAmount - changedAmount;
+    const randomSupplier = suppliers[Math.floor(Math.random() * suppliers.length)];
+    const randomCurrency = currencies[Math.floor(Math.random() * currencies.length)];
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    const randomWinLoss = winLossTypes[Math.floor(Math.random() * winLossTypes.length)];
 
     return {
       id: `abc${index + 1}`,
-      userId: `abc${index + 1}`,
-      name: randomName,
-      type: randomType,
-      changedAmount,
-      beforeAmount,
-      afterAmount,
+      gameId: `abc${index + 1}`,
+      supplier: randomSupplier,
+      currency: randomCurrency,
+      bet: Math.floor(Math.random() * 5000) + 1000,
+      bonus: Math.floor(Math.random() * 3000) + 500,
+      winLoss: randomWinLoss,
+      transactionId: `abc${index + 1}`,
+      betId: `abc${index + 1}`,
       createTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}:${String(Math.floor(Math.random() * 60)).padStart(2, '0')}`,
-      remark: `beizhuuuuu${index + 1}`
+      status: randomStatus
     };
   });
 };
@@ -232,16 +326,17 @@ const getList = async () => {
     }
     if (searchData.value.name) {
       filteredData = filteredData.filter(item =>
-        item.name.toLowerCase().includes(searchData.value.name.toLowerCase())
+        item.id.toLowerCase().includes(searchData.value.name.toLowerCase())
       );
     }
     if (searchData.value.agent) {
       filteredData = filteredData.filter(item =>
-        item.name.toLowerCase().includes(searchData.value.agent.toLowerCase())
+        item.supplier.toLowerCase().includes(searchData.value.agent.toLowerCase())
       );
     }
     if (searchData.value.status !== "") {
-      // 这里可以根据实际需求处理状态筛选
+      const statusText = searchData.value.status === "1" ? "正常" : "停用";
+      filteredData = filteredData.filter(item => item.status === statusText);
     }
     if (
       searchData.value.registerTime &&
@@ -294,16 +389,16 @@ const exportExcel = () => {
     return;
   }
   const exportTitles = tableConfig.value.map((col: any) => col.label);
-  const exportProps = tableConfig.value.map((col: any) => col.prop);
-  const res: string[][] = multipleSelection.value.map((item: DepositWithdrawalItem) => {
-    return exportProps.map(prop => item[prop as keyof DepositWithdrawalItem] ?? "");
+  const exportProps = tableConfig.value.map((col: any) => col.prop).filter((prop: string) => prop !== "action");
+  const res: string[][] = multipleSelection.value.map((item: BettingItem) => {
+    return exportProps.map(prop => item[prop as keyof BettingItem] ?? "");
   });
-  res.unshift(exportTitles);
+  res.unshift(exportTitles.filter((title: string) => title !== "操作"));
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "存取款明细";
+  const sheetName = "投注明细";
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `存取款明细.xlsx`;
+  const fileName = `投注明细.xlsx`;
   writeFile(workBook, fileName);
 };
 
@@ -318,7 +413,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "存取款明细.json";
+  a.download = "投注明细.json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -348,6 +443,11 @@ const exportJson = () => {
       :columns="tableConfig"
       :table-data="tableData"
       :is-selection="true"
+      :action-bar="{
+        buttons,
+        width: 'auto',
+        label: ''
+      }"
       height="550px"
       @selection-change="handleSelectionChange"
     >
@@ -493,3 +593,4 @@ const exportJson = () => {
   background-color: #f5f7fa !important;
 }
 </style>
+
