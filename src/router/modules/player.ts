@@ -7,7 +7,7 @@ export default {
   path: "/player",
   name: "Player",
   component: Layout,
-  redirect: "/player",
+  redirect: "/player/transfer",
   meta: {
     icon: FormkitPeople,
     title: $t("menus.player"),
@@ -15,33 +15,27 @@ export default {
   },
   children: [
     {
-      path: "/transfer",
+      path: "/player/transfer",
       name: "Transfer",
       component: () => import("@/views/player/transfer.vue"),
       meta: {
         title: $t("menus.transfer"),
-        showLink: true,
-        showParent: true
       },
       children: [
         {
-          path: "deposit-withdrawal-details",
+          path: "/player/transfer/deposit-withdrawal-details",
           name: "DepositWithdrawalDetails",
           component: () => import("@/views/player/depositAndWithdrawalDetails.vue"),
           meta: {
             title: "存取款明细",
-            showLink: true,
-            showParent: true
           }
         },
         {
-          path: "betting-details",
+          path: "/player/transfer/betting-details",
           name: "BettingDetails",
           component: () => import("@/views/player/bettingDetails.vue"),
           meta: {
             title: "投注明细",
-            showLink: true,
-            showParent: true
           }
         }
       ]
