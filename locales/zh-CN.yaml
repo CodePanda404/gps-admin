@@ -67,6 +67,8 @@ menus:
   transfer: 转账模式玩家
   single: 单一模式/免转账玩家
   depositAndWithdrawalDetails: 存取款明细
+  system: 系统设置
+  attachment: 附件管理
 home:
   todayData: 今日数据
   updateTime: 更新时间
@@ -173,4 +175,29 @@ player:
     status: 状态
     depWithDrawDetail: 存取款明细
     betDetail: 投注明细
+    action: 操作
+
+system:
+  attachment:
+    type: 类型
+    typePlaceholder: 请选择
+    account: 账户
+    accountPlaceholder: 请输入内容
+    name: 姓名
+    namePlaceholder: 请输入姓名
+    operationTime: 操作时间
+    startTime: 开始日期时间
+    endTime: 结束日期时间
+    search: 搜索
+    reset: 重置
+    add: 添加
+    edit: 编辑
+    delete: 删除
+    more: 更多
+    id: ID
+    supplier: 供应商
+    sort: 排序
+    updateTime: 更新时间
+    status: 状态
+    itemName: 项目名称
     action: 操作

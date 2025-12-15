@@ -86,6 +86,10 @@ const transitionMain = defineComponent({
       transitions.value(this.route)?.name || "fade-transform";
     const enterTransition = transitions.value(this.route)?.enterTransition;
     const leaveTransition = transitions.value(this.route)?.leaveTransition;
+
+    // LOGGING
+    // console.log("TransitionMain Render:", this.route.path, "KeepAlive:", isKeepAlive.value);
+
     return h(
       Transition,
       {
@@ -97,7 +101,14 @@ const transitionMain = defineComponent({
           ? `animate__animated ${leaveTransition}`
           : undefined,
         mode: "out-in",
-        appear: true
+        appear: true,
+        // events
+        onBeforeEnter: () =>
+          console.log("Transition: Before Enter", this.route.path),
+        onAfterEnter: () =>
+          console.log("Transition: After Enter", this.route.path),
+        onBeforeLeave: () =>
+          console.log("Transition: Before Leave", this.route.path)
       },
       {
         default: () => [this.$slots.default()]
@@ -146,7 +157,6 @@ const transitionMain = defineComponent({
                   >
                     <component
                       :is="Comp"
-                      :key="fullPath"
                       :frameInfo="frameInfo"
                       class="main-content"
                     />
@@ -170,7 +180,6 @@ const transitionMain = defineComponent({
                 >
                   <component
                     :is="Comp"
-                    :key="fullPath"
                     :frameInfo="frameInfo"
                     class="main-content"
                   />

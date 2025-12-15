@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+defineOptions({
+  name: "Transfer"
+});
 import { useRouter } from "vue-router";
-import {
-  type PlusColumn,
-  PlusSearch
-} from "plus-pro-components";
+import { type PlusColumn, PlusSearch } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
 import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
@@ -130,7 +130,8 @@ type TableRow = TransferPlayerItem;
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
 // 表格相关数据和操作
-const { tableData, buttons, pageInfo, total, loadingStatus } = useTable<TableRow[]>();
+const { tableData, buttons, pageInfo, total, loadingStatus } =
+  useTable<TableRow[]>();
 
 // 表格配置
 const tableConfig: any = ref([
@@ -281,7 +282,7 @@ const handleStatusChange = async (params: {
     return;
   }
   // 原始状态 => 新状态的反值
-  const originalStatus = !value; 
+  const originalStatus = !value;
 
   // 是否是禁用操作
   const isDisabling = originalStatus === true;
@@ -747,8 +748,8 @@ const getList = async () => {
 
     // ID 筛选
     if (searchData.value.id) {
-      filteredData = filteredData.filter(item =>
-        item.id.toString() === searchData.value.id.toString()
+      filteredData = filteredData.filter(
+        item => item.id.toString() === searchData.value.id.toString()
       );
     }
 
@@ -761,8 +762,8 @@ const getList = async () => {
 
     // 用户ID筛选
     if (searchData.value.userId) {
-      filteredData = filteredData.filter(item =>
-        item.id.toString() === searchData.value.userId.toString()
+      filteredData = filteredData.filter(
+        item => item.id.toString() === searchData.value.userId.toString()
       );
     }
 
@@ -875,126 +876,136 @@ const exportJson = () => {
 </script>
 
 <template>
-  <!-- 搜索表单 -->
-  <el-card class="search-card" shadow="never" style="margin: 20px">
-    <PlusSearch
-      v-model="searchData"
-      :columns="searchColumns"
-      label-width="80"
-      label-position="right"
-      :has-unfold="false"
-      :searchText="t('player.transfer.search')"
-      :resetText="t('player.transfer.reset')"
-      @search="handleSearch"
-      @reset="handleRest"
-    />
-  </el-card>
-  <!-- 表格 -->
-  <el-card class="table-card" shadow="never" style="margin: 20px">
-    <PlusTable
-      v-loading="loadingStatus"
-      :columns="tableConfig"
-      :table-data="tableData"
-      :is-selection="true"
-      :action-bar="{
-        buttons,
-        width: '220px',
-        label: t('player.transfer.action')
-      }"
-      height="550px"
-      @selection-change="handleSelectionChange"
-      @formChange="handleStatusChange"
-    >
-      <template #density-icon>
-        <el-tooltip content="密度" placement="top">
-          <el-icon
-            :size="18"
-            style="cursor: pointer; outline: none; margin-right: 15px;"
-            color="#606266"
-          >
-            <component :is="Monitor" />
-          </el-icon>
-        </el-tooltip>
-      </template>
-      <template #column-settings-icon>
-        <el-tooltip content="列设置" placement="top">
-          <el-icon
-            :size="18"
-            style="cursor: pointer; outline: none; margin-right: 5px;"
-            color="#606266"
-          >
-            <component :is="Grid" />
-          </el-icon>
-        </el-tooltip>
-      </template>
-      <template #toolbar>
-        <!-- 导出下拉菜单 -->
-        <el-tooltip content="导出" placement="top" :trigger="'hover'">
-          <span style="display: inline-block;">
-            <el-dropdown trigger="click" popper-class="custom-export-dropdown">
-              <el-icon
-                :size="18"
-                style="
-                  margin-right: 15px;
-                  cursor: pointer;
-                  outline: none;
-                  display: inline-block;
-                "
-                color="#606266"
+  <div class="transfer-container">
+    <!-- 搜索表单 -->
+    <el-card class="search-card" shadow="never" style="margin: 20px">
+      <PlusSearch
+        v-model="searchData"
+        :columns="searchColumns"
+        label-width="80"
+        label-position="right"
+        :has-unfold="false"
+        :searchText="t('player.transfer.search')"
+        :resetText="t('player.transfer.reset')"
+        @search="handleSearch"
+        @reset="handleRest"
+      />
+    </el-card>
+    <!-- 表格 -->
+    <el-card class="table-card" shadow="never" style="margin: 20px">
+      <PlusTable
+        v-loading="loadingStatus"
+        :columns="tableConfig"
+        :table-data="tableData"
+        :is-selection="true"
+        :action-bar="{
+          buttons,
+          width: '220px',
+          label: t('player.transfer.action')
+        }"
+        height="550px"
+        @selection-change="handleSelectionChange"
+        @formChange="handleStatusChange"
+      >
+        <template #density-icon>
+          <el-tooltip content="密度" placement="top">
+            <el-icon
+              :size="18"
+              style=" margin-right: 15px;cursor: pointer; outline: none"
+              color="#606266"
+            >
+              <component :is="Monitor" />
+            </el-icon>
+          </el-tooltip>
+        </template>
+        <template #column-settings-icon>
+          <el-tooltip content="列设置" placement="top">
+            <el-icon
+              :size="18"
+              style=" margin-right: 5px;cursor: pointer; outline: none"
+              color="#606266"
+            >
+              <component :is="Grid" />
+            </el-icon>
+          </el-tooltip>
+        </template>
+        <template #toolbar>
+          <!-- 导出下拉菜单 -->
+          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+            <span style="display: inline-block">
+              <el-dropdown
+                trigger="click"
+                popper-class="custom-export-dropdown"
               >
-                <component :is="Upload" />
-              </el-icon>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item class="export-active" @click="exportJson"
-                    >Json</el-dropdown-item
-                  >
-                  <el-dropdown-item @click="exportExcel">Excel</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </span>
-        </el-tooltip>
-        <!-- 筛选下拉菜单 -->
-        <el-tooltip content="筛选" placement="top" :trigger="'hover'">
-          <span style="display: inline-block;">
-            <el-dropdown trigger="click" popper-class="custom-filter-dropdown">
-              <el-icon
-                :size="18"
-                style="
-                  margin-right: 15px;
-                  cursor: pointer;
-                  outline: none;
-                  display: inline-block;
-                "
-                color="#606266"
+                <el-icon
+                  :size="18"
+                  style="
+                    display: inline-block;
+                    margin-right: 15px;
+                    cursor: pointer;
+                    outline: none;
+                  "
+                  color="#606266"
+                >
+                  <component :is="Upload" />
+                </el-icon>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item class="export-active" @click="exportJson"
+                      >Json</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="exportExcel"
+                      >Excel</el-dropdown-item
+                    >
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </span>
+          </el-tooltip>
+          <!-- 筛选下拉菜单 -->
+          <el-tooltip content="筛选" placement="top" :trigger="'hover'">
+            <span style="display: inline-block">
+              <el-dropdown
+                trigger="click"
+                popper-class="custom-filter-dropdown"
               >
-                <component :is="Filter" />
-              </el-icon>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item>全部</el-dropdown-item>
-                  <el-dropdown-item>图片</el-dropdown-item>
-                  <el-dropdown-item>视频</el-dropdown-item>
-                  <el-dropdown-item>文本</el-dropdown-item>
-                  <el-dropdown-item>应用包</el-dropdown-item>
-                  <el-dropdown-item>压缩包</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </span>
-        </el-tooltip>
-      </template>
-    </PlusTable>
-    <PlusPagination
-      v-model="pageInfo"
-      :total="total"
-      :small="true"
-      :page-sizes="[10, 20, 50, 100]"
-      :layout="'total, sizes, prev, pager, next, jumper'"
-      @change="handlePageChange"
-    />
-  </el-card>
+                <el-icon
+                  :size="18"
+                  style="
+                    display: inline-block;
+                    margin-right: 15px;
+                    cursor: pointer;
+                    outline: none;
+                  "
+                  color="#606266"
+                >
+                  <component :is="Filter" />
+                </el-icon>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item>全部</el-dropdown-item>
+                    <el-dropdown-item>图片</el-dropdown-item>
+                    <el-dropdown-item>视频</el-dropdown-item>
+                    <el-dropdown-item>文本</el-dropdown-item>
+                    <el-dropdown-item>应用包</el-dropdown-item>
+                    <el-dropdown-item>压缩包</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </span>
+          </el-tooltip>
+        </template>
+      </PlusTable>
+      <PlusPagination
+        v-model="pageInfo"
+        :total="total"
+        :small="true"
+        :page-sizes="[10, 20, 50, 100]"
+        :layout="'total, sizes, prev, pager, next, jumper'"
+        @change="handlePageChange"
+      />
+    </el-card>
+  </div>
 </template>
 
 <style scoped>

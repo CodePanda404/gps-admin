@@ -1,13 +1,13 @@
 import { $t } from "@/plugins/i18n";
 const { VITE_HIDE_HOME } = import.meta.env;
 const Layout = () => import("@/layout/index.vue");
-import FormkitPeople from '~icons/formkit/people';
+import FormkitPeople from "~icons/formkit/people";
 
 export default {
   path: "/player",
   name: "Player",
   component: Layout,
-  redirect: "/player",
+  redirect: "/transfer",
   meta: {
     icon: FormkitPeople,
     title: $t("menus.player"),
@@ -21,13 +21,15 @@ export default {
       meta: {
         title: $t("menus.transfer"),
         showLink: true,
-        showParent: true
+        showParent: true,
+        keepAlive: true
       },
       children: [
         {
           path: "deposit-withdrawal-details",
           name: "DepositWithdrawalDetails",
-          component: () => import("@/views/player/depositAndWithdrawalDetails.vue"),
+          component: () =>
+            import("@/views/player/depositAndWithdrawalDetails.vue"),
           meta: {
             title: "存取款明细",
             showLink: true,
@@ -54,7 +56,6 @@ export default {
         title: $t("menus.single"),
         showLink: VITE_HIDE_HOME === "true" ? false : true,
         showParent: true
-
       }
     }
   ]
