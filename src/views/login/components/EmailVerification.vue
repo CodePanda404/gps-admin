@@ -7,7 +7,7 @@ import type { FormInstance } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
 import { useUserStoreHook } from "@/store/modules/user";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { sendVerificationCode, verifyCode, recoverPassword } from "@/api/user";
+import { sendEmailCode } from "@/api/user";
 import Keyhole from "~icons/ri/shield-keyhole-line";
 import RiGoogleFill from "~icons/ri/google-fill";
 
@@ -15,29 +15,74 @@ const { t } = useI18n();
 const loading = ref(false);
 const countdown = ref(0);
 const timer = ref<number | null>(null);
-const hasGoogleAuth = ref(false);
-const email = ref("");
 const ruleForm = reactive({
   emailCode: "",
   googleCode: ""
 });
 const ruleFormRef = ref<FormInstance>();
 
+// 从 store 获取邮箱和谷歌验证状态
+const recoveryEmail = computed(() => {
+  return useUserStoreHook().recoveryEmail || "";
+});
+
+// 格式化邮箱显示（部分隐藏）
+const email = computed(() => {
+  const emailStr = recoveryEmail.value;
+  if (!emailStr) return "";
+  
+  const [localPart, domain] = emailStr.split("@");
+  if (!localPart || !domain) return emailStr;
+  
+  // 如果本地部分长度大于2，只显示前2个字符，其余用*代替
+  if (localPart.length > 2) {
+    return `${localPart.substring(0, 2)}${"*".repeat(localPart.length - 2)}@${domain}`;
+  }
+  return emailStr;
+});
+
+const hasGoogleAuth = computed(() => {
+  return useUserStoreHook().googleStatus === 1;
+});
+
+// 邮箱验证码校验规则：不为空且纯数字
 const emailCodeRules = [
   {
     required: true,
     message: transformI18n($t("login.passwordRecovery.emailCodePlaceholder")),
     trigger: "blur"
+  },
+  {
+    pattern: /^\d+$/,
+    message: "邮箱验证码必须为纯数字",
+    trigger: "blur"
   }
 ];
 
+// 谷歌验证码校验规则：非空且为数字
 const googleCodeRules = [
   {
     required: true,
     message: transformI18n($t("login.passwordRecovery.googleCodePlaceholder")),
     trigger: "blur"
+  },
+  {
+    pattern: /^\d+$/,
+    message: "谷歌验证码必须为数字",
+    trigger: "blur"
   }
 ];
+
+// 动态表单验证规则
+const formRules = computed(() => {
+  const rules: any = {
+    emailCode: emailCodeRules
+  };
+  if (hasGoogleAuth.value) {
+    rules.googleCode = googleCodeRules;
+  }
+  return rules;
+});
 
 const countdownText = computed(() => {
   if (countdown.value > 0) {
@@ -66,82 +111,73 @@ const startCountdown = () => {
 const onResendCode = async () => {
   if (countdown.value > 0) return;
   
-  const account = useUserStoreHook().username;
-  if (!account) {
+  const username = useUserStoreHook().username;
+  const userEmail = recoveryEmail.value;
+  
+  if (!username || !userEmail) {
     message(transformI18n($t("login.passwordRecovery.accountRequired")), { type: "error" });
     return;
   }
   
-  // 暂时只做前端处理，模拟发送验证码
-  message(transformI18n($t("login.passwordRecovery.codeSent")), { type: "success" });
-  startCountdown();
-  
-  // 如果需要后端发送验证码，可以取消下面的注释
-  // loading.value = true;
-  // sendVerificationCode({ account })
-  //   .then(res => {
-  //     if (res.success) {
-  //       message(transformI18n($t("login.passwordRecovery.codeSent")), { type: "success" });
-  //       if (res.data?.email) {
-  //         email.value = res.data.email;
-  //       }
-  //       if (res.data?.hasGoogleAuth !== undefined) {
-  //         hasGoogleAuth.value = res.data.hasGoogleAuth;
-  //       }
-  //       startCountdown();
-  //     } else {
-  //       message(res.message || transformI18n($t("login.passwordRecovery.sendCodeFailed")), { type: "error" });
-  //     }
-  //   })
-  //   .catch(error => {
-  //     message(error?.message || transformI18n($t("login.passwordRecovery.sendCodeFailed")), { type: "error" });
-  //   })
-  //   .finally(() => {
-  //     loading.value = false;
-  //   });
+  loading.value = true;
+  sendEmailCode({ username, email: userEmail })
+    .then(res => {
+      if (res.code === 0) {
+        message(transformI18n($t("login.passwordRecovery.codeSent")), { type: "success" });
+        startCountdown();
+      } else {
+        message(res.msg || transformI18n($t("login.passwordRecovery.sendCodeFailed")), { type: "error" });
+      }
+    })
+    .catch(error => {
+      message(error?.response?.data?.msg || error?.message || transformI18n($t("login.passwordRecovery.sendCodeFailed")), { type: "error" });
+    })
+    .finally(() => {
+      loading.value = false;
+    });
 };
 
 const onSubmit = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   
-  // 手动验证邮箱验证码
+  // 先进行表单验证
+  await formEl.validate(valid => {
+    if (!valid) return;
+  });
+  
+  // 前端校验邮箱验证码（不为空且纯数字）
   if (!ruleForm.emailCode) {
     message(transformI18n($t("login.passwordRecovery.emailCodePlaceholder")), { type: "error" });
     return;
   }
   
-  // 如果开启了谷歌验证，验证谷歌验证码
-  if (hasGoogleAuth.value && !ruleForm.googleCode) {
-    message(transformI18n($t("login.passwordRecovery.googleCodePlaceholder")), { type: "error" });
+  if (!/^\d+$/.test(ruleForm.emailCode)) {
+    message("邮箱验证码必须为纯数字", { type: "error" });
     return;
   }
   
-  // 暂时只做前端验证，不调用后端
-  // 直接跳转到设置新密码页面
-  useUserStoreHook().SET_CURRENTPAGE(3);
+  // 如果开启了谷歌验证，前端校验谷歌验证码（非空且为数字）
+  if (hasGoogleAuth.value) {
+    if (!ruleForm.googleCode) {
+      message(transformI18n($t("login.passwordRecovery.googleCodePlaceholder")), { type: "error" });
+      return;
+    }
+    
+    if (!/^\d+$/.test(ruleForm.googleCode)) {
+      message("谷歌验证码必须为数字", { type: "error" });
+      return;
+    }
+  }
   
-  // 如果需要后端验证，可以取消下面的注释
-  // loading.value = true;
-  // const account = useUserStoreHook().username;
-  // verifyCode({
-  //   account,
-  //   emailCode: ruleForm.emailCode,
-  //   googleCode: hasGoogleAuth.value ? ruleForm.googleCode : undefined
-  // })
-  //   .then(res => {
-  //     if (res.success) {
-  //       // 跳转到设置新密码页面
-  //       useUserStoreHook().SET_CURRENTPAGE(3);
-  //     } else {
-  //       message(res.message || transformI18n($t("login.passwordRecovery.verifyFailed")), { type: "error" });
-  //     }
-  //   })
-  //   .catch(error => {
-  //     message(error?.message || transformI18n($t("login.passwordRecovery.verifyFailed")), { type: "error" });
-  //   })
-  //   .finally(() => {
-  //     loading.value = false;
-  //   });
+  // 保存验证码到 store，供设置新密码页面使用
+  useUserStoreHook().SET_EMAIL_CODE(ruleForm.emailCode);
+  if (hasGoogleAuth.value && ruleForm.googleCode) {
+    useUserStoreHook().SET_GOOGLE_CODE(ruleForm.googleCode);
+  }
+  
+  // 所有验证码通过前端校验后，直接跳转到设置新密码页面
+  // 后端验证统一交给下一个流程（设置新密码页面）来处理
+  useUserStoreHook().SET_CURRENTPAGE(3);
 };
 
 const onBack = () => {
@@ -155,35 +191,17 @@ const onBack = () => {
 
 onMounted(async () => {
   // 初始化时获取账号信息
-  const account = useUserStoreHook().username;
-  if (!account) {
-    // 如果没有账号信息，返回上一步
-    useUserStoreHook().SET_CURRENTPAGE(1);
-    return;
+  const username = useUserStoreHook().username;
+  const userEmail = recoveryEmail.value;
+  const shouldAutoSend = useUserStoreHook().shouldAutoSendEmailCode;
+  
+  // 只有从校验用户页面进入时才自动发送验证码
+  if (username && userEmail && shouldAutoSend) {
+    // 自动发送验证码
+    onResendCode();
+    // 发送后重置标记
+    useUserStoreHook().SET_SHOULD_AUTO_SEND_EMAIL_CODE(false);
   }
-  
-  // 暂时模拟邮箱和谷歌验证状态（用于调试）
-  // 可以设置一个测试邮箱
-  email.value = "px*******@gmail.com";
-  hasGoogleAuth.value = false; // 设置为 true 可以测试谷歌验证码输入框
-  
-  // 如果需要从后端获取，可以取消下面的注释
-  // try {
-  //   const res = await recoverPassword({ account });
-  //   if (res.success) {
-  //     if (res.data?.email) {
-  //       email.value = res.data.email;
-  //     }
-  //     if (res.data?.hasGoogleAuth !== undefined) {
-  //       hasGoogleAuth.value = res.data.hasGoogleAuth;
-  //     }
-  //   }
-  // } catch (error) {
-  //   console.error("Failed to get account info:", error);
-  // }
-  
-  // 暂时不自动发送验证码，用户需要手动点击重新获取
-  // onResendCode();
 });
 
 onUnmounted(() => {
@@ -198,6 +216,7 @@ onUnmounted(() => {
   <el-form
     ref="ruleFormRef"
     :model="ruleForm"
+    :rules="formRules"
     size="large"
   >
     <Motion>
@@ -213,7 +232,7 @@ onUnmounted(() => {
       </p>
     </Motion>
 
-    <Motion :delay="100" style="margin-bottom: 30px;">
+    <Motion :delay="100">
       <el-form-item :rules="emailCodeRules" prop="emailCode">
         <el-input
           v-model="ruleForm.emailCode"
@@ -239,7 +258,7 @@ onUnmounted(() => {
     </Motion>
 
     <Motion v-if="hasGoogleAuth" :delay="150" style="margin-bottom: 30px;">
-      <el-form-item prop="googleCode">
+      <el-form-item :rules="googleCodeRules" prop="googleCode">
         <el-input
           v-model="ruleForm.googleCode"
           clearable
@@ -279,7 +298,7 @@ onUnmounted(() => {
   font-size: 24px;
   font-weight: bold;
   color: #333;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
   text-align: left;
   
   html.dark & {
@@ -306,7 +325,6 @@ onUnmounted(() => {
 }
 
 .resend-text {
-  margin-top: 8px;
   text-align: left;
 }
 

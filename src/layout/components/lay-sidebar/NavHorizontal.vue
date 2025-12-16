@@ -15,6 +15,10 @@ import GlobalizationIcon from "@/assets/svg/globalization.svg?component";
 import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
 import Setting from "~icons/ri/settings-3-line";
 import Check from "~icons/ep/check";
+import User from "~icons/tdesign/user";
+import Lock from "~icons/ri/lock-fill";
+import { useRouter } from "vue-router";
+import { message } from "@/utils/message";
 
 const menuRef = ref();
 const showLogo = ref(
@@ -37,6 +41,16 @@ const {
   getDropdownItemStyle,
   getDropdownItemClass
 } = useNav();
+const router = useRouter();
+
+const handleProfile = () => {
+  // 个人中心功能（暂时可以跳转到主页或显示提示）
+  message("个人中心功能开发中", { type: "info" });
+};
+
+const handleChangePassword = () => {
+  router.push("/profile/change-password");
+};
 
 const defaultActive = computed(() =>
   !isAllEmpty(route.meta?.activePath) ? route.meta.activePath : route.path
@@ -120,7 +134,21 @@ onMounted(() => {
         </span>
         <template #dropdown>
           <el-dropdown-menu class="logout">
-            <el-dropdown-item @click="logout">
+            <el-dropdown-item @click="handleProfile">
+              <IconifyIconOffline
+                :icon="User"
+                style="margin: 5px"
+              />
+              个人中心
+            </el-dropdown-item>
+            <el-dropdown-item @click="handleChangePassword">
+              <IconifyIconOffline
+                :icon="Lock"
+                style="margin: 5px"
+              />
+              修改密码
+            </el-dropdown-item>
+            <el-dropdown-item divided @click="logout">
               <IconifyIconOffline
                 :icon="LogoutCircleRLine"
                 style="margin: 5px"

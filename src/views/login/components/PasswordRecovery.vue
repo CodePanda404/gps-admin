@@ -7,7 +7,7 @@ import type { FormInstance } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
 import { useUserStoreHook } from "@/store/modules/user";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { recoverPassword } from "@/api/user";
+import { checkAccount } from "@/api/user";
 import User from "~icons/tdesign/user";
 import { Warning } from "@element-plus/icons-vue";
 
@@ -34,38 +34,36 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
   errorMessage.value = "";
   await formEl.validate(valid => {
     if (valid) {
-      // 暂时只做前端验证，不调用后端
-      // 保存账号信息，用于下一步
-      useUserStoreHook().SET_USERNAME(ruleForm.account);
-      // 直接跳转到验证码页面
-      useUserStoreHook().SET_CURRENTPAGE(2);
-      
-      // 如果需要后端验证，可以取消下面的注释
-      // loading.value = true;
-      // recoverPassword({ account: ruleForm.account })
-      //   .then(res => {
-      //     if (res.success) {
-      //       // 保存账号和邮箱信息，用于下一步
-      //       useUserStoreHook().SET_USERNAME(ruleForm.account);
-      //       if (res.data?.email) {
-      //         // 可以存储邮箱信息到 store 或通过其他方式传递
-      //       }
-      //       if (res.data?.hasGoogleAuth) {
-      //         // 存储是否开启谷歌验证
-      //       }
-      //       // 跳转到验证码页面
-      //       useUserStoreHook().SET_CURRENTPAGE(2);
-      //     } else {
-      //       // 显示错误信息
-      //       errorMessage.value = res.message || transformI18n($t("login.passwordRecovery.accountNotExist"));
-      //     }
-      //   })
-      //   .catch(error => {
-      //     errorMessage.value = error?.message || transformI18n($t("login.passwordRecovery.accountNotExist"));
-      //   })
-      //   .finally(() => {
-      //     loading.value = false;
-      //   });
+      loading.value = true;
+      checkAccount({ username: ruleForm.account })
+        .then(res => {
+          if (res.code === 0) {
+            // 校验用户是否绑定邮箱
+            if (!res.data.email || res.data.email.trim() === "") {
+              errorMessage.value = "当前您的用户没有绑定，请联系管理员";
+              return;
+            }
+            
+            // 保存账号信息、邮箱和谷歌验证状态，用于下一步
+            useUserStoreHook().SET_USERNAME(ruleForm.account);
+            useUserStoreHook().SET_RECOVERY_EMAIL(res.data.email);
+            useUserStoreHook().SET_GOOGLE_STATUS(res.data.google_status);
+            // 设置标记：从校验用户页面进入，应该自动发送验证码
+            useUserStoreHook().SET_SHOULD_AUTO_SEND_EMAIL_CODE(true);
+            // 可以保存 token 用于后续步骤（如果需要）
+            // 跳转到验证码页面
+            useUserStoreHook().SET_CURRENTPAGE(2);
+          } else {
+            // 显示错误信息
+            errorMessage.value = res.msg || transformI18n($t("login.passwordRecovery.accountNotExist"));
+          }
+        })
+        .catch(error => {
+          errorMessage.value = error?.response?.data?.msg || error?.message || transformI18n($t("login.passwordRecovery.accountNotExist"));
+        })
+        .finally(() => {
+          loading.value = false;
+        });
     }
   });
 };

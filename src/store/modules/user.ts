@@ -36,7 +36,19 @@ export const useUserStore = defineStore("pure-user", {
     // 是否勾选了登录页的免登录
     isRemembered: false,
     // 登录页的免登录存储几天，默认5天
-    loginDay: 5
+    loginDay: 5,
+    // 找回密码时用户的谷歌验证状态
+    googleStatus: 0,
+    // 找回密码时用户的邮箱
+    recoveryEmail: "",
+    // 找回密码时输入的邮箱验证码
+    emailCode: "",
+    // 找回密码时输入的谷歌验证码
+    googleCode: "",
+    // 当前登录用户的邮箱
+    userEmail: "",
+    // 是否应该自动发送邮箱验证码
+    shouldAutoSendEmailCode: false
   }),
   actions: {
     /** 存储头像 */
@@ -71,13 +83,74 @@ export const useUserStore = defineStore("pure-user", {
     SET_LOGINDAY(value: number) {
       this.loginDay = Number(value);
     },
+    /** 存储找回密码时用户的谷歌验证状态 */
+    SET_GOOGLE_STATUS(value: number) {
+      this.googleStatus = value;
+    },
+    /** 存储找回密码时用户的邮箱 */
+    SET_RECOVERY_EMAIL(value: string) {
+      this.recoveryEmail = value;
+    },
+    /** 存储找回密码时输入的邮箱验证码 */
+    SET_EMAIL_CODE(value: string) {
+      this.emailCode = value;
+    },
+    /** 存储找回密码时输入的谷歌验证码 */
+    SET_GOOGLE_CODE(value: string) {
+      this.googleCode = value;
+    },
+    /** 存储当前登录用户的邮箱 */
+    SET_USER_EMAIL(value: string) {
+      this.userEmail = value;
+    },
+    /** 设置是否应该自动发送邮箱验证码 */
+    SET_SHOULD_AUTO_SEND_EMAIL_CODE(value: boolean) {
+      this.shouldAutoSendEmailCode = value;
+    },
     /** 登入 */
     async loginByUsername(data) {
-      return new Promise<UserResult>((resolve, reject) => {
+      return new Promise<{ success: boolean; message?: string; data?: any }>((resolve, reject) => {
         getLogin(data)
-          .then(data => {
-            if (data?.success) setToken(data.data);
-            resolve(data);
+          .then(response => {
+            if (response?.code === 0) {
+              // 计算过期时间（默认 7 天后过期）
+              const expires = new Date();
+              expires.setDate(expires.getDate() + 7);
+
+              // 转换为 setToken 需要的格式
+              setToken({
+                accessToken: response.data.token,
+                refreshToken: response.data.token,
+                expires: expires,
+                avatar: response.data.avatar || "",
+                username: response.data.username,
+                nickname: response.data.gruop_name || response.data.username,
+                roles: [response.data.gruop_name || "admin"],
+                permissions: ["*:*:*"]
+              });
+
+              // 设置用户邮箱和谷歌验证状态
+              this.SET_USER_EMAIL(response.data.email || "");
+              if (response.data.google_status !== undefined) {
+                this.SET_GOOGLE_STATUS(response.data.google_status);
+              }
+
+              // 清除邮箱检查标记，让系统在进入首页后重新检查
+              if (typeof sessionStorage !== "undefined") {
+                sessionStorage.removeItem("emailChecked");
+              }
+
+              resolve({
+                success: true,
+                message: response.msg,
+                data: response.data
+              });
+            } else {
+              resolve({
+                success: false,
+                message: response.msg || "登录失败"
+              });
+            }
           })
           .catch(error => {
             reject(error);

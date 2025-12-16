@@ -261,7 +261,6 @@ const handleStatusChange = async (params: {
   value: any;
 }) => {
   const { row, prop, value } = params;
-  console.log("切换玩家状态", params.row);
   // 只处理玩家状态字段的变化
   if (prop !== "status") {
     return;

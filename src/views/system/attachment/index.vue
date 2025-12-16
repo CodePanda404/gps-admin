@@ -75,7 +75,6 @@ const searchColumns: PlusColumn[] = [
 const handleSearch = () => {
   page.value.page = 1;
   // In real app, fetch data here
-  console.log("Search", state.value);
 };
 
 const handleReset = () => {

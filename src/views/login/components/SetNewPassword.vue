@@ -8,7 +8,7 @@ import type { FormInstance } from "element-plus";
 import { $t, transformI18n } from "@/plugins/i18n";
 import { useUserStoreHook } from "@/store/modules/user";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
-import { resetPassword } from "@/api/user";
+import { forgetPassword } from "@/api/user";
 import Lock from "~icons/ri/lock-fill";
 import { View, Hide } from "@element-plus/icons-vue";
 
@@ -56,45 +56,53 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
   if (!formEl) return;
   await formEl.validate(valid => {
     if (valid) {
-      // 暂时只做前端验证，不调用后端
-      message(transformI18n($t("login.passwordRecovery.resetSuccess")), { type: "success" });
-      // 重置状态并返回登录页
-      setTimeout(() => {
-        useUserStoreHook().SET_CURRENTPAGE(0);
-        useUserStoreHook().SET_USERNAME("");
-      }, 1500);
+      const username = useUserStoreHook().username;
+      const emailCode = useUserStoreHook().emailCode;
+      const googleCode = useUserStoreHook().googleCode;
+      const hasGoogleAuth = useUserStoreHook().googleStatus === 1;
       
-      // 如果需要后端验证，可以取消下面的注释
-      // loading.value = true;
-      // const account = useUserStoreHook().username;
-      // resetPassword({
-      //   account,
-      //   password: ruleForm.password,
-      //   confirmPassword: ruleForm.confirmPassword
-      // })
-      //   .then(res => {
-      //     if (res.success) {
-      //       message(transformI18n($t("login.passwordRecovery.resetSuccess")), { type: "success" });
-      //       // 重置状态并返回登录页
-      //       setTimeout(() => {
-      //         useUserStoreHook().SET_CURRENTPAGE(0);
-      //         useUserStoreHook().SET_USERNAME("");
-      //       }, 1500);
-      //     } else {
-      //       message(res.message || transformI18n($t("login.passwordRecovery.resetFailed")), { type: "error" });
-      //     }
-      //   })
-      //   .catch(error => {
-      //     message(error?.message || transformI18n($t("login.passwordRecovery.resetFailed")), { type: "error" });
-      //   })
-      //   .finally(() => {
-      //     loading.value = false;
-      //   });
+      if (!username || !emailCode) {
+        message(transformI18n($t("login.passwordRecovery.accountRequired")), { type: "error" });
+        return;
+      }
+      
+      loading.value = true;
+      forgetPassword({
+        username,
+        password: ruleForm.password,
+        repassword: ruleForm.confirmPassword,
+        sms_code: emailCode,
+        google_code: hasGoogleAuth ? googleCode : undefined
+      })
+        .then(res => {
+          if (res.code === 0) {
+            message(res.msg || transformI18n($t("login.passwordRecovery.resetSuccess")), { type: "success" });
+            // 重置状态并返回登录页
+            setTimeout(() => {
+              useUserStoreHook().SET_CURRENTPAGE(0);
+              useUserStoreHook().SET_USERNAME("");
+              useUserStoreHook().SET_EMAIL_CODE("");
+              useUserStoreHook().SET_GOOGLE_CODE("");
+              useUserStoreHook().SET_RECOVERY_EMAIL("");
+              useUserStoreHook().SET_GOOGLE_STATUS(0);
+            }, 1500);
+          } else {
+            message(res.msg || transformI18n($t("login.passwordRecovery.resetFailed")), { type: "error" });
+          }
+        })
+        .catch(error => {
+          message(error?.response?.data?.msg || error?.message || transformI18n($t("login.passwordRecovery.resetFailed")), { type: "error" });
+        })
+        .finally(() => {
+          loading.value = false;
+        });
     }
   });
 };
 
 const onBack = () => {
+  // 从设置新密码页面返回，不应该自动发送验证码
+  useUserStoreHook().SET_SHOULD_AUTO_SEND_EMAIL_CODE(false);
   useUserStoreHook().SET_CURRENTPAGE(2);
 };
 </script>

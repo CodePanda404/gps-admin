@@ -31,6 +31,11 @@ import LaySetting from "./components/lay-setting/index.vue";
 import NavVertical from "./components/lay-sidebar/NavVertical.vue";
 import NavHorizontal from "./components/lay-sidebar/NavHorizontal.vue";
 import BackTopIcon from "@/assets/svg/back_top.svg?component";
+import BindEmailDialog from "@/views/login/components/BindEmailDialog.vue";
+import EmailVerifyDialog from "@/views/login/components/EmailVerifyDialog.vue";
+import { useUserStoreHook } from "@/store/modules/user";
+import { bindEmail } from "@/api/user";
+import { message } from "@/utils/message";
 
 const { t } = useI18n();
 const appWrapperRef = ref();
@@ -116,10 +121,80 @@ useResizeObserver(appWrapperRef, entries => {
   }
 });
 
+// 绑定邮箱相关
+const showBindEmailDialog = ref(false);
+const showEmailVerifyDialog = ref(false);
+const bindEmailAddress = ref("");
+const bindEmailLoading = ref(false);
+
+// 检查用户是否绑定邮箱
+const checkUserEmail = () => {
+  // 延迟检查，确保页面完全加载后再检查
+  setTimeout(() => {
+    // 检查是否已经检查过（避免重复弹出）
+    const hasChecked = sessionStorage.getItem("emailChecked");
+    if (hasChecked === "true") {
+      return;
+    }
+    
+    const userEmail = useUserStoreHook().userEmail || "";
+    
+    // 如果用户没有绑定邮箱，显示绑定邮箱对话框
+    if (!userEmail || userEmail.trim() === "") {
+      showBindEmailDialog.value = true;
+      sessionStorage.setItem("emailChecked", "true");
+    }
+  }, 500);
+};
+
+// 绑定邮箱对话框 - 下一步（发送验证码）
+const handleBindEmailNext = (email: string) => {
+  bindEmailAddress.value = email;
+  showBindEmailDialog.value = false;
+  showEmailVerifyDialog.value = true;
+};
+
+// 邮箱验证对话框 - 确认（绑定邮箱）
+const handleEmailVerifyConfirm = async (emailCode: string, googleCode?: string) => {
+  bindEmailLoading.value = true;
+  const username = useUserStoreHook().username;
+  if (!username) {
+    message("用户信息丢失，请重新登录", { type: "error" });
+    bindEmailLoading.value = false;
+    return;
+  }
+  
+  bindEmail({
+    username,
+    email: bindEmailAddress.value,
+    email_code: emailCode,
+    google_code: googleCode
+  })
+    .then(res => {
+      if (res.code === 0) {
+        message(res.msg || "绑定邮箱成功", { type: "success" });
+        showEmailVerifyDialog.value = false;
+        // 更新 store 中的邮箱信息
+        useUserStoreHook().SET_USER_EMAIL(bindEmailAddress.value);
+      } else {
+        message(res.msg || "绑定邮箱失败", { type: "error" });
+      }
+    })
+    .catch(error => {
+      message(error?.response?.data?.msg || error?.message || "绑定邮箱失败", { type: "error" });
+    })
+    .finally(() => {
+      bindEmailLoading.value = false;
+    });
+};
+
 onMounted(() => {
   if (isMobile) {
     toggle("mobile", false);
   }
+  
+  // 检查用户是否绑定邮箱
+  checkUserEmail();
 });
 
 onBeforeMount(() => {
@@ -200,6 +275,19 @@ const LayHeader = defineComponent({
     </div>
     <!-- 系统设置 -->
     <LaySetting />
+    
+    <!-- 绑定邮箱对话框 -->
+    <BindEmailDialog
+      v-model:visible="showBindEmailDialog"
+      @next="handleBindEmailNext"
+    />
+    
+    <!-- 邮箱验证对话框 -->
+    <EmailVerifyDialog
+      v-model:visible="showEmailVerifyDialog"
+      :email="bindEmailAddress"
+      @confirm="handleEmailVerifyConfirm"
+    />
   </div>
 </template>
 

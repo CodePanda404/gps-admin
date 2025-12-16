@@ -46,4 +46,10 @@ export type userType = {
   permissions?: Array<string>;
   isRemembered?: boolean;
   loginDay?: number;
+  googleStatus?: number; // 找回密码时用户的谷歌验证状态：1-开启，0-未开启
+  recoveryEmail?: string; // 找回密码时用户的邮箱
+  emailCode?: string; // 找回密码时输入的邮箱验证码
+  googleCode?: string; // 找回密码时输入的谷歌验证码
+  userEmail?: string; // 当前登录用户的邮箱
+  shouldAutoSendEmailCode?: boolean; // 是否应该自动发送邮箱验证码
 };

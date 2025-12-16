@@ -6,7 +6,6 @@ import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
 import { ref, reactive, toRaw, computed } from "vue";
 import { debounce } from "@pureadmin/utils";
-import LoginUpdate from "./components/LoginUpdate.vue";
 import PasswordRecovery from "./components/PasswordRecovery.vue";
 import EmailVerification from "./components/EmailVerification.vue";
 import SetNewPassword from "./components/SetNewPassword.vue";
@@ -17,7 +16,7 @@ import { $t, transformI18n } from "@/plugins/i18n";
 import { useLayout } from "@/layout/hooks/useLayout";
 import { useUserStoreHook } from "@/store/modules/user";
 import { initRouter, getTopMenu } from "@/router/utils";
-import { bg, avatar, illustration, login, logo, shop, proxy } from "./utils/static";
+import { proxy } from "./utils/static";
 import { useRenderIcon } from "@/components/ReIcon/src/hooks";
 import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
@@ -42,11 +41,11 @@ const loading = ref(false);
 const disabled = ref(false);
 const ruleFormRef = ref<FormInstance>();
 const imgCode = ref("");
-const loginDay = ref(7);
 const checked = ref(false);
 const currentPage = computed(() => {
   return useUserStoreHook().currentPage;
 });
+
 
 const { initStorage } = useLayout();
 initStorage();
@@ -58,8 +57,8 @@ const {  getDropdownItemStyle, getDropdownItemClass } = useNav();
 const { locale, translationCh, translationEn } = useTranslationLang();
 
 const ruleForm = reactive({
-  username: "admin",
-  password: "admin123",
+  username: "",
+  password: "",
   googleVerifyCode: ""
 });
 
@@ -71,7 +70,8 @@ const onLogin = async (formEl: FormInstance | undefined) => {
       useUserStoreHook()
         .loginByUsername({
           username: ruleForm.username,
-          password: ruleForm.password
+          password: ruleForm.password,
+          google_code: ruleForm.googleVerifyCode
         })
         .then(res => {
           if (res.success) {
@@ -81,12 +81,12 @@ const onLogin = async (formEl: FormInstance | undefined) => {
               router
                 .push(getTopMenu(true).path)
                 .then(() => {
-                  message(t("login.loginSuccess"), { type: "success" });
+                  message(res.message || t("login.loginSuccess"), { type: "success" });
                 })
                 .finally(() => (disabled.value = false));
             });
           } else {
-            message(t("login.loginFail"), { type: "error" });
+            message(res.message || t("login.loginFail"), { type: "error" });
           }
         })
         .finally(() => (loading.value = false));
@@ -221,14 +221,7 @@ useEventListener(document, "keydown", ({ code }) => {
               </Motion>
               <!-- 谷歌验证码 -->
               <Motion :delay="150" style="margin-bottom: 30px;">
-                <el-form-item  :rules="[
-                    {
-                      required: true,
-                      message: transformI18n($t('login.googleVerifyCodeRuleReg')),
-                      trigger: 'blur'
-                    }
-                  ]"
-                  prop="googleVerifyCode">
+                <el-form-item>
                   <el-input
                     v-model="ruleForm.googleVerifyCode"
                     clearable
