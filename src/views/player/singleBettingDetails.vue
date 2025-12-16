@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
 defineOptions({
-  name: "DepositWithdrawalDetails"
+  name: "SingleBettingDetails"
 });
 import { useRoute, useRouter } from "vue-router";
 import {
@@ -11,7 +11,6 @@ import {
   PlusPagination
 } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
-import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import Upload from "~icons/ep/upload";
@@ -27,9 +26,6 @@ const router = useRouter();
 const playerId = computed(() => (route.query.playerId as string) || "");
 const playerName = computed(() => (route.query.playerName as string) || "");
 
-// 国际化
-const { t } = useI18n();
-
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
 const searchData = ref({
@@ -37,7 +33,7 @@ const searchData = ref({
   name: "",
   agent: "",
   status: "",
-  registerTime: null as string[] | null
+  createTime: null as string[] | null
 });
 
 // 搜索表单显示控制
@@ -86,14 +82,14 @@ const searchColumns: PlusColumn[] = [
         value: "1"
       },
       {
-        label: "禁用",
+        label: "停用",
         value: "0"
       }
     ]
   },
   {
-    label: "注册时间",
-    prop: "registerTime",
+    label: "创建时间",
+    prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "datetimerange",
@@ -116,30 +112,43 @@ const handleRest = () => {
     name: "",
     agent: "",
     status: "",
-    registerTime: null
+    createTime: null
   };
   pageInfo.value.page = 1;
   getList();
 };
 
 // 表格数据类型
-type DepositWithdrawalItem = {
+type BettingItem = {
   id: string;
-  userId: string;
-  name: string;
-  type: string; // 存款/取款
-  changedAmount: number;
-  beforeAmount: number;
-  afterAmount: number;
+  memberId: string;
+  gameId: string;
+  gameName: string;
+  transactionId: string;
+  betId: string;
+  gameType: string;
+  categoryId: string;
+  supplier: string;
+  currency: string;
+  bet: number;
+  bonus: number;
+  winLoss: number;
+  roundId: string;
   createTime: string;
-  remark: string;
+  endTime: string;
+  status: string; // 中奖/未中奖
 };
 
 // 多选选中数据
-const multipleSelection = ref<DepositWithdrawalItem[]>([]);
+const multipleSelection = ref<BettingItem[]>([]);
 // 表格相关数据和操作
-const { tableData, pageInfo, total, loadingStatus } =
-  useTable<DepositWithdrawalItem[]>();
+const { tableData, buttons, pageInfo, total, loadingStatus } =
+  useTable<BettingItem[]>();
+
+// 统计信息
+const totalBet = ref(0);
+const totalWinLoss = ref(0);
+const totalCount = ref(0);
 
 // 表格配置
 const tableConfig: any = ref([
@@ -148,69 +157,135 @@ const tableConfig: any = ref([
     prop: "id"
   },
   {
-    label: "用户ID",
-    prop: "userId"
+    label: "会员ID",
+    prop: "memberId"
   },
   {
-    label: "用户名",
-    prop: "name"
+    label: "游戏ID",
+    prop: "gameId"
   },
   {
-    label: "类型",
-    prop: "type"
+    label: "游戏名称",
+    prop: "gameName"
   },
   {
-    label: "变动游戏币",
-    prop: "changedAmount"
+    label: "交易ID",
+    prop: "transactionId"
   },
   {
-    label: "变动前",
-    prop: "beforeAmount"
+    label: "投注ID",
+    prop: "betId"
   },
   {
-    label: "变动后",
-    prop: "afterAmount"
+    label: "游戏类型",
+    prop: "gameType"
+  },
+  {
+    label: "分类ID",
+    prop: "categoryId"
+  },
+  {
+    label: "供应商",
+    prop: "supplier"
+  },
+  {
+    label: "币种",
+    prop: "currency"
+  },
+  {
+    label: "投注",
+    prop: "bet"
+  },
+  {
+    label: "奖金",
+    prop: "bonus"
+  },
+  {
+    label: "输赢",
+    prop: "winLoss"
+  },
+  {
+    label: "回合ID",
+    prop: "roundId"
   },
   {
     label: "创建时间",
     prop: "createTime"
   },
   {
-    label: "备注",
-    prop: "remark"
+    label: "结束时间",
+    prop: "endTime"
+  },
+  {
+    label: "状态",
+    prop: "status",
+    valueType: "tag",
+    fieldProps: value => ({
+      type: value === "中奖" ? "success" : "danger"
+    })
   }
 ]);
 
+// 表格操作栏按钮定义
+buttons.value = [
+  {
+    text: () => "游戏历史",
+    code: "gameHistory",
+    props: {
+      type: "primary"
+    },
+    onClick: () => {
+      message("游戏历史功能", { type: "info" });
+    }
+  }
+];
+
 // 表格选中数据
-const handleSelectionChange = (val: DepositWithdrawalItem[]) => {
+const handleSelectionChange = (val: BettingItem[]) => {
   multipleSelection.value = val;
 };
 
 // 生成模拟数据
-const generateMockData = (): DepositWithdrawalItem[] => {
-  const types = ["存款", "取款"];
-  const names = ["Siew", "John", "Alice", "Bob"];
+const generateMockData = (): BettingItem[] => {
+  const suppliers = ["Pragmatic Play", "Evolution", "NetEnt", "Microgaming"];
+  const currencies = ["PHP", "INR", "THB", "MYR", "USD"];
+  const statuses = ["中奖", "未中奖"];
+  const gameTypes = ["Casino", "Sports", "Lottery", "Poker"];
+  const gameNames = ["1000", "2000", "3000", "4000"];
 
   return Array.from({ length: 100 }).map((_, index) => {
-    const randomType = types[Math.floor(Math.random() * types.length)];
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const changedAmount = Math.floor(Math.random() * 10000) + 1000;
-    const beforeAmount = Math.floor(Math.random() * 50000) + 10000;
-    const afterAmount =
-      randomType === "存款"
-        ? beforeAmount + changedAmount
-        : beforeAmount - changedAmount;
+    const randomSupplier =
+      suppliers[Math.floor(Math.random() * suppliers.length)];
+    const randomCurrency =
+      currencies[Math.floor(Math.random() * currencies.length)];
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    const randomGameType =
+      gameTypes[Math.floor(Math.random() * gameTypes.length)];
+    const randomGameName =
+      gameNames[Math.floor(Math.random() * gameNames.length)];
+
+    const bet = Math.floor(Math.random() * 5000) + 1000;
+    const bonus = Math.floor(Math.random() * 3000) + 500;
+    const winLoss = randomStatus === "中奖" ? bet + bonus - bet : -bet;
 
     return {
       id: `abc${index + 1}`,
-      userId: `abc${index + 1}`,
-      name: randomName,
-      type: randomType,
-      changedAmount,
-      beforeAmount,
-      afterAmount,
-      createTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
-      remark: `beizhuuuuu${index + 1}`
+      memberId: `abc${index + 1}`,
+      gameId: `abc${index + 1}`,
+      gameName: randomGameName,
+      transactionId: `1000`,
+      betId: `1000`,
+      gameType: randomGameType,
+      categoryId: randomGameType,
+      supplier: randomSupplier,
+      currency: randomCurrency,
+      bet: bet,
+      bonus: bonus,
+      winLoss: winLoss,
+      roundId: `abc${index + 1}`,
+      createTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
+      endTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
+      status: randomStatus
     };
   });
 };
@@ -231,37 +306,48 @@ const getList = async () => {
     }
     if (searchData.value.name) {
       filteredData = filteredData.filter(item =>
-        item.name.toLowerCase().includes(searchData.value.name.toLowerCase())
+        item.memberId.toLowerCase().includes(searchData.value.name.toLowerCase())
       );
     }
     if (searchData.value.agent) {
       filteredData = filteredData.filter(item =>
-        item.name.toLowerCase().includes(searchData.value.agent.toLowerCase())
+        item.supplier
+          .toLowerCase()
+          .includes(searchData.value.agent.toLowerCase())
       );
     }
     if (searchData.value.status !== "") {
-      // 这里可以根据实际需求处理状态筛选
+      const statusText = searchData.value.status === "1" ? "中奖" : "未中奖";
+      filteredData = filteredData.filter(item => item.status === statusText);
     }
     if (
-      searchData.value.registerTime &&
-      Array.isArray(searchData.value.registerTime) &&
-      searchData.value.registerTime.length === 2
+      searchData.value.createTime &&
+      Array.isArray(searchData.value.createTime) &&
+      searchData.value.createTime.length === 2
     ) {
-      const startTime = new Date(searchData.value.registerTime[0]).getTime();
-      const endTime = new Date(searchData.value.registerTime[1]).getTime();
+      const startTime = new Date(searchData.value.createTime[0]).getTime();
+      const endTime = new Date(searchData.value.createTime[1]).getTime();
       filteredData = filteredData.filter(item => {
         const itemTime = new Date(item.createTime).getTime();
         return itemTime >= startTime && itemTime <= endTime;
       });
     }
 
-    const totalCount = filteredData.length;
+    // 计算统计信息
+    totalBet.value = filteredData.reduce((sum, item) => sum + item.bet, 0);
+    totalWinLoss.value = filteredData.reduce(
+      (sum, item) => sum + item.winLoss,
+      0
+    );
+    totalCount.value = filteredData.length;
+
+    const totalCountForPagination = filteredData.length;
     const start = (pageInfo.value.page - 1) * pageInfo.value.pageSize;
     const end = start + pageInfo.value.pageSize;
     const paginatedData = filteredData.slice(start, end);
 
     tableData.value = paginatedData;
-    total.value = totalCount;
+    total.value = totalCountForPagination;
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
@@ -293,20 +379,18 @@ const exportExcel = () => {
     return;
   }
   const exportTitles = tableConfig.value.map((col: any) => col.label);
-  const exportProps = tableConfig.value.map((col: any) => col.prop);
-  const res: string[][] = multipleSelection.value.map(
-    (item: DepositWithdrawalItem) => {
-      return exportProps.map(
-        prop => item[prop as keyof DepositWithdrawalItem] ?? ""
-      );
-    }
-  );
-  res.unshift(exportTitles);
+  const exportProps = tableConfig.value
+    .map((col: any) => col.prop)
+    .filter((prop: string) => prop !== "action");
+  const res: string[][] = multipleSelection.value.map((item: BettingItem) => {
+    return exportProps.map(prop => item[prop as keyof BettingItem] ?? "");
+  });
+  res.unshift(exportTitles.filter((title: string) => title !== "操作"));
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "存取款明细";
+  const sheetName = "投注明细";
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `存取款明细.xlsx`;
+  const fileName = `投注明细.xlsx`;
   writeFile(workBook, fileName);
 };
 
@@ -321,7 +405,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "存取款明细.json";
+  a.download = "投注明细.json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -330,7 +414,7 @@ const exportJson = () => {
 </script>
 
 <template>
-  <div class="deposit-withdrawal-details-container">
+  <div class="single-betting-details-container">
     <!-- 搜索表单 -->
     <el-card class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
@@ -346,6 +430,37 @@ const exportJson = () => {
         @reset="handleRest"
       />
     </el-card>
+
+    <!-- 统计信息 -->
+    <el-card class="stats-card" shadow="never" style="margin: 20px">
+      <div class="stats-content">
+        <div class="stat-item">
+          <span class="stat-label">总投注:</span>
+          <el-input
+            v-model="totalBet"
+            readonly
+            style="width: 200px; margin-left: 10px"
+          />
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">总输赢:</span>
+          <el-input
+            v-model="totalWinLoss"
+            readonly
+            style="width: 200px; margin-left: 10px"
+          />
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">总笔数:</span>
+          <el-input
+            v-model="totalCount"
+            readonly
+            style="width: 200px; margin-left: 10px"
+          />
+        </div>
+      </div>
+    </el-card>
+
     <!-- 表格 -->
     <el-card class="table-card" shadow="never" style="margin: 20px">
       <PlusTable
@@ -353,10 +468,17 @@ const exportJson = () => {
         :columns="tableConfig"
         :table-data="tableData"
         :is-selection="true"
+        :adaptive="true"
+        :action-bar="{
+          buttons,
+          width: '150px',
+          label: '操作'
+        }"
         width="100%"
         height="90%"
         @selection-change="handleSelectionChange"
       >
+        <!-- 工具栏 -->
         <template #density-icon>
           <el-tooltip content="密度" placement="top">
             <el-icon
@@ -380,14 +502,34 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #toolbar>
-          <div>
-            <!-- 筛选：点击切换搜索表单显示/隐藏 -->
-            <el-tooltip
-              :content="showSearch ? '隐藏搜索' : '显示搜索'"
-              placement="top"
-              :trigger="'hover'"
-            >
-              <span style="display: inline-block">
+          <!-- 筛选：点击切换搜索表单显示/隐藏 -->
+          <el-tooltip
+            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            placement="top"
+            :trigger="'hover'"
+          >
+            <span style="display: inline-block">
+              <el-icon
+                :size="18"
+                style="
+                  margin-right: 15px;
+                  cursor: pointer;
+                  outline: none;
+                "
+                color="#606266"
+                @click="showSearch = !showSearch"
+              >
+                <component :is="Filter" />
+              </el-icon>
+            </span>
+          </el-tooltip>
+          <!-- 导出下拉菜单 -->
+          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+            <span style="display: inline-block">
+              <el-dropdown
+                trigger="click"
+                popper-class="custom-export-dropdown"
+              >
                 <el-icon
                   :size="18"
                   style="
@@ -396,47 +538,22 @@ const exportJson = () => {
                     outline: none;
                   "
                   color="#606266"
-                  @click="showSearch = !showSearch"
                 >
-                  <component :is="Filter" />
+                  <component :is="Upload" />
                 </el-icon>
-              </span>
-            </el-tooltip>
-            <!-- 导出下拉菜单 -->
-            <el-tooltip content="导出" placement="top" :trigger="'hover'">
-              <span style="display: inline-block">
-                <el-dropdown
-                  trigger="click"
-                  popper-class="custom-export-dropdown"
-                >
-                  <el-icon
-                    :size="18"
-                    style="
-                      display: inline-block;
-                      margin-right: 15px;
-                      cursor: pointer;
-                      outline: none;
-                    "
-                    color="#606266"
-                  >
-                    <component :is="Upload" />
-                  </el-icon>
-                  <template #dropdown>
-                    <el-dropdown-menu>
-                      <el-dropdown-item
-                        class="export-active"
-                        @click="exportJson"
-                        >Json</el-dropdown-item
-                      >
-                      <el-dropdown-item @click="exportExcel"
-                        >Excel</el-dropdown-item
-                      >
-                    </el-dropdown-menu>
-                  </template>
-                </el-dropdown>
-              </span>
-            </el-tooltip>
-          </div>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item class="export-active" @click="exportJson"
+                      >Json</el-dropdown-item
+                    >
+                    <el-dropdown-item @click="exportExcel"
+                      >Excel</el-dropdown-item
+                    >
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </span>
+          </el-tooltip>
         </template>
       </PlusTable>
       <PlusPagination
@@ -452,6 +569,26 @@ const exportJson = () => {
 </template>
 
 <style scoped>
+.stats-card {
+  border: 1px dashed #409eff;
+}
+
+.stats-content {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #606266;
+}
+
 .custom-export-dropdown {
   min-width: 80px !important;
   padding: 0 !important;
@@ -475,23 +612,5 @@ const exportJson = () => {
 .custom-export-dropdown .el-dropdown-item:not(.export-active):hover {
   background-color: #f5f7fa !important;
 }
-
-.custom-filter-dropdown {
-  min-width: 120px !important;
-  padding: 0 !important;
-  border-radius: 4px;
-}
-
-.custom-filter-dropdown .el-dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 8px 12px !important;
-  margin: 0 !important;
-  text-align: center;
-  border-radius: 0;
-}
-
-.custom-filter-dropdown .el-dropdown-item:hover {
-  background-color: #f5f7fa !important;
-}
 </style>
+

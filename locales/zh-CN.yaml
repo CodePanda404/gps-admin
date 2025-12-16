@@ -67,6 +67,7 @@ menus:
   transfer: 转账模式玩家
   single: 单一模式/免转账玩家
   depositAndWithdrawalDetails: 存取款明细
+  game: 游戏管理
   system: 系统设置
   attachment: 附件管理
 home:

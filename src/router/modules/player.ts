@@ -11,7 +11,7 @@ export default {
   meta: {
     icon: FormkitPeople,
     title: $t("menus.player"),
-    rank: 0
+    rank: 1
   },
   children: [
     {
@@ -44,14 +44,27 @@ export default {
       ]
     },
     {
-      path: "/single",
+      path: "/player/single",
       name: "Single",
       component: () => import("@/views/player/single.vue"),
       meta: {
         title: $t("menus.single"),
         showLink: VITE_HIDE_HOME === "true" ? false : true,
         showParent: true
-      }
+      },
+      children: [
+        {
+          path: "/player/single/betting-details",
+          name: "SingleBettingDetails",
+          component: () =>
+            import("@/views/player/singleBettingDetails.vue"),
+          meta: {
+            title: "投注明细",
+            showLink: true,
+            showParent: true
+          }
+        }
+      ]
     }
   ]
 } satisfies RouteConfigsTable;

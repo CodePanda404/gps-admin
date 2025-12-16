@@ -67,6 +67,7 @@ menus:
   transfer: transfer
   single: single
   depositAndWithdrawalDetails: depositAndWithdrawalDetails
+  game: Game
 home:
   todayData: Today's Data
   updateTime: Update Time

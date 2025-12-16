@@ -32,6 +32,8 @@ const searchData = ref({
   status: "",
   registerTime: null as string[] | null
 });
+// 搜索表单显示控制
+const showSearch = ref(true);
 
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
@@ -138,81 +140,72 @@ const tableConfig: any = ref([
   {
     label: "ID",
     renderHeader: () => t("player.transfer.id"),
-    prop: "id",
-    width: "100"
+    prop: "id"
   },
   {
     label: "用户名",
     renderHeader: () => t("player.transfer.name"),
-    prop: "name",
-    width: "130"
+    prop: "name"
   },
   {
     label: "余额",
     renderHeader: () => t("player.transfer.balance"),
-    prop: "balance",
-    width: "130"
+    prop: "balance"
   },
   {
     label: "币种",
     renderHeader: () => t("player.transfer.currency"),
-    prop: "currency",
-    width: "130"
+    prop: "currency"
   },
   {
     label: "商户ID",
     renderHeader: () => t("player.transfer.merchantID"),
-    prop: "merchant",
-    width: "130"
+    prop: "merchant"
   },
   {
     label: "累计投注",
     renderHeader: () => t("player.transfer.totalBet"),
-    prop: "totalBet",
-    width: "130"
+    prop: "totalBet"
   },
   {
     label: "累计派彩",
     renderHeader: () => t("player.transfer.totalPet"),
-    prop: "totalPet",
-    width: "130"
+    prop: "totalPet"
   },
   {
     label: "累计输赢",
     renderHeader: () => t("player.transfer.totalWinLoss"),
-    prop: "totalWinLoss",
-    width: "130"
+    prop: "totalWinLoss"
   },
   {
     label: "登录时间",
     renderHeader: () => t("player.transfer.loginTime"),
     prop: "loginTime",
-    width: "180"
+    width: "160"
   },
   {
     label: "登录IP",
     renderHeader: () => t("player.transfer.loginIP"),
     prop: "loginIp",
-    width: "130"
+    width: "140"
   },
   {
     label: "注册时间",
     renderHeader: () => t("player.transfer.registerTime"),
     prop: "registerTime",
-    width: "180"
+    width: "160"
   },
   {
     label: "注册IP",
     renderHeader: () => t("player.transfer.registerIP"),
     prop: "registerIP",
-    width: "130"
+    width: "140"
   },
   {
     label: "状态",
     renderHeader: () => t("player.transfer.status"),
     prop: "status",
     valueType: "switch",
-    width: "100",
     editable: true
   }
 ]);
@@ -245,7 +238,6 @@ buttons.value = [
     },
     onClick: (params: any) => {
       const row = params.row as TableRow;
-      // 跳转到投注明细页面，传递玩家ID
       router.push({
         name: "BettingDetails",
         query: {
@@ -878,19 +870,20 @@ const exportJson = () => {
 <template>
   <div class="transfer-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
-      <PlusSearch
-        v-model="searchData"
-        :columns="searchColumns"
-        label-width="80"
-        label-position="right"
-        :has-unfold="false"
-        :searchText="t('player.transfer.search')"
-        :resetText="t('player.transfer.reset')"
-        @search="handleSearch"
-        @reset="handleRest"
-      />
-    </el-card>
+  <el-card class="search-card" shadow="never" style="margin: 20px">
+    <PlusSearch
+      v-show="showSearch"
+      v-model="searchData"
+      :columns="searchColumns"
+      label-width="80"
+      label-position="right"
+      :has-unfold="false"
+      :searchText="t('player.transfer.search')"
+      :resetText="t('player.transfer.reset')"
+      @search="handleSearch"
+      @reset="handleRest"
+    />
+  </el-card>
     <!-- 表格 -->
     <el-card class="table-card" shadow="never" style="margin: 20px">
       <PlusTable
@@ -898,15 +891,18 @@ const exportJson = () => {
         :columns="tableConfig"
         :table-data="tableData"
         :is-selection="true"
+        :adaptive="true"
         :action-bar="{
           buttons,
           width: '220px',
           label: t('player.transfer.action')
         }"
-        height="550px"
         @selection-change="handleSelectionChange"
         @formChange="handleStatusChange"
+        width="100%"
+        height="90%"
       >
+       <!-- 工具栏 -->
         <template #density-icon>
           <el-tooltip content="密度" placement="top">
             <el-icon
@@ -930,7 +926,28 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #toolbar>
-          <!-- 导出下拉菜单 -->
+          <!-- 筛选：点击切换搜索表单显示/隐藏 -->
+          <el-tooltip
+            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            placement="top"
+            :trigger="'hover'"
+          >
+           <span style="display: inline-block">
+            <el-icon
+              :size="18"
+              style="
+                margin-right: 15px;
+                cursor: pointer;
+                outline: none;
+              "
+              color="#606266"
+              @click="showSearch = !showSearch"
+            >
+              <component :is="Filter" />
+            </el-icon>
+             </span>
+          </el-tooltip>
+           <!-- 导出下拉菜单 -->
           <el-tooltip content="导出" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
@@ -940,7 +957,6 @@ const exportJson = () => {
                 <el-icon
                   :size="18"
                   style="
-                    display: inline-block;
                     margin-right: 15px;
                     cursor: pointer;
                     outline: none;
@@ -962,38 +978,6 @@ const exportJson = () => {
               </el-dropdown>
             </span>
           </el-tooltip>
-          <!-- 筛选下拉菜单 -->
-          <el-tooltip content="筛选" placement="top" :trigger="'hover'">
-            <span style="display: inline-block">
-              <el-dropdown
-                trigger="click"
-                popper-class="custom-filter-dropdown"
-              >
-                <el-icon
-                  :size="18"
-                  style="
-                    display: inline-block;
-                    margin-right: 15px;
-                    cursor: pointer;
-                    outline: none;
-                  "
-                  color="#606266"
-                >
-                  <component :is="Filter" />
-                </el-icon>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item>全部</el-dropdown-item>
-                    <el-dropdown-item>图片</el-dropdown-item>
-                    <el-dropdown-item>视频</el-dropdown-item>
-                    <el-dropdown-item>文本</el-dropdown-item>
-                    <el-dropdown-item>应用包</el-dropdown-item>
-                    <el-dropdown-item>压缩包</el-dropdown-item>
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
-            </span>
-          </el-tooltip>
         </template>
       </PlusTable>
       <PlusPagination
@@ -1009,11 +993,6 @@ const exportJson = () => {
 </template>
 
 <style scoped>
-.table-card {
-  max-width: 100%;
-  height: 700px;
-  max-height: 650px;
-}
 
 .custom-export-dropdown {
   min-width: 80px !important;

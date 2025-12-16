@@ -1,34 +1,20 @@
 <script setup lang="ts">
-import { ref, computed, h } from "vue";
+import { ref, computed } from "vue";
 defineOptions({
-  name: "BettingDetails"
+  name: "Games"
 });
-import { useRoute, useRouter } from "vue-router";
-import {
-  type PlusColumn,
-  PlusSearch,
-  PlusTable,
-  PlusPagination
-} from "plus-pro-components";
+import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
-import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
+import { ElMessageBox } from "element-plus";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
 import Filter from "~icons/ep/filter";
-
-// 路由
-const route = useRoute();
-const router = useRouter();
-
-// 获取路由参数
-const playerId = computed(() => (route.query.playerId as string) || "");
-const playerName = computed(() => (route.query.playerName as string) || "");
-
-// 国际化
-const { t } = useI18n();
+import Plus from "~icons/ep/plus";
+import Edit from "~icons/ep/edit";
+import More from "~icons/ep/more";
 
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
@@ -39,7 +25,6 @@ const searchData = ref({
   status: "",
   registerTime: null as string[] | null
 });
-
 // 搜索表单显示控制
 const showSearch = ref(true);
 
@@ -83,11 +68,15 @@ const searchColumns: PlusColumn[] = [
       },
       {
         label: "正常",
-        value: "1"
+        value: "正常"
       },
       {
-        label: "停用",
-        value: "0"
+        label: "下架",
+        value: "下架"
+      },
+      {
+        label: "维护",
+        value: "维护"
       }
     ]
   },
@@ -123,25 +112,36 @@ const handleRest = () => {
 };
 
 // 表格数据类型
-type BettingItem = {
+type TableRow = {
   id: string;
-  gameId: string;
+  walletType: string;
   supplier: string;
-  currency: string;
-  bet: number;
-  bonus: number;
-  winLoss: string;
-  transactionId: string;
-  betId: string;
+  gameId: string;
+  gameCode: string;
+  gameNameEn: string;
+  gameNameCn: string;
+  productAbbr: string;
+  productId: string;
+  playType: string;
+  category: string;
+  tags: string;
+  productImage: string;
+  demoImage: string;
+  webpImage: string;
+  imageStorage: string;
+  hasImage: boolean;
+  supportedCurrencies: string;
+  disabledCurrencies: string;
   createTime: string;
-  status: string; // 正常/停用
+  updateTime: string;
+  status: string; // 正常/下架/维护
 };
 
 // 多选选中数据
-const multipleSelection = ref<BettingItem[]>([]);
+const multipleSelection = ref<TableRow[]>([]);
 // 表格相关数据和操作
-const { tableData, buttons, pageInfo, total, loadingStatus } =
-  useTable<BettingItem[]>();
+const { tableData, pageInfo, total, loadingStatus } =
+  useTable<TableRow[]>();
 
 // 表格配置
 const tableConfig: any = ref([
@@ -150,100 +150,137 @@ const tableConfig: any = ref([
     prop: "id"
   },
   {
-    label: "游戏ID",
-    prop: "gameId"
+    label: "钱包类型",
+    prop: "walletType"
   },
   {
     label: "供应商",
     prop: "supplier"
   },
   {
-    label: "币种",
-    prop: "currency"
+    label: "游戏ID",
+    prop: "gameId"
   },
   {
-    label: "投注",
-    prop: "bet"
+    label: "游戏code",
+    prop: "gameCode"
   },
   {
-    label: "奖金",
-    prop: "bonus"
+    label: "游戏英文名称",
+    prop: "gameNameEn"
   },
   {
-    label: "输赢",
-    prop: "winLoss"
+    label: "游戏中文名称",
+    prop: "gameNameCn"
   },
   {
-    label: "交易ID",
-    prop: "transactionId"
+    label: "产品缩写",
+    prop: "productAbbr"
   },
   {
-    label: "投注ID",
-    prop: "betId"
+    label: "产品ID",
+    prop: "productId"
+  },
+  {
+    label: "所属玩法",
+    prop: "playType"
+  },
+  {
+    label: "所属分类",
+    prop: "category"
+  },
+  {
+    label: "标签",
+    prop: "tags"
+  },
+  {
+    label: "产品主图",
+    prop: "productImage"
+  },
+  {
+    label: "演示站游戏图",
+    prop: "demoImage"
+  },
+  {
+    label: "webp游戏图",
+    prop: "webpImage"
+  },
+  {
+    label: "图片存储",
+    prop: "imageStorage"
+  },
+  {
+    label: "有无图片",
+    prop: "hasImage"
+  },
+  {
+    label: "支持币种",
+    prop: "supportedCurrencies"
+  },
+  {
+    label: "已停用币种",
+    prop: "disabledCurrencies"
   },
   {
     label: "创建时间",
     prop: "createTime"
   },
   {
+    label: "更新时间",
+    prop: "updateTime"
+  },
+  {
     label: "状态",
     prop: "status",
     valueType: "tag",
-    fieldProps: value => ({
-      type: value === "正常" ? "success" : "danger"
-    })
+    fieldProps: value => {
+      let type = "info";
+      if (value === "正常") type = "success";
+      else if (value === "下架") type = "warning";
+      else if (value === "维护") type = "danger";
+      return { type };
+    }
   }
 ]);
 
-// 表格操作栏按钮定义
-buttons.value = [
-  {
-    text: () => "游戏数据",
-    code: "add",
-    props: {
-      type: "primary"
-    },
-    onClick: () => {
-      message("添加功能", { type: "info" });
-    }
-  },
-];
 
 // 表格选中数据
-const handleSelectionChange = (val: BettingItem[]) => {
+const handleSelectionChange = (val: TableRow[]) => {
   multipleSelection.value = val;
 };
 
 // 生成模拟数据
-const generateMockData = (): BettingItem[] => {
-  const suppliers = ["Pragmatic Play", "Evolution", "NetEnt", "Microgaming"];
-  const currencies = ["PHP", "INR", "THB", "MYR", "USD"];
-  const statuses = ["正常", "停用"];
-  const winLossTypes = ["存款", "取款"];
+const generateMockData = (): TableRow[] => {
+  const suppliers = ["Pragmatic Play", "Evolution", "NetEnt"];
+  const walletTypes = ["钱包1", "钱包2", "钱包3"];
+  const playTypes = ["老虎机", "真人", "体育"];
+  const statuses = ["正常", "下架", "维护"];
+  const currencies = ["PHP,INR,THB", "USD,EUR", "MYR,CNY"];
 
-  return Array.from({ length: 100 }).map((_, index) => {
-    const randomSupplier =
-      suppliers[Math.floor(Math.random() * suppliers.length)];
-    const randomCurrency =
-      currencies[Math.floor(Math.random() * currencies.length)];
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    const randomWinLoss =
-      winLossTypes[Math.floor(Math.random() * winLossTypes.length)];
-
-    return {
-      id: `abc${index + 1}`,
-      gameId: `abc${index + 1}`,
-      supplier: randomSupplier,
-      currency: randomCurrency,
-      bet: Math.floor(Math.random() * 5000) + 1000,
-      bonus: Math.floor(Math.random() * 3000) + 500,
-      winLoss: randomWinLoss,
-      transactionId: `abc${index + 1}`,
-      betId: `abc${index + 1}`,
-      createTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
-      status: randomStatus
-    };
-  });
+  return Array.from({ length: 100 }).map((_, index) => ({
+    id: `game_${index + 1}`,
+    walletType: walletTypes[index % walletTypes.length],
+    supplier: suppliers[index % suppliers.length],
+    gameId: `G${String(index + 1).padStart(4, "0")}`,
+    gameCode: `CODE${index + 1}`,
+    gameNameEn: `Game ${index + 1}`,
+    gameNameCn: `游戏${index + 1}`,
+    productAbbr: `ABBR${index + 1}`,
+    productId: `PID${index + 1}`,
+    playType: playTypes[index % playTypes.length],
+    category: `分类${index % 5 + 1}`,
+    tags: `标签${index + 1}`,
+    productImage: `product_${index + 1}.jpg`,
+    demoImage: `demo_${index + 1}.jpg`,
+    webpImage: `webp_${index + 1}.webp`,
+    imageStorage: "本地",
+    hasImage: index % 2 === 0,
+    supportedCurrencies: currencies[index % currencies.length],
+    disabledCurrencies: "",
+    createTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
+    updateTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
+    status: statuses[index % statuses.length]
+  }));
 };
 
 // 获取列表数据
@@ -251,31 +288,33 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     await new Promise(resolve => setTimeout(resolve, 300));
+
     const allData = generateMockData();
     let filteredData = [...allData];
 
-    // 根据搜索条件过滤数据
     if (searchData.value.id) {
       filteredData = filteredData.filter(item =>
         item.id.includes(searchData.value.id)
       );
     }
+
     if (searchData.value.name) {
       filteredData = filteredData.filter(item =>
-        item.id.toLowerCase().includes(searchData.value.name.toLowerCase())
+        item.gameNameCn.toLowerCase().includes(searchData.value.name.toLowerCase()) ||
+        item.gameNameEn.toLowerCase().includes(searchData.value.name.toLowerCase())
       );
     }
+
     if (searchData.value.agent) {
       filteredData = filteredData.filter(item =>
-        item.supplier
-          .toLowerCase()
-          .includes(searchData.value.agent.toLowerCase())
+        item.supplier.toLowerCase().includes(searchData.value.agent.toLowerCase())
       );
     }
+
     if (searchData.value.status !== "") {
-      const statusText = searchData.value.status === "1" ? "正常" : "停用";
-      filteredData = filteredData.filter(item => item.status === statusText);
+      filteredData = filteredData.filter(item => item.status === searchData.value.status);
     }
+
     if (
       searchData.value.registerTime &&
       Array.isArray(searchData.value.registerTime) &&
@@ -284,7 +323,7 @@ const getList = async () => {
       const startTime = new Date(searchData.value.registerTime[0]).getTime();
       const endTime = new Date(searchData.value.registerTime[1]).getTime();
       filteredData = filteredData.filter(item => {
-        const itemTime = new Date(item.createTime).getTime();
+        const itemTime = new Date(item.updateTime).getTime();
         return itemTime >= startTime && itemTime <= endTime;
       });
     }
@@ -320,25 +359,54 @@ const handlePageChange = () => {
 // 初始化加载数据
 getList();
 
+// 添加
+const handleAdd = () => {
+  message("添加游戏", { type: "info" });
+};
+
+// 编辑
+const handleEdit = () => {
+  if (!multipleSelection.value.length) {
+    message("请先选择要编辑的数据！", { type: "warning" });
+    return;
+  }
+  message(`编辑 ${multipleSelection.value.length} 条数据`, { type: "info" });
+};
+
+// 测试游戏
+const handleTestGame = () => {
+  if (!multipleSelection.value.length) {
+    message("请先选择要测试的游戏！", { type: "warning" });
+    return;
+  }
+  message("测试游戏功能", { type: "info" });
+};
+
 // 导出到excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
     message("请先选择要导出的数据！", { type: "warning" });
     return;
   }
-  const exportTitles = tableConfig.value.map((col: any) => col.label);
+
+  const exportTitles = tableConfig.value
+    .filter((col: any) => col.prop !== "action")
+    .map((col: any) => col.label);
   const exportProps = tableConfig.value
-    .map((col: any) => col.prop)
-    .filter((prop: string) => prop !== "action");
-  const res: string[][] = multipleSelection.value.map((item: BettingItem) => {
-    return exportProps.map(prop => item[prop as keyof BettingItem] ?? "");
+    .filter((col: any) => col.prop !== "action")
+    .map((col: any) => col.prop);
+
+  const res: string[][] = multipleSelection.value.map((item: TableRow) => {
+    return exportProps.map(prop => item[prop as keyof TableRow] ?? "");
   });
-  res.unshift(exportTitles.filter((title: string) => title !== "操作"));
+
+  res.unshift(exportTitles);
+
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "投注明细";
+  const sheetName = "游戏列表";
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `投注明细.xlsx`;
+  const fileName = `游戏列表.xlsx`;
   writeFile(workBook, fileName);
 };
 
@@ -353,7 +421,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "投注明细.json";
+  a.download = "游戏列表.json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -362,7 +430,7 @@ const exportJson = () => {
 </script>
 
 <template>
-  <div class="betting-details-container">
+  <div class="games-container">
     <!-- 搜索表单 -->
     <el-card class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
@@ -378,6 +446,7 @@ const exportJson = () => {
         @reset="handleRest"
       />
     </el-card>
+
     <!-- 表格 -->
     <el-card class="table-card" shadow="never" style="margin: 20px">
       <PlusTable
@@ -385,24 +454,38 @@ const exportJson = () => {
         :columns="tableConfig"
         :table-data="tableData"
         :is-selection="true"
-        :action-bar="{
-          buttons,
-          width: '150px',
-          label: t('player.transfer.action')
-        }"
+        :adaptive="true"
+        @selection-change="handleSelectionChange"
         width="100%"
         height="90%"
-        @selection-change="handleSelectionChange"
       >
-      <!-- 表格操作栏按钮 -->
-       <template #title>
-        <el-button type="primary" size="large">新增</el-button>
-        <el-button type="primary" size="large">编辑</el-button>
-        <el-button type="primary" size="large">删除</el-button>
-        <el-button type="primary" size="large">更多</el-button>
-        <el-button type="primary" size="large">Toggle All</el-button>
-       </template>
-       <!-- 表格操作工具栏 -->
+        <!-- 表格操作栏按钮 -->
+        <template #title>
+          <el-button type="primary" @click="handleAdd" size="large">
+            <el-icon><component :is="Plus" /></el-icon>
+            <span style="margin-left: 3px;">新增</span>
+          </el-button>
+          <el-button type="success" @click="handleEdit" size="large">
+            <el-icon><component :is="Edit" /></el-icon>
+            <span style="margin-left: 3px;">编辑</span>
+          </el-button>
+          <el-button @click="handleTestGame" size="large">
+            <span>测试游戏</span>
+          </el-button>
+          <el-dropdown style="margin-left: 15px;">
+            <el-button type="info" size="large">
+              <span>更多</span>
+              <el-icon class="el-icon--right"><component :is="More" /></el-icon>
+            </el-button>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>操作1</el-dropdown-item>
+                <el-dropdown-item>操作2</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+        <!-- 工具栏 -->
         <template #density-icon>
           <el-tooltip content="密度" placement="top">
             <el-icon
@@ -426,7 +509,6 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #toolbar>
-          <div>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
             :content="showSearch ? '隐藏搜索' : '显示搜索'"
@@ -445,10 +527,10 @@ const exportJson = () => {
                 @click="showSearch = !showSearch"
               >
                 <component :is="Filter" />
-                </el-icon>
-              </span>
-            </el-tooltip>
-            <!-- 导出下拉菜单 -->
+              </el-icon>
+            </span>
+          </el-tooltip>
+          <!-- 导出下拉菜单 -->
           <el-tooltip content="导出" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
@@ -458,7 +540,6 @@ const exportJson = () => {
                 <el-icon
                   :size="18"
                   style="
-                    display: inline-block;
                     margin-right: 15px;
                     cursor: pointer;
                     outline: none;
@@ -480,7 +561,6 @@ const exportJson = () => {
               </el-dropdown>
             </span>
           </el-tooltip>
-          </div>
         </template>
       </PlusTable>
       <PlusPagination
@@ -518,25 +598,6 @@ const exportJson = () => {
 }
 
 .custom-export-dropdown .el-dropdown-item:not(.export-active):hover {
-  background-color: #f5f7fa !important;
-}
-
-.custom-filter-dropdown {
-  min-width: 120px !important;
-  padding: 0 !important;
-  border-radius: 4px;
-}
-
-.custom-filter-dropdown .el-dropdown-item {
-  display: block;
-  width: 100%;
-  padding: 8px 12px !important;
-  margin: 0 !important;
-  text-align: center;
-  border-radius: 0;
-}
-
-.custom-filter-dropdown .el-dropdown-item:hover {
   background-color: #f5f7fa !important;
 }
 </style>
