@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, h } from "vue";
+import { ref, computed, h, watch, onMounted } from "vue";
 defineOptions({
   name: "BettingDetails"
 });
@@ -318,7 +318,27 @@ const handlePageChange = () => {
 };
 
 // 初始化加载数据
-getList();
+onMounted(() => {
+  // 如果URL中有playerId，设置到搜索表单的ID字段
+  if (playerId.value) {
+    searchData.value.id = playerId.value;
+    pageInfo.value.page = 1;
+  }
+  getList();
+});
+
+// 监听路由参数变化，自动设置搜索表单的ID
+watch(
+  () => route.query.playerId,
+  (newPlayerId) => {
+    if (newPlayerId && typeof newPlayerId === "string") {
+      searchData.value.id = newPlayerId;
+      // 重置到第一页并重新获取数据
+      pageInfo.value.page = 1;
+      getList();
+    }
+  }
+);
 
 // 导出到excel
 const exportExcel = () => {

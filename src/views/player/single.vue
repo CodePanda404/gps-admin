@@ -9,6 +9,12 @@ import { useTable } from "plus-pro-components";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
+import {
+  getSinglePlayerList,
+  lockSinglePlayer,
+  type SinglePlayerListParams,
+  type SinglePlayerItem
+} from "@/api/player";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -108,19 +114,8 @@ const handleRest = () => {
   getList();
 };
 
-// 表格数据类型
-type TableRow = {
-  id: string;
-  name: string;
-  balance: number;
-  currency: string;
-  merchant: string;
-  loginTime: string;
-  loginIp: string;
-  registerTime: string;
-  registerIP: string;
-  status: boolean;
-};
+// 表格数据类型（直接使用后端字段）
+type TableRow = SinglePlayerItem;
 
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
@@ -136,11 +131,12 @@ const tableConfig: any = ref([
   },
   {
     label: "用户名",
-    prop: "name"
+    prop: "username",
+    width: "200"
   },
   {
     label: "余额",
-    prop: "balance"
+    prop: "money"
   },
   {
     label: "币种",
@@ -148,29 +144,37 @@ const tableConfig: any = ref([
   },
   {
     label: "商户ID",
-    prop: "merchant"
+    prop: "admin_id"
   },
   {
     label: "登录时间",
-    prop: "loginTime"
+    prop: "logintime",
+    width: "160"
   },
   {
     label: "登录IP",
-    prop: "loginIp"
+    prop: "loginip",  
+    width: "140"
   },
   {
     label: "注册时间",
-    prop: "registerTime"
+    prop: "jointime",
+    width: "160"
   },
   {
     label: "注册IP",
-    prop: "registerIP"
+    prop: "joinip",
+    width: "140"
   },
   {
     label: "状态",
     prop: "status",
     valueType: "switch",
-    editable: true
+    editable: true,
+    fieldProps: {
+      activeValue: "normal",
+      inactiveValue: "hidden"
+    }
   }
 ]);
 
@@ -187,8 +191,8 @@ buttons.value = [
       router.push({
         name: "SingleBettingDetails",
         query: {
-          playerId: row.id,
-          playerName: row.name
+          playerId: row.id.toString(),
+          playerName: row.username
         }
       });
     }
@@ -207,61 +211,73 @@ const handleStatusChange = async (params: {
   value: any;
 }) => {
   const { row, prop, value } = params;
+  // 只处理玩家状态字段的变化
   if (prop !== "status") {
     return;
   }
 
+  // 检查 row 是否存在
   if (!row) {
+    console.error("行数据不存在");
     message("操作失败：无法找到对应的数据", { type: "error" });
     return;
   }
 
-  const originalStatus = !value;
-  const isDisabling = originalStatus === true;
+  // 目标状态 (value 是切换后的值)
+  // value: Normal/Unlock-> type: 1
+  // value: Disabled/Lock-> type: 2
+  const targetType = value == 'normal' ? 1 : 2;
+  // 原始状态
+  const originalStatus = value == 'normal' ? 'hidden' : 'normal';
 
-  const confirmMessage = isDisabling
-    ? `是否确定将玩家${row.name}禁用?`
-    : `是否确定将玩家${row.name}恢复正常?`;
+  // 提示文字
+  const confirmMessage = value == 'normal'
+    ? `是否确定将玩家${row.username}解锁?`
+    : `是否确定将玩家${row.username}锁定?`
+
+  // 查找当前行在 tableData 中的索引
+  const index = tableData.value.findIndex(item => item.id === row.id);
+  if (index === -1) {
+    message("操作失败：无法找到对应的数据", { type: "error" });
+    return;
+  }
 
   try {
+    // 弹出确认对话框
     await ElMessageBox.confirm(confirmMessage, "切换状态", {
       confirmButtonText: "确认",
       cancelButtonText: "取消",
       draggable: true
     });
 
-    // 模拟API调用
-    const res = {
-      success: true,
-      message: "玩家状态切换成功"
-    };
+    const res = await lockSinglePlayer({
+      id: row.id,
+      type: targetType
+    });
 
-    if (res.success) {
-      message(isDisabling ? "玩家已禁用" : "玩家已恢复正常", {
+    if (res.code === 0) {
+      message(value == 'normal' ? "玩家已解锁" : "玩家已锁定", {
         type: "success"
       });
+      // 更新本地数据 - 通过更新 tableData 中对应的项来触发响应式更新
+      tableData.value[index] = {
+        ...tableData.value[index],
+        status: res.data.status
+      };
     } else {
-      row.status = originalStatus;
-      const tableRowIndex = tableData.value.findIndex(
-        item => item.id === row.id
-      );
-      if (tableRowIndex !== -1) {
-        tableData.value[tableRowIndex] = {
-          ...tableData.value[tableRowIndex],
-          status: originalStatus
-        };
-      }
-      message("玩家状态切换失败", { type: "error" });
-    }
-  } catch (error: any) {
-    row.status = originalStatus;
-    const tableRowIndex = tableData.value.findIndex(item => item.id === row.id);
-    if (tableRowIndex !== -1) {
-      tableData.value[tableRowIndex] = {
-        ...tableData.value[tableRowIndex],
+      // 失败恢复 - 通过更新 tableData 中对应的项来触发响应式更新
+      tableData.value[index] = {
+        ...tableData.value[index],
         status: originalStatus
       };
+      message(res.msg || "玩家状态切换失败", { type: "error" });
     }
+  } catch (error: any) {
+    //取消或出错恢复 - 通过更新 tableData 中对应的项来触发响应式更新
+    tableData.value[index] = {
+      ...tableData.value[index],
+      status: originalStatus
+    };
     if (error !== "cancel") {
       console.error("状态切换失败:", error);
       message(error?.message || "状态切换失败", { type: "error" });
@@ -269,369 +285,43 @@ const handleStatusChange = async (params: {
   }
 };
 
-// 固定初始数据
-const generateMockData = (): TableRow[] => {
-  return [
-    {
-      id: "abc123",
-      name: "Siew",
-      balance: 1000,
-      currency: "PHP",
-      merchant: "abc123",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc124",
-      name: "Siew2",
-      balance: 2000,
-      currency: "PHP",
-      merchant: "abc123",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc125",
-      name: "Siew3",
-      balance: 3000,
-      currency: "INR",
-      merchant: "xyz789",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: false
-    },
-    {
-      id: "abc126",
-      name: "Siew4",
-      balance: 4000,
-      currency: "THB",
-      merchant: "merchant001",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc127",
-      name: "Siew5",
-      balance: 5000,
-      currency: "MYR",
-      merchant: "merchant002",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc128",
-      name: "Siew6",
-      balance: 6000,
-      currency: "USD",
-      merchant: "merchant003",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: false
-    },
-    {
-      id: "abc129",
-      name: "Siew7",
-      balance: 7000,
-      currency: "PHP",
-      merchant: "abc123",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc130",
-      name: "Siew8",
-      balance: 8000,
-      currency: "INR",
-      merchant: "xyz789",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc131",
-      name: "Siew9",
-      balance: 9000,
-      currency: "THB",
-      merchant: "merchant001",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: false
-    },
-    {
-      id: "abc132",
-      name: "Siew10",
-      balance: 10000,
-      currency: "MYR",
-      merchant: "merchant002",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc133",
-      name: "Siew11",
-      balance: 11000,
-      currency: "USD",
-      merchant: "merchant003",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc134",
-      name: "Siew12",
-      balance: 12000,
-      currency: "PHP",
-      merchant: "abc123",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc135",
-      name: "Siew13",
-      balance: 13000,
-      currency: "INR",
-      merchant: "xyz789",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: false
-    },
-    {
-      id: "abc136",
-      name: "Siew14",
-      balance: 14000,
-      currency: "THB",
-      merchant: "merchant001",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc137",
-      name: "Siew15",
-      balance: 15000,
-      currency: "MYR",
-      merchant: "merchant002",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc138",
-      name: "Siew16",
-      balance: 16000,
-      currency: "USD",
-      merchant: "merchant003",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: false
-    },
-    {
-      id: "abc139",
-      name: "Siew17",
-      balance: 17000,
-      currency: "PHP",
-      merchant: "abc123",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc140",
-      name: "Siew18",
-      balance: 18000,
-      currency: "INR",
-      merchant: "xyz789",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc141",
-      name: "Siew19",
-      balance: 19000,
-      currency: "THB",
-      merchant: "merchant001",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: false
-    },
-    {
-      id: "abc142",
-      name: "Siew20",
-      balance: 20000,
-      currency: "MYR",
-      merchant: "merchant002",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc143",
-      name: "Siew21",
-      balance: 21000,
-      currency: "USD",
-      merchant: "merchant003",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc144",
-      name: "Siew22",
-      balance: 22000,
-      currency: "PHP",
-      merchant: "abc123",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc145",
-      name: "Siew23",
-      balance: 23000,
-      currency: "INR",
-      merchant: "xyz789",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: false
-    },
-    {
-      id: "abc146",
-      name: "Siew24",
-      balance: 24000,
-      currency: "THB",
-      merchant: "merchant001",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    },
-    {
-      id: "abc147",
-      name: "Siew25",
-      balance: 25000,
-      currency: "MYR",
-      merchant: "merchant002",
-      loginTime: "2025-10-17 00:24:16",
-      loginIp: "abc123",
-      registerTime: "2025-10-17 00:24:16",
-      registerIP: "abc123",
-      status: true
-    }
-  ];
-};
-
 // 获取列表数据
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const { page, pageSize } = pageInfo.value;
+    const { id, name, status, registerTime } = searchData.value;
+    
+    const params: SinglePlayerListParams = {
+      pageNumber: page,
+      pageSize,
+      id: id || undefined,
+      username: name || undefined,
+      status: status || undefined
+    };
 
-    const allData = generateMockData();
-    let filteredData = [...allData];
-
-    // 根据搜索条件过滤数据
-    if (searchData.value.id) {
-      filteredData = filteredData.filter(item =>
-        item.id.includes(searchData.value.id)
-      );
+    // 处理时间范围
+    if (registerTime && Array.isArray(registerTime) && registerTime.length === 2) {
+      params.create_start_time = registerTime[0];
+      params.create_end_time = registerTime[1];
     }
 
-    if (searchData.value.name) {
-      filteredData = filteredData.filter(item =>
-        item.name.toLowerCase().includes(searchData.value.name.toLowerCase())
-      );
+    const res = await getSinglePlayerList(params);
+
+    if (res.code === 0 && res.data && res.data.rows) {
+      // 直接使用后端数据，无需转换
+      tableData.value = res.data.rows;
+      total.value = res.data.total;
+    } else {
+      tableData.value = [];
+      total.value = 0;
+      message(res.msg || "获取列表数据失败", { type: "error" });
     }
-
-    if (searchData.value.agent) {
-      filteredData = filteredData.filter(item =>
-        item.merchant.toLowerCase().includes(searchData.value.agent.toLowerCase())
-      );
-    }
-
-    if (searchData.value.status !== "") {
-      const statusBool = searchData.value.status === "1";
-      filteredData = filteredData.filter(item => item.status === statusBool);
-    }
-
-    if (
-      searchData.value.registerTime &&
-      Array.isArray(searchData.value.registerTime) &&
-      searchData.value.registerTime.length === 2
-    ) {
-      const startTime = new Date(searchData.value.registerTime[0]).getTime();
-      const endTime = new Date(searchData.value.registerTime[1]).getTime();
-      filteredData = filteredData.filter(item => {
-        const itemTime = new Date(item.registerTime).getTime();
-        return itemTime >= startTime && itemTime <= endTime;
-      });
-    }
-
-    const totalCount = filteredData.length;
-    const start = (pageInfo.value.page - 1) * pageInfo.value.pageSize;
-    const end = start + pageInfo.value.pageSize;
-    const paginatedData = filteredData.slice(start, end);
-
-    tableData.value = paginatedData;
-    total.value = totalCount;
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
     tableData.value = [];
+    total.value = 0;
   } finally {
     loadingStatus.value = false;
   }

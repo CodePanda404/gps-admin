@@ -46,7 +46,7 @@ export const useUserStore = defineStore("pure-user", {
     // 找回密码时输入的谷歌验证码
     googleCode: "",
     // 当前登录用户的邮箱
-    userEmail: "",
+    userEmail: storageLocal().getItem<DataInfo<number>>(userKey)?.userEmail ?? "",
     // 是否应该自动发送邮箱验证码
     shouldAutoSendEmailCode: false
   }),
@@ -102,6 +102,14 @@ export const useUserStore = defineStore("pure-user", {
     /** 存储当前登录用户的邮箱 */
     SET_USER_EMAIL(value: string) {
       this.userEmail = value;
+      // 同时保存到 localStorage
+      const userInfo = storageLocal().getItem<DataInfo<number>>(userKey);
+      if (userInfo) {
+        storageLocal().setItem(userKey, {
+          ...userInfo,
+          userEmail: value
+        });
+      }
     },
     /** 设置是否应该自动发送邮箱验证码 */
     SET_SHOULD_AUTO_SEND_EMAIL_CODE(value: boolean) {
@@ -126,7 +134,8 @@ export const useUserStore = defineStore("pure-user", {
                 username: response.data.username,
                 nickname: response.data.gruop_name || response.data.username,
                 roles: [response.data.gruop_name || "admin"],
-                permissions: ["*:*:*"]
+                permissions: ["*:*:*"],
+                userEmail: response.data.email || ""
               });
 
               // 设置用户邮箱和谷歌验证状态

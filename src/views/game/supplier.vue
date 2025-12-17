@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, h } from "vue";
+import dayjs from "dayjs";
 defineOptions({
   name: "Supplier"
 });
@@ -8,6 +9,19 @@ import { useTable } from "plus-pro-components";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
+import {
+  getSupplierList,
+  addSupplier,
+  editSupplier,
+  deleteSupplier,
+  uploadImage,
+  type SupplierListParams,
+  type SupplierItem,
+  type AddSupplierParams,
+  type EditSupplierParams,
+  type DeleteSupplierParams
+} from "@/api/game";
+import { ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElSwitch, ElUpload, ElButton, ElRadioGroup, ElRadio } from "element-plus";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -22,9 +36,9 @@ import More from "~icons/ep/more";
 const searchData = ref({
   id: "",
   name: "",
-  agent: "",
+  remark: "",
   status: "",
-  registerTime: null as string[] | null
+  updateTime: [] as string[]
 });
 // 搜索表单显示控制
 const showSearch = ref(true);
@@ -36,23 +50,23 @@ const searchColumns: PlusColumn[] = [
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "请输入ID"
     }))
   },
   {
-    label: "用户名",
+    label: "供应商",
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "请输入供应商名称"
     }))
   },
   {
-    label: "所属代理",
-    prop: "agent",
+    label: "备注",
+    prop: "remark",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "请输入备注"
     }))
   },
   {
@@ -78,13 +92,79 @@ const searchColumns: PlusColumn[] = [
     ]
   },
   {
-    label: "注册时间",
-    prop: "registerTime",
+    label: "更新时间",
+    prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
-      type: "datetimerange",
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
       startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间"
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
     }))
   }
 ];
@@ -100,44 +180,40 @@ const handleRest = () => {
   searchData.value = {
     id: "",
     name: "",
-    agent: "",
+    remark: "",
     status: "",
-    registerTime: null
+    updateTime: []
   };
   pageInfo.value.page = 1;
   getList();
 };
 
-// 表格数据类型
-type TableRow = {
-  id: string;
-  supplier: string;
-  logo: string;
-  remark: string;
-  sort: number;
-  updateTime: string;
-  status: boolean;
-};
+// 表格数据类型（直接使用后端字段）
+type TableRow = SupplierItem;
 
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
 // 表格相关数据和操作
-const { tableData, pageInfo, total, loadingStatus } =
+const { tableData, buttons, pageInfo, total, loadingStatus } =
   useTable<TableRow[]>();
 
-// 表格配置
+// 表格配置（根据后端字段调整）
 const tableConfig: any = ref([
   {
     label: "ID",
     prop: "id"
   },
   {
-    label: "供应商",
-    prop: "supplier"
+    label: "供应商名称",
+    prop: "name"
   },
-  {
-    label: "Logo",
-    prop: "logo"
+ {
+    label: 'logo',
+    prop: 'pic',
+    valueType: 'img',
+    fieldProps: {
+      fit:"cover"
+   }
   },
   {
     label: "备注",
@@ -145,19 +221,34 @@ const tableConfig: any = ref([
   },
   {
     label: "排序",
-    prop: "sort"
+    prop: "sort_no"
+  },
+  {
+    label: "创建时间",
+    prop: "createtime",
+    width: "160"
   },
   {
     label: "更新时间",
-    prop: "updateTime"
-  },
-  {
-    label: "状态",
-    prop: "status",
-    valueType: "switch",
-    editable: true
+    prop: "updatetime",
+    width: "160"
   }
 ]);
+
+// 表格操作栏按钮定义
+buttons.value = [
+  {
+    text: "编辑",
+    code: "edit",
+    props: {
+      type: "primary"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleEditRow(row);
+    }
+  }
+];
 
 
 // 表格选中数据
@@ -178,12 +269,20 @@ const handleStatusChange = async (params: any) => {
     return;
   }
 
-  const originalStatus = !value;
-  const isDisabling = originalStatus === true;
+  // value 是切换后的状态值（"1" 或 "0"）
+  const originalStatus = value === "1" ? "0" : "1";
+  const isDisabling = value === "0";
 
   const confirmMessage = isDisabling
-    ? `是否确定将供应商${typedRow.supplier}禁用?`
-    : `是否确定将供应商${typedRow.supplier}恢复正常?`;
+    ? `是否确定将供应商${typedRow.name}禁用?`
+    : `是否确定将供应商${typedRow.name}恢复正常?`;
+
+  // 查找当前行在 tableData 中的索引
+  const index = tableData.value.findIndex(item => item.id === typedRow.id);
+  if (index === -1) {
+    message("操作失败：无法找到对应的数据", { type: "error" });
+    return;
+  }
 
   try {
     await ElMessageBox.confirm(confirmMessage, "切换状态", {
@@ -192,37 +291,36 @@ const handleStatusChange = async (params: any) => {
       draggable: true
     });
 
+    // TODO: 调用真实的状态切换接口
+    // const res = await updateSupplierStatus({ id: typedRow.id, status: value });
     const res = {
-      success: true,
-      message: "状态切换成功"
+      code: 0,
+      msg: "状态切换成功"
     };
 
-    if (res.success) {
+    if (res.code === 0) {
       message(isDisabling ? "已禁用" : "已恢复正常", {
         type: "success"
       });
+      // 更新本地数据
+      tableData.value[index] = {
+        ...tableData.value[index],
+        status: value
+      };
     } else {
-      typedRow.status = originalStatus;
-      const tableRowIndex = tableData.value.findIndex(
-        item => item.id === typedRow.id
-      );
-      if (tableRowIndex !== -1) {
-        tableData.value[tableRowIndex] = {
-          ...tableData.value[tableRowIndex],
-          status: originalStatus
-        };
-      }
-      message("状态切换失败", { type: "error" });
-    }
-  } catch (error: any) {
-    typedRow.status = originalStatus;
-    const tableRowIndex = tableData.value.findIndex(item => item.id === typedRow.id);
-    if (tableRowIndex !== -1) {
-      tableData.value[tableRowIndex] = {
-        ...tableData.value[tableRowIndex],
+      // 失败恢复
+      tableData.value[index] = {
+        ...tableData.value[index],
         status: originalStatus
       };
+      message(res.msg || "状态切换失败", { type: "error" });
     }
+  } catch (error: any) {
+    // 取消或出错恢复
+    tableData.value[index] = {
+      ...tableData.value[index],
+      status: originalStatus
+    };
     if (error !== "cancel") {
       console.error("状态切换失败:", error);
       message(error?.message || "状态切换失败", { type: "error" });
@@ -230,76 +328,44 @@ const handleStatusChange = async (params: any) => {
   }
 };
 
-// 生成模拟数据
-const generateMockData = (): TableRow[] => {
-  const suppliers = ["Pragmatic Play", "Evolution", "NetEnt", "Microgaming", "Play'n GO"];
-  return Array.from({ length: 25 }).map((_, index) => ({
-    id: `supplier_${index + 1}`,
-    supplier: suppliers[index % suppliers.length],
-    logo: `logo_${index + 1}.png`,
-    remark: `备注信息 ${index + 1}`,
-    sort: index + 1,
-    updateTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
-    status: index % 3 !== 0
-  }));
-};
-
 // 获取列表数据
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const { page, pageSize } = pageInfo.value;
+    const { id, name, remark, status, updateTime } = searchData.value;
+    
+    const params: SupplierListParams = {
+      pageNumber: page,
+      pageSize,
+      id: id || undefined,
+      name: name || undefined,
+      remark: remark || undefined,
+      status: status || undefined
+    };
 
-    const allData = generateMockData();
-    let filteredData = [...allData];
-
-    if (searchData.value.id) {
-      filteredData = filteredData.filter(item =>
-        item.id.includes(searchData.value.id)
-      );
+    // 处理时间范围
+    if (updateTime && Array.isArray(updateTime) && updateTime.length === 2) {
+      params.update_start_time = updateTime[0];
+      params.update_end_time = updateTime[1];
     }
 
-    if (searchData.value.name) {
-      filteredData = filteredData.filter(item =>
-        item.supplier.toLowerCase().includes(searchData.value.name.toLowerCase())
-      );
+    const res = await getSupplierList(params);
+
+    if (res.code === 0 && res.data && res.data.rows) {
+      // 直接使用后端数据，无需转换
+      tableData.value = res.data.rows;
+      total.value = res.data.total;
+    } else {
+      tableData.value = [];
+      total.value = 0;
+      message(res.msg || "获取列表数据失败", { type: "error" });
     }
-
-    if (searchData.value.agent) {
-      filteredData = filteredData.filter(item =>
-        item.remark.toLowerCase().includes(searchData.value.agent.toLowerCase())
-      );
-    }
-
-    if (searchData.value.status !== "") {
-      const statusBool = searchData.value.status === "1";
-      filteredData = filteredData.filter(item => item.status === statusBool);
-    }
-
-    if (
-      searchData.value.registerTime &&
-      Array.isArray(searchData.value.registerTime) &&
-      searchData.value.registerTime.length === 2
-    ) {
-      const startTime = new Date(searchData.value.registerTime[0]).getTime();
-      const endTime = new Date(searchData.value.registerTime[1]).getTime();
-      filteredData = filteredData.filter(item => {
-        const itemTime = new Date(item.updateTime).getTime();
-        return itemTime >= startTime && itemTime <= endTime;
-      });
-    }
-
-    const totalCount = filteredData.length;
-    const start = (pageInfo.value.page - 1) * pageInfo.value.pageSize;
-    const end = start + pageInfo.value.pageSize;
-    const paginatedData = filteredData.slice(start, end);
-
-    tableData.value = paginatedData;
-    total.value = totalCount;
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
     tableData.value = [];
+    total.value = 0;
   } finally {
     loadingStatus.value = false;
   }
@@ -320,18 +386,302 @@ const handlePageChange = () => {
 // 初始化加载数据
 getList();
 
-// 添加
-const handleAdd = () => {
-  message("添加供应商", { type: "info" });
+// 新增供应商对话框相关
+const showAddDialog = ref(false);
+const addFormRef = ref();
+const addFormData = ref({
+  name: "",
+  remark: "",
+  sort_no: 1,
+  pic: "",
+  status: "1"
+});
+const addFormRules = {
+  name: [
+    { required: true, message: "请输入供应商名称", trigger: "blur" }
+  ]
+};
+const imageUrl = ref("");
+const uploading = ref(false);
+const imageUploadRef = ref();
+
+// 图片上传前的处理
+const beforeUpload = (file: File) => {
+  const isImage = file.type.startsWith("image/");
+  const isLt2M = file.size / 1024 / 1024 < 2;
+
+  if (!isImage) {
+    message("只能上传图片文件！", { type: "error" });
+    return false;
+  }
+  if (!isLt2M) {
+    message("图片大小不能超过 2MB！", { type: "error" });
+    return false;
+  }
+  return true;
 };
 
-// 编辑
+// 处理图片上传
+const handleImageUpload = async (options: any) => {
+  const { file } = options;
+  uploading.value = true;
+  
+  try {
+    // Element Plus 的 http-request 中，file 就是 File 对象
+    const res = await uploadImage({
+      file: file,
+      type: "1"
+    });
+
+    if (res.code === 0) {
+      imageUrl.value = res.data;
+      addFormData.value.pic = res.data;
+      message("图片上传成功", { type: "success" });
+    } else {
+      message(res.msg || "图片上传失败", { type: "error" });
+    }
+  } catch (error: any) {
+    console.error("图片上传失败:", error);
+    message(error?.message || "图片上传失败", { type: "error" });
+  } finally {
+    uploading.value = false;
+  }
+};
+
+// 触发图片上传
+const triggerImageUpload = () => {
+  triggerImageSelect();
+};
+
+// 触发图片选择
+const triggerImageSelect = () => {
+  // 触发隐藏的 upload 组件的点击事件
+  const uploadEl = imageUploadRef.value?.$el?.querySelector('input[type="file"]');
+  if (uploadEl) {
+    uploadEl.click();
+  }
+};
+
+// 移除图片
+const handleRemoveImage = () => {
+  imageUrl.value = "";
+  addFormData.value.pic = "";
+};
+
+// 打开新增对话框
+const handleAdd = () => {
+  showAddDialog.value = true;
+  // 重置表单
+  addFormData.value = {
+    name: "",
+    remark: "",
+    sort_no: 1,
+    pic: "",
+    status: "1"
+  };
+  imageUrl.value = "";
+};
+
+// 关闭新增对话框
+const handleCloseAddDialog = () => {
+  showAddDialog.value = false;
+  addFormRef.value?.resetFields();
+  addFormData.value = {
+    name: "",
+    remark: "",
+    sort_no: 1,
+    pic: "",
+    status: "1"
+  };
+  imageUrl.value = "";
+};
+
+// 提交新增表单
+const handleSubmitAdd = async () => {
+  if (!addFormRef.value) return;
+
+  await addFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      try {
+        const params: AddSupplierParams = {
+          name: addFormData.value.name,
+          remark: addFormData.value.remark,
+          sort_no: addFormData.value.sort_no,
+          pic: addFormData.value.pic,
+          status: addFormData.value.status
+        };
+
+        const res = await addSupplier(params);
+
+        if (res.code === 0) {
+          message("新增供应商成功", { type: "success" });
+          handleCloseAddDialog();
+          // 刷新列表
+          getList();
+        } else {
+          message(res.msg || "新增供应商失败", { type: "error" });
+        }
+      } catch (error: any) {
+        console.error("新增供应商失败:", error);
+        message(error?.message || "新增供应商失败", { type: "error" });
+      }
+    }
+  });
+};
+
+// 编辑（批量）- 只有一条选中时才能编辑
 const handleEdit = () => {
-  if (!multipleSelection.value.length) {
-    message("请先选择要编辑的数据！", { type: "warning" });
+  if (multipleSelection.value.length !== 1) {
+    message("请选择一条数据进行编辑！", { type: "warning" });
     return;
   }
-  message(`编辑 ${multipleSelection.value.length} 条数据`, { type: "info" });
+  // 调用编辑函数，与表格操作列的编辑按钮效果一致
+  handleEditRow(multipleSelection.value[0]);
+};
+
+// 编辑供应商对话框相关
+const showEditDialog = ref(false);
+const editFormRef = ref();
+const editFormData = ref({
+  id: 0,
+  name: "",
+  remark: "",
+  sort_no: 1,
+  pic: "",
+  status: "1"
+});
+const editFormRules = {
+  name: [
+    { required: true, message: "请输入供应商名称", trigger: "blur" }
+  ]
+};
+const editImageUrl = ref("");
+const editUploading = ref(false);
+const editImageUploadRef = ref();
+
+// 编辑图片上传前的处理
+const beforeEditUpload = (file: File) => {
+  const isImage = file.type.startsWith("image/");
+  const isLt2M = file.size / 1024 / 1024 < 2;
+
+  if (!isImage) {
+    message("只能上传图片文件！", { type: "error" });
+    return false;
+  }
+  if (!isLt2M) {
+    message("图片大小不能超过 2MB！", { type: "error" });
+    return false;
+  }
+  return true;
+};
+
+// 处理编辑图片上传
+const handleEditImageUpload = async (options: any) => {
+  const { file } = options;
+  editUploading.value = true;
+  
+  try {
+    const res = await uploadImage({
+      file: file,
+      type: "1"
+    });
+
+    if (res.code === 0) {
+      editImageUrl.value = res.data;
+      editFormData.value.pic = res.data;
+      message("图片上传成功", { type: "success" });
+    } else {
+      message(res.msg || "图片上传失败", { type: "error" });
+    }
+  } catch (error: any) {
+    console.error("图片上传失败:", error);
+    message(error?.message || "图片上传失败", { type: "error" });
+  } finally {
+    editUploading.value = false;
+  }
+};
+
+// 触发编辑图片上传
+const triggerEditImageUpload = () => {
+  triggerEditImageSelect();
+};
+
+// 触发编辑图片选择
+const triggerEditImageSelect = () => {
+  const uploadEl = editImageUploadRef.value?.$el?.querySelector('input[type="file"]');
+  if (uploadEl) {
+    uploadEl.click();
+  }
+};
+
+// 移除编辑图片
+const handleRemoveEditImage = () => {
+  editImageUrl.value = "";
+  editFormData.value.pic = "";
+};
+
+// 编辑单行数据
+const handleEditRow = (row: TableRow) => {
+  showEditDialog.value = true;
+  // 回填数据
+  editFormData.value = {
+    id: row.id,
+    name: row.name,
+    remark: row.remark || "",
+    sort_no: row.sort_no || 1,
+    pic: row.pic || "",
+    status: row.status || "1"
+  };
+  editImageUrl.value = row.pic || "";
+};
+
+// 关闭编辑对话框
+const handleCloseEditDialog = () => {
+  showEditDialog.value = false;
+  editFormRef.value?.resetFields();
+  editFormData.value = {
+    id: 0,
+    name: "",
+    remark: "",
+    sort_no: 1,
+    pic: "",
+    status: "1"
+  };
+  editImageUrl.value = "";
+};
+
+// 提交编辑表单
+const handleSubmitEdit = async () => {
+  if (!editFormRef.value) return;
+
+  await editFormRef.value.validate(async (valid: boolean) => {
+    if (valid) {
+      try {
+        const params: EditSupplierParams = {
+          id: editFormData.value.id,
+          name: editFormData.value.name,
+          remark: editFormData.value.remark,
+          sort_no: editFormData.value.sort_no,
+          pic: editFormData.value.pic,
+          status: editFormData.value.status
+        };
+
+        const res = await editSupplier(params);
+
+        if (res.code === 0) {
+          message("编辑供应商成功", { type: "success" });
+          handleCloseEditDialog();
+          // 刷新列表
+          getList();
+        } else {
+          message(res.msg || "编辑供应商失败", { type: "error" });
+        }
+      } catch (error: any) {
+        console.error("编辑供应商失败:", error);
+        message(error?.message || "编辑供应商失败", { type: "error" });
+      }
+    }
+  });
 };
 
 // 删除
@@ -340,17 +690,44 @@ const handleDelete = async () => {
     message("请先选择要删除的数据！", { type: "warning" });
     return;
   }
+
+  // 构建删除确认消息
+  const supplierNames = multipleSelection.value.map(item => item.name).join("、");
+  const confirmMessage = `确定删除供应商 ${supplierNames}？`;
+
   try {
-    await ElMessageBox.confirm("确认要删除吗?", "提示", {
+    await ElMessageBox.confirm(confirmMessage, "删除供应商", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
-      draggable: true
+      draggable: true,
+      type: "warning"
     });
-    message("删除成功", { type: "success" });
-    getList();
+
+    // 批量删除选中的供应商
+    const deletePromises = multipleSelection.value.map(item =>
+      deleteSupplier({ id: item.id })
+    );
+
+    const results = await Promise.all(deletePromises);
+    
+    // 检查是否全部成功
+    const failedCount = results.filter(res => res.code !== 0).length;
+    
+    if (failedCount === 0) {
+      message("删除成功", { type: "success" });
+      // 清空选中数据
+      multipleSelection.value = [];
+      // 刷新列表
+      getList();
+    } else {
+      message(`删除失败 ${failedCount} 条数据`, { type: "error" });
+      // 即使有失败，也刷新列表
+      getList();
+    }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
     }
   }
 };
@@ -362,11 +739,20 @@ const exportExcel = () => {
     return;
   }
 
-  const exportTitles = tableConfig.value.map((col: any) => col.label);
-  const exportProps = tableConfig.value.map((col: any) => col.prop);
+  const exportTitles = tableConfig.value
+    .filter((col: any) => col.prop !== "pic") // 排除Logo列
+    .map((col: any) => col.label);
+  const exportProps = tableConfig.value
+    .filter((col: any) => col.prop !== "pic") // 排除Logo列
+    .map((col: any) => col.prop);
 
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
-    return exportProps.map(prop => item[prop as keyof TableRow] ?? "");
+    return exportProps.map(prop => {
+      if (prop === "status") {
+        return item.status === "1" ? "正常" : "禁用";
+      }
+      return item[prop as keyof TableRow] ?? "";
+    });
   });
 
   res.unshift(exportTitles);
@@ -424,6 +810,11 @@ const exportJson = () => {
         :table-data="tableData"
         :is-selection="true"
         :adaptive="true"
+        :action-bar="{
+          buttons,
+          width: '120px',
+          label: '操作'
+        }"
         @selection-change="handleSelectionChange"
         @formChange="handleStatusChange"
         width="100%"
@@ -435,11 +826,21 @@ const exportJson = () => {
             <el-icon><component :is="Plus" /></el-icon>
             <span style="margin-left: 3px;">新增</span>
           </el-button>
-          <el-button type="success" @click="handleEdit" size="large">
+          <el-button 
+            type="success" 
+            @click="handleEdit" 
+            size="large"
+            :disabled="multipleSelection.length !== 1"
+          >
             <el-icon><component :is="Edit" /></el-icon>
             <span style="margin-left: 3px;">编辑</span>
           </el-button>
-          <el-button type="danger" @click="handleDelete" size="large">
+          <el-button 
+            type="danger" 
+            @click="handleDelete" 
+            size="large"
+            :disabled="multipleSelection.length === 0"
+          >
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>
           </el-button>
@@ -543,6 +944,206 @@ const exportJson = () => {
         @change="handlePageChange"
       />
     </el-card>
+
+    <!-- 新增供应商对话框 -->
+    <el-dialog
+      v-model="showAddDialog"
+      title="新增供应商"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="handleCloseAddDialog"
+    >
+      <el-form
+        ref="addFormRef"
+        :model="addFormData"
+        :rules="addFormRules"
+        label-width="80px"
+      >
+        <el-form-item label="供应商" prop="name">
+          <el-input
+            v-model="addFormData.name"
+            placeholder="请输入"
+            maxlength="50"
+          />
+        </el-form-item>
+        <el-form-item label="图片">
+          <div class="image-upload-container">
+            <div class="image-input-group">
+              <el-input
+                v-model="addFormData.pic"
+                placeholder="请输入"
+                readonly
+              />
+              <el-button type="primary" @click="triggerImageUpload" :loading="uploading">
+                <el-icon><Upload /></el-icon>
+                上传
+              </el-button>
+            </div>
+            <div class="image-upload-area">
+              <el-upload
+                ref="imageUploadRef"
+                class="avatar-uploader"
+                :action="''"
+                :auto-upload="true"
+                :show-file-list="false"
+                :before-upload="beforeUpload"
+                :http-request="handleImageUpload"
+                style="display: none"
+              >
+              </el-upload>
+              <div
+                v-if="!imageUrl"
+                class="upload-placeholder"
+                @click="triggerImageSelect"
+              >
+                <el-icon class="upload-icon"><Plus /></el-icon>
+                <div class="upload-text">点击上传图片</div>
+              </div>
+              <div v-else class="image-preview">
+                <img :src="imageUrl" class="preview-image" />
+                <el-button
+                  type="primary"
+                  link
+                  class="delete-btn"
+                  @click="handleRemoveImage"
+                >
+                  删除
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input
+            v-model="addFormData.remark"
+            placeholder="请输入"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="排序">
+          <el-input-number
+            v-model="addFormData.sort_no"
+            :min="1"
+            :max="9999"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="addFormData.status">
+            <el-radio label="1">开启</el-radio>
+            <el-radio label="0">关闭</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCloseAddDialog">取消</el-button>
+          <el-button type="primary" @click="handleSubmitAdd" :loading="uploading">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 编辑供应商对话框 -->
+    <el-dialog
+      v-model="showEditDialog"
+      title="编辑供应商"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="handleCloseEditDialog"
+    >
+      <el-form
+        ref="editFormRef"
+        :model="editFormData"
+        :rules="editFormRules"
+        label-width="80px"
+      >
+        <el-form-item label="供应商" prop="name">
+          <el-input
+            v-model="editFormData.name"
+            placeholder="请输入"
+            maxlength="50"
+          />
+        </el-form-item>
+        <el-form-item label="图片">
+          <div class="image-upload-container">
+            <div class="image-input-group">
+              <el-input
+                v-model="editFormData.pic"
+                placeholder="请输入"
+                readonly
+              />
+              <el-button type="primary" @click="triggerEditImageUpload" :loading="editUploading">
+                <el-icon><Upload /></el-icon>
+                上传
+              </el-button>
+            </div>
+            <div class="image-upload-area">
+              <el-upload
+                ref="editImageUploadRef"
+                class="avatar-uploader"
+                :action="''"
+                :auto-upload="true"
+                :show-file-list="false"
+                :before-upload="beforeEditUpload"
+                :http-request="handleEditImageUpload"
+                style="display: none"
+              >
+              </el-upload>
+              <div
+                v-if="!editImageUrl"
+                class="upload-placeholder"
+                @click="triggerEditImageSelect"
+              >
+                <el-icon class="upload-icon"><Plus /></el-icon>
+                <div class="upload-text">点击上传图片</div>
+              </div>
+              <div v-else class="image-preview">
+                <img :src="editImageUrl" class="preview-image" />
+                <el-button
+                  type="primary"
+                  link
+                  class="delete-btn"
+                  @click="handleRemoveEditImage"
+                >
+                  删除
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input
+            v-model="editFormData.remark"
+            placeholder="请输入"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="排序">
+          <el-input-number
+            v-model="editFormData.sort_no"
+            :min="1"
+            :max="9999"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-radio-group v-model="editFormData.status">
+            <el-radio label="1">开启</el-radio>
+            <el-radio label="0">关闭</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCloseEditDialog">取消</el-button>
+          <el-button type="primary" @click="handleSubmitEdit" :loading="editUploading">
+            确定
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -569,5 +1170,81 @@ const exportJson = () => {
 
 .custom-export-dropdown .el-dropdown-item:not(.export-active):hover {
   background-color: #f5f7fa !important;
+}
+
+/* 图片上传样式 */
+.image-upload-container {
+  width: 100%;
+}
+
+.image-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  
+  .el-input {
+    flex: 1;
+  }
+  
+  .el-button {
+    white-space: nowrap;
+  }
+}
+
+.image-upload-area {
+  position: relative;
+}
+
+.upload-placeholder {
+  width: 178px;
+  height: 178px;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--el-transition-duration-fast);
+  background-color: var(--el-fill-color-lighter);
+  
+  &:hover {
+    border-color: var(--el-color-primary);
+  }
+  
+  .upload-icon {
+    font-size: 48px;
+    color: var(--el-text-color-placeholder);
+    margin-bottom: 8px;
+  }
+  
+  .upload-text {
+    font-size: 14px;
+    color: var(--el-text-color-placeholder);
+  }
+}
+
+.image-preview {
+  position: relative;
+  width: 178px;
+  height: 178px;
+  
+  .preview-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  
+  .delete-btn {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    color: var(--el-color-primary);
+  }
+}
+
+.avatar-uploader {
+  display: none;
 }
 </style>

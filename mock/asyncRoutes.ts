@@ -66,6 +66,7 @@ const testRouter = {
     {
       path: "/test/index",
       name: "Test",
+      component: "test/index",
       meta: {
         title: "测试页面",
       }

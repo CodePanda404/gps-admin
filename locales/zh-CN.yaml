@@ -152,6 +152,7 @@ player:
   transfer:
     idPlaceholder: 请输入ID
     namePlaceholder: 请输入用户名
+    adminIdPlaceholder: 请输入商户ID
     userIdPlaceholder: 请输入用户ID
     statusPlaceholder: 请选择状态
     registerTimePlaceholder: 请选择
@@ -159,6 +160,7 @@ player:
     search: 搜索
     id: ID
     name: 用户名
+    admin_id: 商户ID
     userId: 用户ID
     all: 全部
     disabled: 禁用

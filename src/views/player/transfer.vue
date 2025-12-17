@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import dayjs from "dayjs";
 defineOptions({
   name: "Transfer"
 });
@@ -31,6 +32,7 @@ const { t } = useI18n();
 const searchData = ref({
   id: "",
   username: "",
+  admin_id: null,
   status: "",
   registerTime: [] as string[]
 });
@@ -57,6 +59,15 @@ const searchColumns: PlusColumn[] = [
       placeholder: t("player.transfer.namePlaceholder")
     }))
   },
+   {
+    label: "商户ID",
+    renderLabel: () => t("player.transfer.admin_id"),
+    prop: "admin_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: t("player.transfer.adminIdPlaceholder")
+    }))
+  },
   {
     label: "状态",
     renderLabel: () => t("player.transfer.status"),
@@ -74,7 +85,7 @@ const searchColumns: PlusColumn[] = [
       {
         label: "禁用",
         renderLabel: () => t("player.transfer.disabled"),
-        value: "disabled"
+        value: "hidden"
       },
       {
         label: "正常",
@@ -93,7 +104,71 @@ const searchColumns: PlusColumn[] = [
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
       startPlaceholder: t("player.transfer.registerTimePlaceholder"),
-      endPlaceholder: t("player.transfer.registerTimePlaceholder")
+      endPlaceholder: t("player.transfer.registerTimePlaceholder"),
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
     }))
   }
 ];
@@ -111,6 +186,7 @@ const handleRest = () => {
   searchData.value = {
     id: "",
     username: "",
+    admin_id: null,
     status: "",
     registerTime: []
   };
@@ -122,9 +198,7 @@ const handleRest = () => {
 
 // /  *----表格相关-----  */ */
 // 表格数据类型
-type TableRow = TransferPlayerItem & {
-  statusBool?: boolean; // 辅助字段用于 Switch
-};
+type TableRow = TransferPlayerItem
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
 // 表格相关数据和操作
@@ -141,7 +215,8 @@ const tableConfig: any = ref([
   {
     label: "用户名",
     renderHeader: () => t("player.transfer.name"),
-    prop: "username"
+    prop: "username",
+    width: "210"
   },
   {
     label: "余额",
@@ -161,17 +236,20 @@ const tableConfig: any = ref([
   {
     label: "累计投注",
     renderHeader: () => t("player.transfer.totalBet"),
-    prop: "bet_all"
+    prop: "bet_all",
+    width: "100"
   },
   {
     label: "累计派彩",
     renderHeader: () => t("player.transfer.totalPet"),
-    prop: "win_all"
+    prop: "win_all",
+    width: "100"
   },
   {
     label: "累计输赢",
     renderHeader: () => t("player.transfer.totalWinLoss"),
-    prop: "company_win_all"
+    prop: "company_win_all",
+    width: "100"
   },
   {
     label: "登录时间",
@@ -200,9 +278,13 @@ const tableConfig: any = ref([
   {
     label: "状态",
     renderHeader: () => t("player.transfer.status"),
-    prop: "statusBool",
+    prop: "status",
     valueType: "switch",
-    editable: true
+    editable: true,
+    fieldProps: {
+      activeValue: "normal",
+      inactiveValue: "hidden"
+    }
   }
 ]);
 
@@ -258,7 +340,7 @@ const handleStatusChange = async (params: {
 }) => {
   const { row, prop, value } = params;
   // 只处理玩家状态字段的变化
-  if (prop !== "statusBool") {
+  if (prop !== "status") {
     return;
   }
 
@@ -269,17 +351,24 @@ const handleStatusChange = async (params: {
     return;
   }
 
-  // 目标状态 (value 是切换后的 boolean 值)
-  // value: true (Normal/Unlock) -> type: 2
-  // value: false (Disabled/Lock) -> type: 1
-  const targetType = value ? 2 : 1;
+  // 目标状态 (value 是切换后的值)
+  // value: Normal/Unlock-> type: 1
+  // value: Disabled/Lock-> type: 2
+  const targetType = value == 'normal' ? 1 : 2;
   // 原始状态
-  const originalStatusBool = !value;
+  const originalStatus = value == 'normal' ? 'hidden' : 'normal';
 
   // 提示文字
-  const confirmMessage = !value
-    ? `是否确定将玩家${row.username}锁定?`
-    : `是否确定将玩家${row.username}解锁?`;
+  const confirmMessage = value == 'normal'
+    ? `是否确定将玩家${row.username}解锁?`
+    : `是否确定将玩家${row.username}锁定?`
+
+  // 查找当前行在 tableData 中的索引
+  const index = tableData.value.findIndex(item => item.id === row.id);
+  if (index === -1) {
+    message("操作失败：无法找到对应的数据", { type: "error" });
+    return;
+  }
 
   try {
     // 弹出确认对话框
@@ -295,21 +384,28 @@ const handleStatusChange = async (params: {
     });
 
     if (res.code === 0) {
-      message(value ? "玩家已解锁" : "玩家已锁定", {
+      message(value == 'normal' ? "玩家已解锁" : "玩家已锁定", {
         type: "success"
       });
-      // 更新本地数据
-      // 注意：API 返回的 status 是 string ("normal" 等)，这里我们只需要保持 switch 状态一致
-      // 如果需要更精确的同步，可以使用 res.data.status
-      row.status = value ? "normal" : "locked"; // 简单映射
+      // 更新本地数据 - 通过更新 tableData 中对应的项来触发响应式更新
+      tableData.value[index] = {
+        ...tableData.value[index],
+        status: value
+      };
     } else {
-      // 失败恢复
-      row.statusBool = originalStatusBool;
+      // 失败恢复 - 通过更新 tableData 中对应的项来触发响应式更新
+      tableData.value[index] = {
+        ...tableData.value[index],
+        status: originalStatus
+      };
       message(res.msg || "玩家状态切换失败", { type: "error" });
     }
   } catch (error: any) {
-    //取消或出错恢复
-    row.statusBool = originalStatusBool;
+    //取消或出错恢复 - 通过更新 tableData 中对应的项来触发响应式更新
+    tableData.value[index] = {
+      ...tableData.value[index],
+      status: originalStatus
+    };
     if (error !== "cancel") {
       console.error("状态切换失败:", error);
       message(error?.message || "状态切换失败", { type: "error" });
@@ -339,11 +435,7 @@ const getList = async () => {
     const { data } = await getTransferPlayerList(params);
 
     if (data && data.rows) {
-      // 映射数据，添加 statusBool 辅助字段
-      tableData.value = data.rows.map(item => ({
-        ...item,
-        statusBool: item.status === "normal"
-      }));
+      tableData.value = data.rows;
       total.value = data.total;
     } else {
       tableData.value = [];
@@ -379,7 +471,7 @@ const exportExcel = () => {
   const res: string[][] = multipleSelection.value.map((item: any) => {
     return exportProps.map(prop => {
       // 处理特殊字段
-      if (prop === "statusBool") {
+      if (prop === "status") {
         return item.status === "normal" ? "正常" : "禁用";
       }
       return item[prop] ?? "";

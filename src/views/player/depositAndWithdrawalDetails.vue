@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 defineOptions({
   name: "DepositWithdrawalDetails"
 });
@@ -14,6 +14,10 @@ import { useTable } from "plus-pro-components";
 import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
+import {
+  getDepositWithdrawalList,
+  type DepositWithdrawalListParams
+} from "@/api/player";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -25,7 +29,6 @@ const router = useRouter();
 
 // 获取路由参数
 const playerId = computed(() => (route.query.playerId as string) || "");
-const playerName = computed(() => (route.query.playerName as string) || "");
 
 // 国际化
 const { t } = useI18n();
@@ -34,7 +37,8 @@ const { t } = useI18n();
 // 搜索表单数据
 const searchData = ref({
   id: "",
-  name: "",
+  user_id: "",
+  username: "",
   agent: "",
   status: "",
   registerTime: null as string[] | null
@@ -55,7 +59,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "用户名",
-    prop: "name",
+    prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
       placeholder: "请输入内容"
@@ -113,7 +117,8 @@ const handleSearch = (values: any) => {
 const handleRest = () => {
   searchData.value = {
     id: "",
-    name: "",
+    user_id: null,
+    username: "",
     agent: "",
     status: "",
     registerTime: null
@@ -122,24 +127,23 @@ const handleRest = () => {
   getList();
 };
 
-// 表格数据类型
-type DepositWithdrawalItem = {
-  id: string;
-  userId: string;
+// 表格数据类型（映射后的格式）
+type TableDepositWithdrawalItem = {
+  id: number;
+  userId: number;
   name: string;
   type: string; // 存款/取款
-  changedAmount: number;
-  beforeAmount: number;
-  afterAmount: number;
-  createTime: string;
-  remark: string;
+  changedAmount: string; // 变动金额（带正负号）
+  beforeAmount: string; // 变动前余额
+  afterAmount: string; // 变动后余额
+  createTime: string; // 创建时间
 };
 
 // 多选选中数据
-const multipleSelection = ref<DepositWithdrawalItem[]>([]);
+const multipleSelection = ref<TableDepositWithdrawalItem[]>([]);
 // 表格相关数据和操作
 const { tableData, pageInfo, total, loadingStatus } =
-  useTable<DepositWithdrawalItem[]>();
+  useTable<TableDepositWithdrawalItem[]>();
 
 // 表格配置
 const tableConfig: any = ref([
@@ -153,7 +157,8 @@ const tableConfig: any = ref([
   },
   {
     label: "用户名",
-    prop: "name"
+    prop: "name",
+    width: 220
   },
   {
     label: "类型",
@@ -173,99 +178,62 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
-    prop: "createTime"
-  },
-  {
-    label: "备注",
-    prop: "remark"
+    prop: "createTime",
+    width: 160
   }
 ]);
 
 // 表格选中数据
-const handleSelectionChange = (val: DepositWithdrawalItem[]) => {
+const handleSelectionChange = (val: TableDepositWithdrawalItem[]) => {
   multipleSelection.value = val;
-};
-
-// 生成模拟数据
-const generateMockData = (): DepositWithdrawalItem[] => {
-  const types = ["存款", "取款"];
-  const names = ["Siew", "John", "Alice", "Bob"];
-
-  return Array.from({ length: 100 }).map((_, index) => {
-    const randomType = types[Math.floor(Math.random() * types.length)];
-    const randomName = names[Math.floor(Math.random() * names.length)];
-    const changedAmount = Math.floor(Math.random() * 10000) + 1000;
-    const beforeAmount = Math.floor(Math.random() * 50000) + 10000;
-    const afterAmount =
-      randomType === "存款"
-        ? beforeAmount + changedAmount
-        : beforeAmount - changedAmount;
-
-    return {
-      id: `abc${index + 1}`,
-      userId: `abc${index + 1}`,
-      name: randomName,
-      type: randomType,
-      changedAmount,
-      beforeAmount,
-      afterAmount,
-      createTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
-      remark: `beizhuuuuu${index + 1}`
-    };
-  });
 };
 
 // 获取列表数据
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const allData = generateMockData();
-    let filteredData = [...allData];
+    const { page, pageSize } = pageInfo.value;
+    const { id, user_id, username, status, registerTime } = searchData.value;
+    
+    const params: DepositWithdrawalListParams = {
+      pageNumber: page,
+      pageSize,
+      user_id: id || undefined,
+      username: username || undefined,
+      type: status || undefined
+    };
 
-    // 根据搜索条件过滤数据
-    if (searchData.value.id) {
-      filteredData = filteredData.filter(item =>
-        item.id.includes(searchData.value.id)
-      );
-    }
-    if (searchData.value.name) {
-      filteredData = filteredData.filter(item =>
-        item.name.toLowerCase().includes(searchData.value.name.toLowerCase())
-      );
-    }
-    if (searchData.value.agent) {
-      filteredData = filteredData.filter(item =>
-        item.name.toLowerCase().includes(searchData.value.agent.toLowerCase())
-      );
-    }
-    if (searchData.value.status !== "") {
-      // 这里可以根据实际需求处理状态筛选
-    }
-    if (
-      searchData.value.registerTime &&
-      Array.isArray(searchData.value.registerTime) &&
-      searchData.value.registerTime.length === 2
-    ) {
-      const startTime = new Date(searchData.value.registerTime[0]).getTime();
-      const endTime = new Date(searchData.value.registerTime[1]).getTime();
-      filteredData = filteredData.filter(item => {
-        const itemTime = new Date(item.createTime).getTime();
-        return itemTime >= startTime && itemTime <= endTime;
-      });
+    // 处理时间范围
+    if (registerTime && Array.isArray(registerTime) && registerTime.length === 2) {
+      params.create_start_time = registerTime[0];
+      params.create_end_time = registerTime[1];
     }
 
-    const totalCount = filteredData.length;
-    const start = (pageInfo.value.page - 1) * pageInfo.value.pageSize;
-    const end = start + pageInfo.value.pageSize;
-    const paginatedData = filteredData.slice(start, end);
+    const res = await getDepositWithdrawalList(params);
 
-    tableData.value = paginatedData;
-    total.value = totalCount;
+    if (res.code === 0 && res.data && res.data.rows) {
+      // 映射后端数据到表格数据格式
+      tableData.value = res.data.rows.map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        name: item.username,
+        type: item.type_text,
+        changedAmount: item.money,
+        beforeAmount: item.before,
+        afterAmount: item.after,
+        createTime: item.createtime
+      }));
+      total.value = res.data.total;
+    } else {
+      tableData.value = [];
+      total.value = 0;
+      message(res.msg || "获取列表数据失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
     tableData.value = [];
+    total.value = 0;
   } finally {
     loadingStatus.value = false;
   }
@@ -284,7 +252,27 @@ const handlePageChange = () => {
 };
 
 // 初始化加载数据
-getList();
+onMounted(() => {
+  // 如果URL中有playerId，设置到搜索表单的ID字段
+  if (playerId.value) {
+    searchData.value.id = playerId.value;
+    pageInfo.value.page = 1;
+  }
+  getList();
+});
+
+// 监听路由参数变化，自动设置搜索表单的ID
+watch(
+  () => route.query.playerId,
+  (newPlayerId) => {
+    if (newPlayerId && typeof newPlayerId === "string") {
+      searchData.value.id = newPlayerId;
+      // 重置到第一页并重新获取数据
+      pageInfo.value.page = 1;
+      getList();
+    }
+  }
+);
 
 // 导出到excel
 const exportExcel = () => {
@@ -295,9 +283,9 @@ const exportExcel = () => {
   const exportTitles = tableConfig.value.map((col: any) => col.label);
   const exportProps = tableConfig.value.map((col: any) => col.prop);
   const res: string[][] = multipleSelection.value.map(
-    (item: DepositWithdrawalItem) => {
+    (item: TableDepositWithdrawalItem) => {
       return exportProps.map(
-        prop => item[prop as keyof DepositWithdrawalItem] ?? ""
+        prop => item[prop as keyof TableDepositWithdrawalItem] ?? ""
       );
     }
   );

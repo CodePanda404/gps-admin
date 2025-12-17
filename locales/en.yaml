@@ -146,6 +146,7 @@ player:
   transfer:
     idPlaceholder: Please enter the id
     namePlaceholder: Please enter the name
+    adminIdPlaceholder: Please enter the merchantID
     userIdPlaceholder: Please enter the userId
     statusPlaceholder: Please select the status
     registerTimePlaceholder: Please select
@@ -153,6 +154,7 @@ player:
     search: Search
     id: ID
     name: name
+    admin_id: merchantID
     userId: userId
     all: all
     disabled: disabled

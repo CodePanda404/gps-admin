@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch, onMounted } from "vue";
 defineOptions({
   name: "SingleBettingDetails"
 });
@@ -13,6 +13,11 @@ import {
 import { useTable } from "plus-pro-components";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
+import {
+  getSingleBettingList,
+  type SingleBettingListParams,
+  type SingleBettingItem
+} from "@/api/player";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -31,8 +36,7 @@ const playerName = computed(() => (route.query.playerName as string) || "");
 const searchData = ref({
   id: "",
   name: "",
-  agent: "",
-  status: "",
+  type: "",
   createTime: null as string[] | null
 });
 
@@ -42,11 +46,11 @@ const showSearch = ref(true);
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
   {
-    label: "ID",
+    label: "用户ID",
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "请输入用户ID"
     }))
   },
   {
@@ -54,20 +58,12 @@ const searchColumns: PlusColumn[] = [
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "请输入用户名"
     }))
   },
   {
-    label: "所属代理",
-    prop: "agent",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入内容"
-    }))
-  },
-  {
-    label: "状态",
-    prop: "status",
+    label: "类型",
+    prop: "type",
     valueType: "select",
     fieldProps: computed(() => ({
       placeholder: "请选择"
@@ -78,11 +74,11 @@ const searchColumns: PlusColumn[] = [
         value: ""
       },
       {
-        label: "正常",
+        label: "中奖",
         value: "1"
       },
       {
-        label: "停用",
+        label: "未中奖",
         value: "0"
       }
     ]
@@ -93,6 +89,8 @@ const searchColumns: PlusColumn[] = [
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "datetimerange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
       startPlaceholder: "开始日期时间",
       endPlaceholder: "结束日期时间"
     }))
@@ -110,34 +108,15 @@ const handleRest = () => {
   searchData.value = {
     id: "",
     name: "",
-    agent: "",
-    status: "",
+    type: "",
     createTime: null
   };
   pageInfo.value.page = 1;
   getList();
 };
 
-// 表格数据类型
-type BettingItem = {
-  id: string;
-  memberId: string;
-  gameId: string;
-  gameName: string;
-  transactionId: string;
-  betId: string;
-  gameType: string;
-  categoryId: string;
-  supplier: string;
-  currency: string;
-  bet: number;
-  bonus: number;
-  winLoss: number;
-  roundId: string;
-  createTime: string;
-  endTime: string;
-  status: string; // 中奖/未中奖
-};
+// 表格数据类型（直接使用后端字段）
+type BettingItem = SingleBettingItem;
 
 // 多选选中数据
 const multipleSelection = ref<BettingItem[]>([]);
@@ -157,70 +136,47 @@ const tableConfig: any = ref([
     prop: "id"
   },
   {
-    label: "会员ID",
-    prop: "memberId"
+    label: "用户ID",
+    prop: "user_id"
+  },
+  {
+    label: "用户名",
+    prop: "username"
   },
   {
     label: "游戏ID",
-    prop: "gameId"
-  },
-  {
-    label: "游戏名称",
-    prop: "gameName"
-  },
-  {
-    label: "交易ID",
-    prop: "transactionId"
+    prop: "game_id"
   },
   {
     label: "投注ID",
-    prop: "betId"
+    prop: "bet_id"
   },
   {
-    label: "游戏类型",
-    prop: "gameType"
+    label: "交易ID",
+    prop: "transaction_id"
   },
   {
-    label: "分类ID",
-    prop: "categoryId"
+    label: "投注金额",
+    prop: "bet_amount"
   },
   {
-    label: "供应商",
-    prop: "supplier"
-  },
-  {
-    label: "币种",
-    prop: "currency"
-  },
-  {
-    label: "投注",
-    prop: "bet"
-  },
-  {
-    label: "奖金",
-    prop: "bonus"
+    label: "中奖金额",
+    prop: "win_amount"
   },
   {
     label: "输赢",
-    prop: "winLoss"
-  },
-  {
-    label: "回合ID",
-    prop: "roundId"
+    prop: "win_and_lose"
   },
   {
     label: "创建时间",
-    prop: "createTime"
-  },
-  {
-    label: "结束时间",
-    prop: "endTime"
+    prop: "createtime",
+    width: "160"
   },
   {
     label: "状态",
-    prop: "status",
+    prop: "status_text",
     valueType: "tag",
-    fieldProps: value => ({
+    fieldProps: (value: any) => ({
       type: value === "中奖" ? "success" : "danger"
     })
   }
@@ -245,113 +201,59 @@ const handleSelectionChange = (val: BettingItem[]) => {
   multipleSelection.value = val;
 };
 
-// 生成模拟数据
-const generateMockData = (): BettingItem[] => {
-  const suppliers = ["Pragmatic Play", "Evolution", "NetEnt", "Microgaming"];
-  const currencies = ["PHP", "INR", "THB", "MYR", "USD"];
-  const statuses = ["中奖", "未中奖"];
-  const gameTypes = ["Casino", "Sports", "Lottery", "Poker"];
-  const gameNames = ["1000", "2000", "3000", "4000"];
-
-  return Array.from({ length: 100 }).map((_, index) => {
-    const randomSupplier =
-      suppliers[Math.floor(Math.random() * suppliers.length)];
-    const randomCurrency =
-      currencies[Math.floor(Math.random() * currencies.length)];
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    const randomGameType =
-      gameTypes[Math.floor(Math.random() * gameTypes.length)];
-    const randomGameName =
-      gameNames[Math.floor(Math.random() * gameNames.length)];
-
-    const bet = Math.floor(Math.random() * 5000) + 1000;
-    const bonus = Math.floor(Math.random() * 3000) + 500;
-    const winLoss = randomStatus === "中奖" ? bet + bonus - bet : -bet;
-
-    return {
-      id: `abc${index + 1}`,
-      memberId: `abc${index + 1}`,
-      gameId: `abc${index + 1}`,
-      gameName: randomGameName,
-      transactionId: `1000`,
-      betId: `1000`,
-      gameType: randomGameType,
-      categoryId: randomGameType,
-      supplier: randomSupplier,
-      currency: randomCurrency,
-      bet: bet,
-      bonus: bonus,
-      winLoss: winLoss,
-      roundId: `abc${index + 1}`,
-      createTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
-      endTime: `2025-10-17 ${String(Math.floor(Math.random() * 24)).padStart(2, "0")}:${String(Math.floor(Math.random() * 60)).padStart(2, "0")}`,
-      status: randomStatus
-    };
-  });
-};
-
 // 获取列表数据
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    await new Promise(resolve => setTimeout(resolve, 300));
-    const allData = generateMockData();
-    let filteredData = [...allData];
+    const { page, pageSize } = pageInfo.value;
+    const { id, name, type, createTime } = searchData.value;
+    
+    const params: SingleBettingListParams = {
+      pageNumber: page,
+      pageSize,
+      user_id: id || undefined,
+      username: name || undefined,
+      type: type || undefined
+    };
 
-    // 根据搜索条件过滤数据
-    if (searchData.value.id) {
-      filteredData = filteredData.filter(item =>
-        item.id.includes(searchData.value.id)
-      );
-    }
-    if (searchData.value.name) {
-      filteredData = filteredData.filter(item =>
-        item.memberId.toLowerCase().includes(searchData.value.name.toLowerCase())
-      );
-    }
-    if (searchData.value.agent) {
-      filteredData = filteredData.filter(item =>
-        item.supplier
-          .toLowerCase()
-          .includes(searchData.value.agent.toLowerCase())
-      );
-    }
-    if (searchData.value.status !== "") {
-      const statusText = searchData.value.status === "1" ? "中奖" : "未中奖";
-      filteredData = filteredData.filter(item => item.status === statusText);
-    }
-    if (
-      searchData.value.createTime &&
-      Array.isArray(searchData.value.createTime) &&
-      searchData.value.createTime.length === 2
-    ) {
-      const startTime = new Date(searchData.value.createTime[0]).getTime();
-      const endTime = new Date(searchData.value.createTime[1]).getTime();
-      filteredData = filteredData.filter(item => {
-        const itemTime = new Date(item.createTime).getTime();
-        return itemTime >= startTime && itemTime <= endTime;
-      });
+    // 处理时间范围
+    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
+      params.create_start_time = createTime[0];
+      params.create_end_time = createTime[1];
     }
 
-    // 计算统计信息
-    totalBet.value = filteredData.reduce((sum, item) => sum + item.bet, 0);
-    totalWinLoss.value = filteredData.reduce(
-      (sum, item) => sum + item.winLoss,
-      0
-    );
-    totalCount.value = filteredData.length;
+    const res = await getSingleBettingList(params);
 
-    const totalCountForPagination = filteredData.length;
-    const start = (pageInfo.value.page - 1) * pageInfo.value.pageSize;
-    const end = start + pageInfo.value.pageSize;
-    const paginatedData = filteredData.slice(start, end);
+    if (res.code === 0 && res.data && res.data.rows) {
+      // 直接使用后端数据，无需转换
+      tableData.value = res.data.rows;
+      total.value = res.data.total;
 
-    tableData.value = paginatedData;
-    total.value = totalCountForPagination;
+      // 计算统计信息（根据实际返回的字段调整）
+      totalBet.value = res.data.rows.reduce((sum, item) => {
+        const bet = parseFloat(item.bet_amount) || 0;
+        return sum + bet;
+      }, 0);
+      totalWinLoss.value = res.data.rows.reduce((sum, item) => {
+        return sum + (item.win_and_lose || 0);
+      }, 0);
+      totalCount.value = res.data.total;
+    } else {
+      tableData.value = [];
+      total.value = 0;
+      totalBet.value = 0;
+      totalWinLoss.value = 0;
+      totalCount.value = 0;
+      message(res.msg || "获取列表数据失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
     tableData.value = [];
+    total.value = 0;
+    totalBet.value = 0;
+    totalWinLoss.value = 0;
+    totalCount.value = 0;
   } finally {
     loadingStatus.value = false;
   }
@@ -370,7 +272,27 @@ const handlePageChange = () => {
 };
 
 // 初始化加载数据
-getList();
+onMounted(() => {
+  // 如果URL中有playerId，设置到搜索表单的ID字段
+  if (playerId.value) {
+    searchData.value.id = playerId.value;
+    pageInfo.value.page = 1;
+  }
+  getList();
+});
+
+// 监听路由参数变化，自动设置搜索表单的ID
+watch(
+  () => route.query.playerId,
+  (newPlayerId) => {
+    if (newPlayerId && typeof newPlayerId === "string") {
+      searchData.value.id = newPlayerId;
+      // 重置到第一页并重新获取数据
+      pageInfo.value.page = 1;
+      getList();
+    }
+  }
+);
 
 // 导出到excel
 const exportExcel = () => {
