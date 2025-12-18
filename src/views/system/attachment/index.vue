@@ -242,6 +242,7 @@ const handlePageChange = (val: PageInfo) => {
           v-loading="loading"
           :columns="tableConfig"
           :table-data="tableData"
+          :stripe="true"
           is-selection
           @selection-change="handleSelectionChange"
         >

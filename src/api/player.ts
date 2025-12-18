@@ -134,6 +134,8 @@ export type DepositWithdrawalItem = {
 
 /** 存取款明细查询参数 */
 export type DepositWithdrawalListParams = {
+  /** ID */
+  id?: string | number;
   /** 用户ID */
   user_id?: string | number;
   /** 用户名 */
@@ -286,6 +288,67 @@ export const getSingleBettingList = (params?: SingleBettingListParams) => {
   return http.request<SingleBettingListResult>(
     "get",
     baseUrlApi("/member/member/betlog"),
+    { params }
+  );
+};
+
+/** 转账模式玩家投注明细项 */
+export type TransferBettingItem = {
+  id: number;
+  user_id: number;
+  username: string;
+  game_id: string;
+  bet_id: string;
+  transaction_id: string;
+  bet_amount: string;
+  win_amount: string;
+  win_and_lose: number;
+  status_text: string;
+  createtime: string;
+};
+
+/** 转账模式玩家投注明细查询参数 */
+export type TransferBettingListParams = {
+  /** 用户ID */
+  user_id?: string | number;
+  /** 用户名 */
+  username?: string;
+  /** 游戏ID */
+  game_id?: string;
+  /** 投注ID */
+  bet_id?: string;
+  /** 交易ID */
+  transaction_id?: string;
+  /** 状态 */
+  status?: string;
+  /** 创建开始时间 */
+  create_start_time?: string;
+  /** 创建结束时间 */
+  create_end_time?: string;
+  /** 当前页码 */
+  pageNumber?: number;
+  /** 每页数量 */
+  pageSize?: number;
+};
+
+/** 转账模式玩家投注明细列表响应 */
+export type TransferBettingListResult = {
+  code: number;
+  msg: string;
+  data: {
+    total: number;
+    pages: number;
+    pageNumber: string | number;
+    pageSize: string | number;
+    rows: TransferBettingItem[];
+  };
+};
+
+/** 获取转账模式玩家投注明细列表 */
+export const getTransferBettingList = (params?: TransferBettingListParams) => {
+  return http.request<TransferBettingListResult>(
+    "get",
+    baseUrlApi("/member/memberts/betlog"),
     { params }
   );
 };

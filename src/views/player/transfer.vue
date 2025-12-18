@@ -16,6 +16,10 @@ import {
   getTransferPlayerList,
   type TransferPlayerItem
 } from "@/api/player";
+import {
+  getCurrencyList,
+  type CurrencyItem
+} from "@/api/game";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -28,12 +32,36 @@ const router = useRouter();
 const { t } = useI18n();
 
 /*  -----搜索表单相关-----  */
+// 币种列表（用于下拉选择）
+const currencyOptions = ref<Array<{ label: string; value: number }>>([]);
+
+// 获取币种列表
+const fetchCurrencyList = async () => {
+  try {
+    const res = await getCurrencyList({ pageSize: 1000 });
+    if (res.code === 0 && res.data && res.data.rows) {
+      currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取币种列表失败:", error);
+  }
+};
+
+// 初始化时获取币种列表
+fetchCurrencyList();
+
 // 搜索表单数据
 const searchData = ref({
   id: "",
   username: "",
   admin_id: null,
   status: "",
+  currency_id: "",
+  login_ip: "",
+  join_ip: "",
   registerTime: [] as string[]
 });
 // 搜索表单显示控制
@@ -93,6 +121,41 @@ const searchColumns: PlusColumn[] = [
         value: "normal"
       }
     ]
+  },
+  {
+    label: "币种",
+    prop: "currency_id",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择",
+      filterable: true
+    })),
+    options: computed(() => [
+      {
+        label: "全部",
+        value: ""
+      },
+      ...currencyOptions.value.map(item => ({
+        label: item.label,
+        value: item.value.toString()
+      }))
+    ])
+  },
+  {
+    label: "登录IP",
+    prop: "login_ip",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入登录IP"
+    }))
+  },
+  {
+    label: "注册IP",
+    prop: "register_ip",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入注册IP"
+    }))
   },
   {
     label: "注册时间",
@@ -188,6 +251,9 @@ const handleRest = () => {
     username: "",
     admin_id: null,
     status: "",
+    currency_id: "",
+    login_ip: "",
+    join_ip: "",
     registerTime: []
   };
   // 重置到第一页
@@ -284,6 +350,10 @@ const tableConfig: any = ref([
     fieldProps: {
       activeValue: "normal",
       inactiveValue: "hidden"
+    },
+    tableColumnProps: {
+       sortable: true,
+       fixed: "right"
     }
   }
 ]);
@@ -418,13 +488,16 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, username, status, registerTime } = searchData.value;
+    const { id, username, status, currency_id, login_ip, join_ip, registerTime } = searchData.value;
     const params: any = {
       pageNumber: page,
       pageSize,
       id: id || undefined,
       username: username || undefined,
-      status: status || undefined
+      status: status || undefined,
+      currency_id: currency_id || undefined,
+      login_ip: login_ip || undefined,
+      join_ip: join_ip || undefined
     };
 
     if (registerTime && registerTime.length === 2) {
@@ -529,6 +602,7 @@ const exportJson = () => {
         v-loading="loadingStatus"
         :columns="tableConfig"
         :table-data="tableData"
+        :stripe="true"
         :is-selection="true"
         :adaptive="true"
         :action-bar="{

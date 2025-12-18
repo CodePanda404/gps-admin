@@ -8,7 +8,7 @@ import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro
 import { useTable } from "plus-pro-components";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
-import { ElMessageBox } from "element-plus";
+import { ElMessageBox, ElTag } from "element-plus";
 import {
   getSupplierList,
   addSupplier,
@@ -50,7 +50,7 @@ const searchColumns: PlusColumn[] = [
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: "ID"
     }))
   },
   {
@@ -58,7 +58,7 @@ const searchColumns: PlusColumn[] = [
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入供应商名称"
+      placeholder: "供应商"
     }))
   },
   {
@@ -66,7 +66,7 @@ const searchColumns: PlusColumn[] = [
     prop: "remark",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入备注"
+      placeholder: "备注"
     }))
   },
   {
@@ -82,12 +82,12 @@ const searchColumns: PlusColumn[] = [
         value: ""
       },
       {
-        label: "禁用",
-        value: "0"
-      },
-      {
         label: "正常",
         value: "1"
+      },
+      {
+        label: "隐藏",
+        value: "-1"
       }
     ]
   },
@@ -226,12 +226,30 @@ const tableConfig: any = ref([
   {
     label: "创建时间",
     prop: "createtime",
-    width: "160"
+    width: "160",
+    tableColumnProps: {
+      sortable: true
+    }
   },
   {
     label: "更新时间",
     prop: "updatetime",
-    width: "160"
+    width: "160",
+    tableColumnProps: {
+      sortable: true
+    }
+  },
+  {
+    label: "状态",
+    prop: "status",
+    render: (value: string) => {
+      return h(ElTag, {
+        type: value === '1' ? "success" : "danger"
+      }, () => value === '1' ? '正常' : '隐藏');
+    },
+    tableColumnProps: {
+      sortable: true
+    }
   }
 ]);
 
@@ -269,12 +287,12 @@ const handleStatusChange = async (params: any) => {
     return;
   }
 
-  // value 是切换后的状态值（"1" 或 "0"）
-  const originalStatus = value === "1" ? "0" : "1";
-  const isDisabling = value === "0";
+  // value 是切换后的状态值（"1" 或 "-1"）
+  const originalStatus = value === "1" ? "-1" : "1";
+  const isDisabling = value === "-1";
 
   const confirmMessage = isDisabling
-    ? `是否确定将供应商${typedRow.name}禁用?`
+    ? `是否确定将供应商${typedRow.name}隐藏?`
     : `是否确定将供应商${typedRow.name}恢复正常?`;
 
   // 查找当前行在 tableData 中的索引
@@ -299,7 +317,7 @@ const handleStatusChange = async (params: any) => {
     };
 
     if (res.code === 0) {
-      message(isDisabling ? "已禁用" : "已恢复正常", {
+      message(isDisabling ? "已隐藏" : "已恢复正常", {
         type: "success"
       });
       // 更新本地数据
@@ -749,7 +767,7 @@ const exportExcel = () => {
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status") {
-        return item.status === "1" ? "正常" : "禁用";
+        return item.status === "1" ? "正常" : "隐藏";
       }
       return item[prop as keyof TableRow] ?? "";
     });
@@ -808,6 +826,7 @@ const exportJson = () => {
         v-loading="loadingStatus"
         :columns="tableConfig"
         :table-data="tableData"
+        :stripe="true"
         :is-selection="true"
         :adaptive="true"
         :action-bar="{
@@ -822,14 +841,14 @@ const exportJson = () => {
       >
         <!-- 表格操作栏按钮 -->
         <template #title>
-          <el-button type="primary" @click="handleAdd" size="large">
+          <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
             <span style="margin-left: 3px;">新增</span>
           </el-button>
           <el-button 
             type="success" 
             @click="handleEdit" 
-            size="large"
+            size="default"
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
@@ -838,14 +857,14 @@ const exportJson = () => {
           <el-button 
             type="danger" 
             @click="handleDelete" 
-            size="large"
+            size="default"
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>
           </el-button>
           <el-dropdown style="margin-left: 15px;">
-            <el-button type="info" size="large" >
+            <el-button type="info" size="default" >
               <span>更多</span>
               <el-icon class="el-icon--right"><component :is="More" /></el-icon>
             </el-button>
@@ -1031,7 +1050,7 @@ const exportJson = () => {
         <el-form-item label="状态">
           <el-radio-group v-model="addFormData.status">
             <el-radio label="1">开启</el-radio>
-            <el-radio label="0">关闭</el-radio>
+            <el-radio label="-1">关闭</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -1131,7 +1150,7 @@ const exportJson = () => {
         <el-form-item label="状态">
           <el-radio-group v-model="editFormData.status">
             <el-radio label="1">开启</el-radio>
-            <el-radio label="0">关闭</el-radio>
+            <el-radio label="-1">关闭</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>

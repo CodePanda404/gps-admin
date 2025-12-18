@@ -1,27 +1,28 @@
 <script setup lang="ts">
 import { ref, computed, h } from "vue";
 import dayjs from "dayjs";
+import { ElTag } from "element-plus";
 defineOptions({
-  name: "GamePlayType"
+  name: "PgfAccount"
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
-import { ElMessageBox, ElTag } from "element-plus";
 import {
-  getGamePlayTypeList,
-  addGamePlayType,
-  editGamePlayType,
-  deleteGamePlayType,
-  uploadImage,
-  type GamePlayTypeListParams,
-  type GamePlayTypeItem,
-  type AddGamePlayTypeParams,
-  type EditGamePlayTypeParams,
-  type DeleteGamePlayTypeParams
+  getPgfAccountList,
+  getCurrencyList,
+  addPgfAccount,
+  editPgfAccount,
+  deletePgfAccount,
+  type PgfAccountListParams,
+  type PgfAccountItem,
+  type CurrencyItem,
+  type AddPgfAccountParams,
+  type EditPgfAccountParams,
+  type DeletePgfAccountParams
 } from "@/api/game";
-import { ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElRadioGroup, ElRadio, ElButton, ElUpload } from "element-plus";
+import { ElMessageBox, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElRadioGroup, ElRadio } from "element-plus";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -32,20 +33,47 @@ import Delete from "~icons/ep/delete";
 import More from "~icons/ep/more";
 
 /*  -----搜索表单相关-----  */
+// 币种列表（用于下拉选择）
+const currencyOptions = ref<Array<{ label: string; value: number }>>([]);
+
+// 获取币种列表
+const fetchCurrencyList = async () => {
+  try {
+    const res = await getCurrencyList({ pageSize: 1000 });
+    if (res.code === 0 && res.data && res.data.rows) {
+      currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取币种列表失败:", error);
+  }
+};
+
+// 初始化时获取币种列表
+fetchCurrencyList();
+
 // 搜索表单数据
 const searchData = ref({
   id: "",
-  name: "",
-  shortname: "",
-  name_cn: "",
+  wallet_type: "",
+  type: "",
+  bound_merchant: "",
+  token: "",
+  key: "",
+  api_host: "",
   status: "",
+  createTime: [] as string[],
   updateTime: [] as string[]
 });
+
 // 搜索表单显示控制
 const showSearch = ref(true);
 
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
+  // Row 1
   {
     label: "ID",
     prop: "id",
@@ -55,27 +83,80 @@ const searchColumns: PlusColumn[] = [
     }))
   },
   {
-    label: "玩法类型",
-    prop: "name",
+    label: "钱包类型",
+    prop: "wallet_type",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "选择"
+    })),
+    options: [
+      {
+        label: "全部",
+        value: ""
+      },
+      {
+        label: "单一模式",
+        value: "1"
+      },
+      {
+        label: "转账模式",
+        value: "2"
+      }
+    ]
+  },
+  {
+    label: "账号类型",
+    prop: "type",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "选择"
+    })),
+    options: [
+      {
+        label: "全部",
+        value: ""
+      },
+      {
+        label: "正式账号",
+        value: "1"
+      },
+      {
+        label: "测试账号",
+        value: "2"
+      }
+    ]
+  },
+  {
+    label: "绑定商户",
+    prop: "bound_merchant",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "玩法类型"
+      placeholder: "绑定商户"
+    }))
+  },
+  // Row 2
+  {
+    label: "Token值",
+    prop: "token",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "Token值"
     }))
   },
   {
-    label: "玩法缩写",
-    prop: "shortname",
+    label: "API密钥",
+    prop: "key",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "玩法缩写"
+      placeholder: "API密钥"
     }))
   },
   {
-    label: "中文名称",
-    prop: "name_cn",
+    label: "API地址",
+    prop: "api_host",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "中文名称"
+      placeholder: "API地址"
     }))
   },
   {
@@ -83,7 +164,7 @@ const searchColumns: PlusColumn[] = [
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: "选择"
     })),
     options: [
       {
@@ -99,6 +180,83 @@ const searchColumns: PlusColumn[] = [
         value: "-1"
       }
     ]
+  },
+  // Row 3
+  {
+    label: "创建时间",
+    prop: "createTime",
+    valueType: "date-picker",
+    fieldProps: computed(() => ({
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      startPlaceholder: "开始日期时间",
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
+    }))
   },
   {
     label: "更新时间",
@@ -188,18 +346,22 @@ const handleSearch = (values: any) => {
 const handleRest = () => {
   searchData.value = {
     id: "",
-    name: "",
-    shortname: "",
-    name_cn: "",
+    wallet_type: "",
+    type: "",
+    bound_merchant: "",
+    token: "",
+    key: "",
+    api_host: "",
     status: "",
+    createTime: [],
     updateTime: []
   };
   pageInfo.value.page = 1;
   getList();
 };
 
-// 表格数据类型（直接使用后端字段）
-type TableRow = GamePlayTypeItem;
+// 表格数据类型
+type TableRow = PgfAccountItem;
 
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
@@ -207,35 +369,59 @@ const multipleSelection = ref<TableRow[]>([]);
 const { tableData, buttons, pageInfo, total, loadingStatus } =
   useTable<TableRow[]>();
 
-// 表格配置（根据后端字段调整）
+// 表格配置
 const tableConfig: any = ref([
   {
     label: "ID",
     prop: "id"
   },
   {
-    label: "玩法类型",
-    prop: "name"
+    label: "钱包类型",
+    prop: "wallet_type",
+    render: (value: number) => {
+      return h(ElTag, {
+        type: value === 1 ? "success" : "warning"
+      }, () => value === 1 ? "单一模式" : value === 2 ? "转账模式" : value);
+    },
+    width: 100
   },
   {
-    label: "玩法缩写",
-    prop: "shortname"
+    label: "账户类型",
+    prop: "type",
+    render: (value: number) => {
+      return h(ElTag, {
+        type: value === 1 ? "success" : "warning"
+      }, () => value === 1 ? "正式账号" : value === 2 ? "测试账号" : value);
+    },
+    width: 100
   },
   {
-    label: "中文名称",
-    prop: "name_cn"
+    label: "币种",
+    prop: "currency_id",
+    render: () => {
+      // TODO: 币种字段需要从其他接口获取，暂时显示空
+      return h("span", "PHP");
+    },
+    width: 100
   },
   {
-    label: "图片",
-    prop: "pic",
-    valueType: "img",
-    fieldProps: {
-      fit: "cover"
-    }
+    label: "绑定商户",
+    prop: "bound_merchant",
+    render: () => {
+      // TODO: 绑定商户字段需要从其他接口获取，暂时显示占位文本
+      return h("span", "SB商户");
+    },
+    width: 140
   },
   {
-    label: "排序",
-    prop: "sort_no"
+    label: "Token值",
+    prop: "token",
+    width: 300
+  },
+  {
+    label: "API密钥",
+    prop: "key",
+    width: 140
   },
   {
     label: "创建时间",
@@ -253,19 +439,19 @@ const tableConfig: any = ref([
       sortable: true
     }
   },
-  {
+   {
     label: "状态",
     prop: "status",
-    // valueType: "tag",
     render: (value: string) => {
       return h(ElTag, {
-        type: value === '1' ? "success" : "danger"
-      }, () => value === '1' ? '正常' : '停用');
+        type: value === "1" ? "success" : "danger"
+      }, () => value === "1" ? "正常" : "隐藏");
     },
     tableColumnProps: {
-      sortable: true
+       sortable: true,
+       fixed: "right"
     }
-  }
+  },
 ]);
 
 // 表格操作栏按钮定义
@@ -293,28 +479,46 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, name, shortname, name_cn, status, updateTime } = searchData.value;
+    const { 
+      id, 
+      wallet_type, 
+      type, 
+      bound_merchant, 
+      token, 
+      key, 
+      api_host, 
+      status, 
+      createTime, 
+      updateTime 
+    } = searchData.value;
     
-    const params: GamePlayTypeListParams = {
+    const params: PgfAccountListParams = {
       pageNumber: page,
       pageSize,
       id: id || undefined,
-      name: name || undefined,
-      shortname: shortname || undefined,
-      name_cn: name_cn || undefined,
+      wallet_type: wallet_type || undefined,
+      type: type || undefined,
+      token: token || undefined,
+      key: key || undefined,
+      api_host: api_host || undefined,
       status: status || undefined
     };
 
-    // 处理时间范围
+    // 处理创建时间范围
+    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
+      params.create_start_time = createTime[0];
+      params.create_end_time = createTime[1];
+    }
+
+    // 处理更新时间范围
     if (updateTime && Array.isArray(updateTime) && updateTime.length === 2) {
       params.update_start_time = updateTime[0];
       params.update_end_time = updateTime[1];
     }
 
-    const res = await getGamePlayTypeList(params);
+    const res = await getPgfAccountList(params);
 
     if (res.code === 0 && res.data && res.data.rows) {
-      // 直接使用后端数据，无需转换
       tableData.value = res.data.rows;
       total.value = res.data.total;
     } else {
@@ -347,106 +551,44 @@ const handlePageChange = () => {
 // 初始化加载数据
 getList();
 
-// 新增玩法类型对话框相关
+// 新增PGF账号对话框相关
 const showAddDialog = ref(false);
 const addFormRef = ref();
 const addFormData = ref({
-  name: "",
-  shortname: "",
-  name_cn: "",
-  pic: "",
-  sort_no: 1,
+  wallet_type: "",
+  type: "",
+  currency_id: "",
+  api_host: "",
+  token: "",
+  key: "",
   status: "1"
 });
 const addFormRules = {
-  name: [
-    { required: true, message: "请输入玩法类型", trigger: "blur" }
-  ],
-  shortname: [
-    { required: true, message: "请输入玩法缩写", trigger: "blur" }
-  ],
-  name_cn: [
-    { required: true, message: "请输入中文名称", trigger: "blur" }
+  wallet_type: [
+    { required: true, message: "请选择钱包模式", trigger: "change" }
   ]
 };
-const addImageUrl = ref("");
-const addUploading = ref(false);
-const addImageUploadRef = ref();
 
-// 新增图片上传前的处理
-const beforeAddUpload = (file: File) => {
-  const isImage = file.type.startsWith("image/");
-  const isLt2M = file.size / 1024 / 1024 < 2;
-
-  if (!isImage) {
-    message("只能上传图片文件！", { type: "error" });
-    return false;
-  }
-  if (!isLt2M) {
-    message("图片大小不能超过 2MB！", { type: "error" });
-    return false;
-  }
-  return true;
-};
-
-// 处理新增图片上传
-const handleAddImageUpload = async (options: any) => {
-  const { file } = options;
-  addUploading.value = true;
-  
-  try {
-    const res = await uploadImage({
-      file: file,
-      type: "1"
-    });
-
-    if (res.code === 0) {
-      addImageUrl.value = res.data;
-      addFormData.value.pic = res.data;
-      message("图片上传成功", { type: "success" });
-    } else {
-      message(res.msg || "图片上传失败", { type: "error" });
-    }
-  } catch (error: any) {
-    console.error("图片上传失败:", error);
-    message(error?.message || "图片上传失败", { type: "error" });
-  } finally {
-    addUploading.value = false;
-  }
-};
-
-// 触发新增图片上传
-const triggerAddImageUpload = () => {
-  triggerAddImageSelect();
-};
-
-// 触发新增图片选择
-const triggerAddImageSelect = () => {
-  const uploadEl = addImageUploadRef.value?.$el?.querySelector('input[type="file"]');
-  if (uploadEl) {
-    uploadEl.click();
-  }
-};
-
-// 移除新增图片
-const handleRemoveAddImage = () => {
-  addImageUrl.value = "";
-  addFormData.value.pic = "";
-};
+// API地址选项（根据实际需求调整）
+const apiHostOptions = ref([
+  { label: "(正式) http://apiexternal12345", value: "http://apiexternal12345" },
+  { label: "(测试) http://apiexternal.nmu2ga.com", value: "http://apiexternal.nmu2ga.com" },
+  { label: "https://apiexternal.pgf-nmg2nd.com", value: "https://apiexternal.pgf-nmg2nd.com" }
+]);
 
 // 打开新增对话框
 const handleAdd = () => {
   showAddDialog.value = true;
   // 重置表单
   addFormData.value = {
-    name: "",
-    shortname: "",
-    name_cn: "",
-    pic: "",
-    sort_no: 1,
+    wallet_type: "",
+    type: "",
+    currency_id: "",
+    api_host: "",
+    token: "",
+    key: "",
     status: "1"
   };
-  addImageUrl.value = "";
 };
 
 // 关闭新增对话框
@@ -454,14 +596,14 @@ const handleCloseAddDialog = () => {
   showAddDialog.value = false;
   addFormRef.value?.resetFields();
   addFormData.value = {
-    name: "",
-    shortname: "",
-    name_cn: "",
-    pic: "",
-    sort_no: 1,
+    wallet_type: "",
+    type: "",
+    currency_id: "",
+    api_host: "",
+    token: "",
+    key: "",
     status: "1"
   };
-  addImageUrl.value = "";
 };
 
 // 提交新增表单
@@ -471,28 +613,28 @@ const handleSubmitAdd = async () => {
   await addFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
-        const params: AddGamePlayTypeParams = {
-          name: addFormData.value.name,
-          shortname: addFormData.value.shortname,
-          name_cn: addFormData.value.name_cn,
-          pic: addFormData.value.pic,
-          sort_no: addFormData.value.sort_no,
-          status: addFormData.value.status
+        const params: AddPgfAccountParams = {
+          wallet_type: addFormData.value.wallet_type,
+          type: addFormData.value.type || undefined,
+          status: addFormData.value.status,
+          token: addFormData.value.token || undefined,
+          key: addFormData.value.key || undefined,
+          api_host: addFormData.value.api_host || undefined
         };
 
-        const res = await addGamePlayType(params);
+        const res = await addPgfAccount(params);
 
         if (res.code === 0) {
-          message("新增玩法类型成功", { type: "success" });
+          message("新增PGF账号成功", { type: "success" });
           handleCloseAddDialog();
           // 刷新列表
           getList();
         } else {
-          message(res.msg || "新增玩法类型失败", { type: "error" });
+          message(res.msg || "新增PGF账号失败", { type: "error" });
         }
       } catch (error: any) {
-        console.error("新增玩法类型失败:", error);
-        message(error?.message || "新增玩法类型失败", { type: "error" });
+        console.error("新增PGF账号失败:", error);
+        message(error?.message || "新增PGF账号失败", { type: "error" });
       }
     }
   });
@@ -504,112 +646,47 @@ const handleEdit = () => {
     message("请选择一条数据进行编辑！", { type: "warning" });
     return;
   }
-  // 调用编辑函数，与表格操作列的编辑按钮效果一致
   handleEditRow(multipleSelection.value[0]);
 };
 
-// 编辑玩法类型对话框相关
+// 编辑PGF账号对话框相关
 const showEditDialog = ref(false);
 const editFormRef = ref();
 const editFormData = ref({
   id: 0,
-  name: "",
-  shortname: "",
-  name_cn: "",
-  pic: "",
-  sort_no: 1,
+  wallet_type: "",
+  type: "",
+  currency_id: "",
+  api_host: "",
+  token: "",
+  key: "",
   status: "1"
 });
 const editFormRules = {
-  name: [
-    { required: true, message: "请输入玩法类型", trigger: "blur" }
-  ],
-  shortname: [
-    { required: true, message: "请输入玩法缩写", trigger: "blur" }
-  ],
-  name_cn: [
-    { required: true, message: "请输入中文名称", trigger: "blur" }
+  wallet_type: [
+    { required: true, message: "请选择钱包模式", trigger: "change" }
   ]
-};
-const editImageUrl = ref("");
-const editUploading = ref(false);
-const editImageUploadRef = ref();
-
-// 编辑图片上传前的处理
-const beforeEditUpload = (file: File) => {
-  const isImage = file.type.startsWith("image/");
-  const isLt2M = file.size / 1024 / 1024 < 2;
-
-  if (!isImage) {
-    message("只能上传图片文件！", { type: "error" });
-    return false;
-  }
-  if (!isLt2M) {
-    message("图片大小不能超过 2MB！", { type: "error" });
-    return false;
-  }
-  return true;
-};
-
-// 处理编辑图片上传
-const handleEditImageUpload = async (options: any) => {
-  const { file } = options;
-  editUploading.value = true;
-  
-  try {
-    const res = await uploadImage({
-      file: file,
-      type: "1"
-    });
-
-    if (res.code === 0) {
-      editImageUrl.value = res.data;
-      editFormData.value.pic = res.data;
-      message("图片上传成功", { type: "success" });
-    } else {
-      message(res.msg || "图片上传失败", { type: "error" });
-    }
-  } catch (error: any) {
-    console.error("图片上传失败:", error);
-    message(error?.message || "图片上传失败", { type: "error" });
-  } finally {
-    editUploading.value = false;
-  }
-};
-
-// 触发编辑图片上传
-const triggerEditImageUpload = () => {
-  triggerEditImageSelect();
-};
-
-// 触发编辑图片选择
-const triggerEditImageSelect = () => {
-  const uploadEl = editImageUploadRef.value?.$el?.querySelector('input[type="file"]');
-  if (uploadEl) {
-    uploadEl.click();
-  }
-};
-
-// 移除编辑图片
-const handleRemoveEditImage = () => {
-  editImageUrl.value = "";
-  editFormData.value.pic = "";
 };
 
 // 编辑单行数据
 const handleEditRow = (row: TableRow) => {
   showEditDialog.value = true;
+  
+  // 查找PHP币种的ID（因为表格中显示的是PHP，但API响应中没有currency_id字段）
+  const phpCurrency = currencyOptions.value.find(opt => opt.label === "PHP");
+  const defaultCurrencyId = phpCurrency ? phpCurrency.value.toString() : "";
+  
   // 回填数据
   editFormData.value = {
     id: row.id,
-    name: row.name,
-    shortname: row.shortname,
-    name_cn: row.name_cn,
-    pic: row.pic || "",
-    sort_no: row.sort_no || 1,
+    wallet_type: row.wallet_type.toString(),
+    type: row.type.toString(),
+    currency_id: defaultCurrencyId, // 默认设置为PHP币种
+    api_host: row.api_host || "",
+    token: row.token || "",
+    key: row.key || "",
     status: row.status || "1"
   };
-  editImageUrl.value = row.pic || "";
 };
 
 // 关闭编辑对话框
@@ -618,14 +695,14 @@ const handleCloseEditDialog = () => {
   editFormRef.value?.resetFields();
   editFormData.value = {
     id: 0,
-    name: "",
-    shortname: "",
-    name_cn: "",
-    pic: "",
-    sort_no: 1,
+    wallet_type: "",
+    type: "",
+    currency_id: "",
+    api_host: "",
+    token: "",
+    key: "",
     status: "1"
   };
-  editImageUrl.value = "";
 };
 
 // 提交编辑表单
@@ -635,29 +712,29 @@ const handleSubmitEdit = async () => {
   await editFormRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
-        const params: EditGamePlayTypeParams = {
+        const params: EditPgfAccountParams = {
           id: editFormData.value.id,
-          name: editFormData.value.name,
-          shortname: editFormData.value.shortname,
-          name_cn: editFormData.value.name_cn,
-          pic: editFormData.value.pic,
-          sort_no: editFormData.value.sort_no,
-          status: editFormData.value.status
+          wallet_type: editFormData.value.wallet_type || undefined,
+          type: editFormData.value.type || undefined,
+          status: editFormData.value.status || undefined,
+          token: editFormData.value.token || undefined,
+          key: editFormData.value.key || undefined,
+          api_host: editFormData.value.api_host || undefined
         };
 
-        const res = await editGamePlayType(params);
+        const res = await editPgfAccount(params);
 
         if (res.code === 0) {
-          message("编辑玩法类型成功", { type: "success" });
+          message("编辑PGF账号成功", { type: "success" });
           handleCloseEditDialog();
           // 刷新列表
           getList();
         } else {
-          message(res.msg || "编辑玩法类型失败", { type: "error" });
+          message(res.msg || "编辑PGF账号失败", { type: "error" });
         }
       } catch (error: any) {
-        console.error("编辑玩法类型失败:", error);
-        message(error?.message || "编辑玩法类型失败", { type: "error" });
+        console.error("编辑PGF账号失败:", error);
+        message(error?.message || "编辑PGF账号失败", { type: "error" });
       }
     }
   });
@@ -671,20 +748,20 @@ const handleDelete = async () => {
   }
 
   // 构建删除确认消息
-  const typeNames = multipleSelection.value.map(item => item.name_cn).join("、");
-  const confirmMessage = `确定删除玩法类型 ${typeNames}？`;
+  const accountIds = multipleSelection.value.map(item => item.id).join("、");
+  const confirmMessage = `确定删除PGF账号 ${accountIds}？`;
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "删除玩法类型", {
+    await ElMessageBox.confirm(confirmMessage, "删除PGF账号", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       draggable: true,
       type: "warning"
     });
 
-    // 批量删除选中的玩法类型
+    // 批量删除选中的账号
     const deletePromises = multipleSelection.value.map(item =>
-      deleteGamePlayType({ id: item.id })
+      deletePgfAccount({ id: item.id })
     );
 
     const results = await Promise.all(deletePromises);
@@ -711,6 +788,16 @@ const handleDelete = async () => {
   }
 };
 
+// 解绑商户
+const handleUnbindMerchant = () => {
+  if (!multipleSelection.value.length) {
+    message("请先选择要解绑的数据！", { type: "warning" });
+    return;
+  }
+  message("解绑商户功能待实现", { type: "info" });
+  // TODO: 实现解绑商户功能
+};
+
 // 导出到excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
@@ -718,17 +805,23 @@ const exportExcel = () => {
     return;
   }
 
-  const exportTitles = tableConfig.value
-    .filter((col: any) => col.prop !== "pic") // 排除图片列
-    .map((col: any) => col.label);
-  const exportProps = tableConfig.value
-    .filter((col: any) => col.prop !== "pic") // 排除图片列
-    .map((col: any) => col.prop);
+  const exportTitles = tableConfig.value.map((col: any) => col.label);
+  const exportProps = tableConfig.value.map((col: any) => col.prop);
 
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status") {
         return item.status === "1" ? "正常" : "隐藏";
+      }
+      if (prop === "wallet_type") {
+        return item.wallet_type === 1 ? "单一模式" : item.wallet_type === 2 ? "转账模式" : item.wallet_type;
+      }
+      if (prop === "type") {
+        return item.type === 1 ? "正式账号" : item.type === 2 ? "测试账号" : item.type;
+      }
+      if (prop === "currency_id" || prop === "bound_merchant") {
+        // 这些字段不在API响应中，导出时显示占位文本
+        return prop === "currency_id" ? "PHP" : "SB商户";
       }
       return item[prop as keyof TableRow] ?? "";
     });
@@ -738,9 +831,9 @@ const exportExcel = () => {
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "玩法类型";
+  const sheetName = "PGF账号管理";
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `玩法类型.xlsx`;
+  const fileName = `PGF账号管理.xlsx`;
   writeFile(workBook, fileName);
 };
 
@@ -755,7 +848,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "玩法类型.json";
+  a.download = "PGF账号管理.json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -764,7 +857,7 @@ const exportJson = () => {
 </script>
 
 <template>
-  <div class="game-play-type-container">
+  <div class="pgf-account-container">
     <!-- 搜索表单 -->
     <el-card class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
@@ -789,21 +882,20 @@ const exportJson = () => {
         :table-data="tableData"
         :stripe="true"
         :is-selection="true"
-        :adaptive="true"
         :action-bar="{
           buttons,
-          width: '120px',
+          width: '150px',
           label: '操作'
         }"
-        @selection-change="handleSelectionChange"
         width="100%"
         height="90%"
+        @selection-change="handleSelectionChange"
       >
         <!-- 表格操作栏按钮 -->
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">添加</span>
           </el-button>
           <el-button 
             type="success" 
@@ -823,8 +915,16 @@ const exportJson = () => {
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>
           </el-button>
+          <el-button 
+            type="warning" 
+            @click="handleUnbindMerchant" 
+            size="default"
+            :disabled="multipleSelection.length === 0"
+          >
+            <span>解绑商户</span>
+          </el-button>
           <el-dropdown style="margin-left: 15px;">
-            <el-button type="info" size="default">
+            <el-button type="info" size="default" >
               <span>更多</span>
               <el-icon class="el-icon--right"><component :is="More" /></el-icon>
             </el-button>
@@ -860,6 +960,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #toolbar>
+          <div>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
             :content="showSearch ? '隐藏搜索' : '显示搜索'"
@@ -891,6 +992,7 @@ const exportJson = () => {
                 <el-icon
                   :size="18"
                   style="
+                    display: inline-block;
                     margin-right: 15px;
                     cursor: pointer;
                     outline: none;
@@ -912,6 +1014,7 @@ const exportJson = () => {
               </el-dropdown>
             </span>
           </el-tooltip>
+          </div>
         </template>
       </PlusTable>
       <PlusPagination
@@ -924,11 +1027,11 @@ const exportJson = () => {
       />
     </el-card>
 
-    <!-- 新增玩法类型对话框 -->
+    <!-- 新增PGF账号对话框 -->
     <el-dialog
       v-model="showAddDialog"
-      title="新增玩法类型"
-      width="500px"
+      title="添加"
+      width="600px"
       :close-on-click-modal="false"
       @close="handleCloseAddDialog"
     >
@@ -936,109 +1039,96 @@ const exportJson = () => {
         ref="addFormRef"
         :model="addFormData"
         :rules="addFormRules"
-        label-width="80px"
+        label-width="100px"
       >
-        <el-form-item label="玩法类型" prop="name">
-          <el-input
-            v-model="addFormData.name"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="玩法缩写" prop="shortname">
-          <el-input
-            v-model="addFormData.shortname"
-            placeholder="请输入"
-            maxlength="20"
-          />
-        </el-form-item>
-        <el-form-item label="中文名称" prop="name_cn">
-          <el-input
-            v-model="addFormData.name_cn"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="图片">
-          <div class="image-upload-container">
-            <div class="image-input-group">
-              <el-input
-                v-model="addFormData.pic"
-                placeholder="请输入"
-                readonly
-              />
-              <el-button type="primary" @click="triggerAddImageUpload" :loading="addUploading">
-                <el-icon><Upload /></el-icon>
-                上传
-              </el-button>
-              <el-button @click="triggerAddImageSelect">
-                选择
-              </el-button>
-            </div>
-            <div class="image-upload-area">
-              <el-upload
-                ref="addImageUploadRef"
-                class="avatar-uploader"
-                :action="''"
-                :auto-upload="true"
-                :show-file-list="false"
-                :before-upload="beforeAddUpload"
-                :http-request="handleAddImageUpload"
-                style="display: none"
-              >
-              </el-upload>
-              <div
-                v-if="!addImageUrl"
-                class="upload-placeholder"
-                @click="triggerAddImageSelect"
-              >
-                <el-icon class="upload-icon"><Plus /></el-icon>
-                <div class="upload-text">点击上传图片</div>
-              </div>
-              <div v-else class="image-preview">
-                <img :src="addImageUrl" class="preview-image" />
-                <el-button
-                  type="primary"
-                  link
-                  class="delete-btn"
-                  @click="handleRemoveAddImage"
-                >
-                  删除
-                </el-button>
-              </div>
-            </div>
-          </div>
-        </el-form-item>
-        <el-form-item label="排序">
-          <el-input-number
-            v-model="addFormData.sort_no"
-            :min="1"
-            :max="9999"
+        <el-form-item label="钱包模式" prop="wallet_type">
+          <el-select
+            v-model="addFormData.wallet_type"
+            placeholder="请选择"
             style="width: 100%"
+          >
+            <el-option label="单一模式" value="1" />
+            <el-option label="转账模式" value="2" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="账号类型" prop="type">
+          <el-select
+            v-model="addFormData.type"
+            placeholder="请选择"
+            style="width: 100%"
+          >
+            <el-option label="正式账号" value="1" />
+            <el-option label="测试账号" value="2" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="选择币种" prop="currency_id">
+          <el-select
+            v-model="addFormData.currency_id"
+            placeholder="请选择"
+            filterable
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in currencyOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value.toString()"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="API 地址" prop="api_host">
+          <el-select
+            v-model="addFormData.api_host"
+            placeholder="请选择"
+            filterable
+            allow-create
+            default-first-option
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in apiHostOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Token值" prop="token">
+          <el-input
+            v-model="addFormData.token"
+            placeholder="请输入"
+            maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item label="API 秘钥" prop="key">
+          <el-input
+            v-model="addFormData.key"
+            placeholder="请输入"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
           <el-radio-group v-model="addFormData.status">
-            <el-radio label="1" value="1">开启</el-radio>
-            <el-radio label="-1" value="-1">关闭</el-radio>
+            <el-radio label="1">开启</el-radio>
+            <el-radio label="-1">关闭</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="handleCloseAddDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitAdd" :loading="addUploading">
-            确定
+          <el-button type="primary" @click="handleSubmitAdd">
+            确认
           </el-button>
         </div>
       </template>
     </el-dialog>
 
-    <!-- 编辑玩法类型对话框 -->
+    <!-- 编辑PGF账号对话框 -->
     <el-dialog
       v-model="showEditDialog"
       title="编辑"
-      width="500px"
+      width="600px"
       :close-on-click-modal="false"
       @close="handleCloseEditDialog"
     >
@@ -1046,99 +1136,86 @@ const exportJson = () => {
         ref="editFormRef"
         :model="editFormData"
         :rules="editFormRules"
-        label-width="80px"
+        label-width="100px"
       >
-        <el-form-item label="玩法类型" prop="name">
-          <el-input
-            v-model="editFormData.name"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="玩法缩写" prop="shortname">
-          <el-input
-            v-model="editFormData.shortname"
-            placeholder="请输入"
-            maxlength="20"
-          />
-        </el-form-item>
-        <el-form-item label="中文名称" prop="name_cn">
-          <el-input
-            v-model="editFormData.name_cn"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="图片">
-          <div class="image-upload-container">
-            <div class="image-input-group">
-              <el-input
-                v-model="editFormData.pic"
-                placeholder="请输入"
-                readonly
-              />
-              <el-button type="primary" @click="triggerEditImageUpload" :loading="editUploading">
-                <el-icon><Upload /></el-icon>
-                上传
-              </el-button>
-              <el-button @click="triggerEditImageSelect">
-                选择
-              </el-button>
-            </div>
-            <div class="image-upload-area">
-              <el-upload
-                ref="editImageUploadRef"
-                class="avatar-uploader"
-                :action="''"
-                :auto-upload="true"
-                :show-file-list="false"
-                :before-upload="beforeEditUpload"
-                :http-request="handleEditImageUpload"
-                style="display: none"
-              >
-              </el-upload>
-              <div
-                v-if="!editImageUrl"
-                class="upload-placeholder"
-                @click="triggerEditImageSelect"
-              >
-                <el-icon class="upload-icon"><Plus /></el-icon>
-                <div class="upload-text">点击上传图片</div>
-              </div>
-              <div v-else class="image-preview">
-                <img :src="editImageUrl" class="preview-image" />
-                <el-button
-                  type="primary"
-                  link
-                  class="delete-btn"
-                  @click="handleRemoveEditImage"
-                >
-                  删除
-                </el-button>
-              </div>
-            </div>
-          </div>
-        </el-form-item>
-        <el-form-item label="排序">
-          <el-input-number
-            v-model="editFormData.sort_no"
-            :min="1"
-            :max="9999"
+        <el-form-item label="钱包模式" prop="wallet_type">
+          <el-select
+            v-model="editFormData.wallet_type"
+            placeholder="请选择"
             style="width: 100%"
+          >
+            <el-option label="单一模式" value="1" />
+            <el-option label="转账模式" value="2" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="账号类型" prop="type">
+          <el-select
+            v-model="editFormData.type"
+            placeholder="请选择"
+            style="width: 100%"
+          >
+            <el-option label="正式账号" value="1" />
+            <el-option label="测试账号" value="2" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="选择币种" prop="currency_id">
+          <el-select
+            v-model="editFormData.currency_id"
+            placeholder="请选择"
+            filterable
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in currencyOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value.toString()"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="API 地址" prop="api_host">
+          <el-select
+            v-model="editFormData.api_host"
+            placeholder="请选择"
+            filterable
+            allow-create
+            default-first-option
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in apiHostOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Token值" prop="token">
+          <el-input
+            v-model="editFormData.token"
+            placeholder="请输入"
+            maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item label="API 秘钥" prop="key">
+          <el-input
+            v-model="editFormData.key"
+            placeholder="请输入"
+            maxlength="200"
+          />
+        </el-form-item>
+        <el-form-item label="状态" prop="status">
           <el-radio-group v-model="editFormData.status">
-            <el-radio label="1" value="1">开启</el-radio>
-            <el-radio label="-1" value="-1">关闭</el-radio>
+            <el-radio label="1">开启</el-radio>
+            <el-radio label="-1">关闭</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="handleCloseEditDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitEdit" :loading="editUploading">
-            确定
+          <el-button type="primary" @click="handleSubmitEdit">
+            确认
           </el-button>
         </div>
       </template>
@@ -1147,7 +1224,6 @@ const exportJson = () => {
 </template>
 
 <style scoped>
-
 .custom-export-dropdown {
   min-width: 80px !important;
   padding: 0 !important;
@@ -1171,80 +1247,5 @@ const exportJson = () => {
 .custom-export-dropdown .el-dropdown-item:not(.export-active):hover {
   background-color: #f5f7fa !important;
 }
-
-/* 图片上传样式 */
-.image-upload-container {
-  width: 100%;
-}
-
-.image-input-group {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-  
-  .el-input {
-    flex: 1;
-  }
-  
-  .el-button {
-    white-space: nowrap;
-  }
-}
-
-.image-upload-area {
-  position: relative;
-}
-
-.upload-placeholder {
-  width: 178px;
-  height: 178px;
-  border: 1px dashed var(--el-border-color);
-  border-radius: 6px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: var(--el-transition-duration-fast);
-  background-color: var(--el-fill-color-lighter);
-  
-  &:hover {
-    border-color: var(--el-color-primary);
-  }
-  
-  .upload-icon {
-    font-size: 48px;
-    color: var(--el-text-color-placeholder);
-    margin-bottom: 8px;
-  }
-  
-  .upload-text {
-    font-size: 14px;
-    color: var(--el-text-color-placeholder);
-  }
-}
-
-.image-preview {
-  position: relative;
-  width: 178px;
-  height: 178px;
-  
-  .preview-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 6px;
-  }
-  
-  .delete-btn {
-    position: absolute;
-    bottom: 8px;
-    right: 8px;
-    color: var(--el-color-primary);
-  }
-}
-
-.avatar-uploader {
-  display: none;
-}
 </style>
+

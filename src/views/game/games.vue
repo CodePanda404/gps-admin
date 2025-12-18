@@ -453,6 +453,7 @@ const exportJson = () => {
         v-loading="loadingStatus"
         :columns="tableConfig"
         :table-data="tableData"
+        :stripe="true"
         :is-selection="true"
         :adaptive="true"
         @selection-change="handleSelectionChange"
@@ -461,19 +462,19 @@ const exportJson = () => {
       >
         <!-- 表格操作栏按钮 -->
         <template #title>
-          <el-button type="primary" @click="handleAdd" size="large">
+          <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
             <span style="margin-left: 3px;">新增</span>
           </el-button>
-          <el-button type="success" @click="handleEdit" size="large">
+          <el-button type="success" @click="handleEdit" size="default">
             <el-icon><component :is="Edit" /></el-icon>
             <span style="margin-left: 3px;">编辑</span>
           </el-button>
-          <el-button @click="handleTestGame" size="large">
+          <el-button @click="handleTestGame" size="default">
             <span>测试游戏</span>
           </el-button>
           <el-dropdown style="margin-left: 15px;">
-            <el-button type="info" size="large">
+            <el-button type="info" size="default">
               <span>更多</span>
               <el-icon class="el-icon--right"><component :is="More" /></el-icon>
             </el-button>

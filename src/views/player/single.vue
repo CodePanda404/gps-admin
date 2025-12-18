@@ -15,22 +15,50 @@ import {
   type SinglePlayerListParams,
   type SinglePlayerItem
 } from "@/api/player";
+import {
+  getCurrencyList,
+  type CurrencyItem
+} from "@/api/game";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
 import Filter from "~icons/ep/filter";
+import dayjs from "dayjs";
 
 // 路由
 const router = useRouter();
 
 /*  -----搜索表单相关-----  */
+// 币种列表（用于下拉选择）
+const currencyOptions = ref<Array<{ label: string; value: number }>>([]);
+
+// 获取币种列表
+const fetchCurrencyList = async () => {
+  try {
+    const res = await getCurrencyList({ pageSize: 1000 });
+    if (res.code === 0 && res.data && res.data.rows) {
+      currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取币种列表失败:", error);
+  }
+};
+
+// 初始化时获取币种列表
+fetchCurrencyList();
+
 // 搜索表单数据
 const searchData = ref({
   id: "",
   name: "",
-  agent: "",
+  currency_id: "",
+  admin_id: "",
   status: "",
-  registerTime: null as string[] | null
+  registerTime: null as string[] | null,
+  loginTime: null as string[] | null
 });
 // 搜索表单显示控制
 const showSearch = ref(true);
@@ -42,7 +70,7 @@ const searchColumns: PlusColumn[] = [
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "ID"
     }))
   },
   {
@@ -50,15 +78,34 @@ const searchColumns: PlusColumn[] = [
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "用户名"
     }))
   },
   {
-    label: "所属代理",
-    prop: "agent",
+    label: "币种",
+    prop: "currency_id",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择",
+      filterable: true
+    })),
+    options: computed(() => [
+      {
+        label: "全部",
+        value: ""
+      },
+      ...currencyOptions.value.map(item => ({
+        label: item.label,
+        value: item.value.toString()
+      }))
+    ])
+  },
+  {
+    label: "商户ID",
+    prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "商户ID"
     }))
   },
   {
@@ -73,13 +120,13 @@ const searchColumns: PlusColumn[] = [
         label: "全部",
         value: ""
       },
+       {
+        label: "正常",
+        value: "1"
+      },
       {
         label: "禁用",
         value: "0"
-      },
-      {
-        label: "正常",
-        value: "1"
       }
     ]
   },
@@ -88,9 +135,151 @@ const searchColumns: PlusColumn[] = [
     prop: "registerTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
-      type: "datetimerange",
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
       startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间"
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
+    }))
+  },
+  {
+    label: "登录时间",
+    prop: "loginTime",
+    valueType: "date-picker",
+    fieldProps: computed(() => ({
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      startPlaceholder: "开始日期时间",
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
     }))
   }
 ];
@@ -106,9 +295,11 @@ const handleRest = () => {
   searchData.value = {
     id: "",
     name: "",
-    agent: "",
+    currency_id: "",
+    admin_id: "",
     status: "",
-    registerTime: null
+    registerTime: null,
+    loginTime: null
   };
   pageInfo.value.page = 1;
   getList();
@@ -174,6 +365,10 @@ const tableConfig: any = ref([
     fieldProps: {
       activeValue: "normal",
       inactiveValue: "hidden"
+    },
+    tableColumnProps: {
+       sortable: true,
+       fixed: "right"
     }
   }
 ]);
@@ -290,20 +485,28 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, name, status, registerTime } = searchData.value;
+    const { id, name, currency_id, admin_id, status, registerTime, loginTime } = searchData.value;
     
-    const params: SinglePlayerListParams = {
+    const params: any = {
       pageNumber: page,
       pageSize,
       id: id || undefined,
       username: name || undefined,
-      status: status || undefined
+      status: status || undefined,
+      currency_id: currency_id || undefined,
+      admin_id: admin_id || undefined
     };
 
-    // 处理时间范围
+    // 处理注册时间范围
     if (registerTime && Array.isArray(registerTime) && registerTime.length === 2) {
       params.create_start_time = registerTime[0];
       params.create_end_time = registerTime[1];
+    }
+
+    // 处理登录时间范围
+    if (loginTime && Array.isArray(loginTime) && loginTime.length === 2) {
+      params.login_start_time = loginTime[0];
+      params.login_end_time = loginTime[1];
     }
 
     const res = await getSinglePlayerList(params);
@@ -408,6 +611,7 @@ const exportJson = () => {
         v-loading="loadingStatus"
         :columns="tableConfig"
         :table-data="tableData"
+        :stripe="true"
         :is-selection="true"
         :adaptive="true"
         :action-bar="{

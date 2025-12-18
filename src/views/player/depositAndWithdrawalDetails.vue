@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from "vue";
+import dayjs from "dayjs";
 defineOptions({
   name: "DepositWithdrawalDetails"
 });
@@ -40,8 +41,8 @@ const searchData = ref({
   user_id: "",
   username: "",
   agent: "",
-  status: "",
-  registerTime: null as string[] | null
+  type: "",
+  createTime: null as string[] | null
 });
 
 // 搜索表单显示控制
@@ -54,7 +55,15 @@ const searchColumns: PlusColumn[] = [
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: "请输入ID"
+    }))
+  },
+  {
+    label: "用户ID",
+    prop: "user_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入用户ID"
     }))
   },
   {
@@ -66,16 +75,8 @@ const searchColumns: PlusColumn[] = [
     }))
   },
   {
-    label: "所属代理",
-    prop: "agent",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入内容"
-    }))
-  },
-  {
-    label: "状态",
-    prop: "status",
+    label: "类型",
+    prop: "type",
     valueType: "select",
     fieldProps: computed(() => ({
       placeholder: "请选择"
@@ -86,23 +87,89 @@ const searchColumns: PlusColumn[] = [
         value: ""
       },
       {
-        label: "正常",
+        label: "存款",
         value: "1"
       },
       {
-        label: "禁用",
-        value: "0"
+        label: "取款",
+        value: "2"
       }
     ]
   },
   {
-    label: "注册时间",
-    prop: "registerTime",
+    label: "创建时间",
+    prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
-      type: "datetimerange",
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
       startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间"
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
     }))
   }
 ];
@@ -117,11 +184,11 @@ const handleSearch = (values: any) => {
 const handleRest = () => {
   searchData.value = {
     id: "",
-    user_id: null,
+    user_id: "",
     username: "",
     agent: "",
-    status: "",
-    registerTime: null
+    type: "",
+    createTime: null
   };
   pageInfo.value.page = 1;
   getList();
@@ -193,20 +260,21 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, user_id, username, status, registerTime } = searchData.value;
+    const { id, user_id, username, type, createTime } = searchData.value;
     
     const params: DepositWithdrawalListParams = {
       pageNumber: page,
       pageSize,
-      user_id: id || undefined,
+      id: id || undefined,
+      user_id: user_id || undefined,
       username: username || undefined,
-      type: status || undefined
+      type: type || undefined
     };
 
     // 处理时间范围
-    if (registerTime && Array.isArray(registerTime) && registerTime.length === 2) {
-      params.create_start_time = registerTime[0];
-      params.create_end_time = registerTime[1];
+    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
+      params.create_start_time = createTime[0];
+      params.create_end_time = createTime[1];
     }
 
     const res = await getDepositWithdrawalList(params);
@@ -340,6 +408,7 @@ const exportJson = () => {
         v-loading="loadingStatus"
         :columns="tableConfig"
         :table-data="tableData"
+        :stripe="true"
         :is-selection="true"
         width="100%"
         height="90%"
