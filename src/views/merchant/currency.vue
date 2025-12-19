@@ -200,26 +200,39 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    prop: "id"
+    prop: "id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "币种",
-    prop: "name"
+    prop: "name",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "备注",
-    prop: "remark"
+    prop: "remark",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "时差",
-    prop: "difftime"
+    prop: "difftime",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "创建时间",
     prop: "createtime",
     width: "160",
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   },
   {
@@ -227,7 +240,8 @@ const tableConfig: any = ref([
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   },
   {
@@ -239,7 +253,8 @@ const tableConfig: any = ref([
       }, () => value === '1' ? '正常' : '停用');
     },
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   }
 ]);
@@ -575,9 +590,8 @@ const exportJson = () => {
 <template>
   <div class="currency-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
-        v-show="showSearch"
         v-model="searchData"
         :columns="searchColumns"
         label-width="80"

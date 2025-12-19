@@ -318,44 +318,71 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    prop: "id"
+    prop: "id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "用户名",
     prop: "username",
-    width: "200"
+    width: "200",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "余额",
-    prop: "money"
+    prop: "money",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "币种",
-    prop: "currency"
+    prop: "currency",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "商户ID",
-    prop: "admin_id"
+    prop: "admin_id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "登录时间",
     prop: "logintime",
-    width: "160"
+    width: "160",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "登录IP",
     prop: "loginip",  
-    width: "140"
+    width: "140",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "注册时间",
     prop: "jointime",
-    width: "160"
+    width: "160",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "注册IP",
     prop: "joinip",
-    width: "140"
+    width: "140",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "状态",
@@ -368,7 +395,8 @@ const tableConfig: any = ref([
     },
     tableColumnProps: {
        sortable: true,
-       fixed: "right"
+       fixed: "right",
+       align: "center"
     }
   }
 ]);
@@ -386,8 +414,7 @@ buttons.value = [
       router.push({
         name: "SingleBettingDetails",
         query: {
-          playerId: row.id.toString(),
-          playerName: row.username
+          userId: row.id.toString()
         }
       });
     }
@@ -591,9 +618,8 @@ const exportJson = () => {
 <template>
   <div class="single-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
-        v-show="showSearch"
         v-model="searchData"
         :columns="searchColumns"
         label-width="80"
@@ -614,6 +640,7 @@ const exportJson = () => {
         :stripe="true"
         :is-selection="true"
         :adaptive="true"
+        :fit="true"
         :action-bar="{
           buttons,
           width: '150px',

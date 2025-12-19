@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from "vue";
+import { ref, computed, watch, onMounted, h } from "vue";
 defineOptions({
   name: "SingleBettingDetails"
 });
@@ -19,6 +19,7 @@ import {
   type TransferBettingListParams,
   type TransferBettingItem
 } from "@/api/player";
+import { ElTag } from "element-plus";
 import dayjs from "dayjs";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
@@ -30,8 +31,7 @@ const route = useRoute();
 const router = useRouter();
 
 // 获取路由参数
-const playerId = computed(() => (route.query.playerId as string) || "");
-const playerName = computed(() => (route.query.playerName as string) || "");
+const userId = computed(() => (route.query.userId as string) || "");
 
 // 国际化
 const { t } = useI18n();
@@ -39,6 +39,7 @@ const { t } = useI18n();
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
 const searchData = ref({
+  id: "",
   user_id: "",
   username: "",
   game_id: "",
@@ -53,6 +54,14 @@ const showSearch = ref(true);
 
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
+  {
+    label: "ID",
+    prop: "id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "ID"
+    }))
+  },
   {
     label: "用户ID",
     prop: "user_id",
@@ -202,6 +211,7 @@ const handleSearch = (values: any) => {
 // 重置搜索表单
 const handleRest = () => {
   searchData.value = {
+    id: "",
     user_id: "",
     username: "",
     game_id: "",
@@ -233,58 +243,94 @@ const tableConfig: any = ref([
   {
     label: "ID",
     prop: "id",
-    width: 100
+    width: 100,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "用户ID",
-    prop: "user_id"
+    prop: "user_id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "用户名",
     prop: "username",
-    width: 140
+    width: 140,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "游戏ID",
     prop: "game_id",
-    width: 140
+    width: 140,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "投注ID",
     prop: "bet_id",
-    width: 240
+    width: 240,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "交易ID",
     prop: "transaction_id",
-    width: 240
+    width: 240,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "投注金额",
     prop: "bet_amount",
-    width: 100
+    width: 100,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "中奖金额",
     prop: "win_amount",
-    width: 100
+    width: 100,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "输赢",
-    prop: "win_and_lose"
+    prop: "win_and_lose",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "状态",
     prop: "status_text",
     valueType: "tag",
-    fieldProps: (value: string) => ({
-      type: value === "中奖" ? "success" : "danger"
-    })
+    width: "100",
+    render: (value: string) => {
+      return h(ElTag, {
+        type: value === '中奖' ? "success" : "danger"
+      }, () => value === '中奖' ? value : '未中奖');
+    },
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "创建时间",
     prop: "createtime",
-    width: 160
+    width: 160,
+    tableColumnProps: {
+      align: "center"
+    }
   }
 ]);
 
@@ -305,209 +351,46 @@ const handleSelectionChange = (val: TableRow[]) => {
   multipleSelection.value = val;
 };
 
-// 模拟数据（用于测试，后端接口响应慢时使用）
-const mockData = {
-  code: 0,
-  msg: "成功",
-  data: {
-    total: 79095972,
-    pages: 7909598,
-    pageNumber: "1",
-    pageSize: "10",
-    rows: [
-      {
-        id: 79097064,
-        user_id: 7954401,
-        username: "12451P17948",
-        game_id: "JL_49",
-        bet_id: "TwomtzQPde3pXyK6Adny7c",
-        transaction_id: "45f7563b-036b-42fe-b42d-221e4a362250",
-        bet_amount: "3.00",
-        win_amount: "0.00",
-        win_and_lose: -3,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:15"
-      },
-      {
-        id: 79097065,
-        user_id: 8016511,
-        username: "12451P21689",
-        game_id: "PGS_74",
-        bet_id: "WC5cfv3wLVzpAwH2MExNzL",
-        transaction_id: "5e1246b2-8ac9-40e1-a14b-de0b063ad2ba",
-        bet_amount: "10.00",
-        win_amount: "0.00",
-        win_and_lose: -10,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:15"
-      },
-      {
-        id: 79097055,
-        user_id: 8005203,
-        username: "12452P30942",
-        game_id: "JL_77",
-        bet_id: "poBVLefK25FHboHt5mdzWN",
-        transaction_id: "3adaa59c-a3fb-42a5-b3be-9eae40887a28",
-        bet_amount: "1.00",
-        win_amount: "0.00",
-        win_and_lose: -1,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:14"
-      },
-      {
-        id: 79097056,
-        user_id: 8012536,
-        username: "12451P21410",
-        game_id: "JL_49",
-        bet_id: "Zz7KTXDbYHNnQfzLjGFpfV",
-        transaction_id: "16ddf54c-2097-4602-947d-b24316832c69",
-        bet_amount: "1.00",
-        win_amount: "0.00",
-        win_and_lose: -1,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:14"
-      },
-      {
-        id: 79097057,
-        user_id: 7957773,
-        username: "12449P23906",
-        game_id: "JL_103",
-        bet_id: "i3C4uokfSFqWmT32jJ6yFA",
-        transaction_id: "489dccdb-0b75-4cf0-a3cd-761077a2e42c",
-        bet_amount: "1.00",
-        win_amount: "0.15",
-        win_and_lose: -0.85,
-        status_text: "中奖",
-        createtime: "2025-12-18 15:57:14"
-      },
-      {
-        id: 79097058,
-        user_id: 8017649,
-        username: "12452P33944",
-        game_id: "PGS_1492288",
-        bet_id: "qGbpgxN4Xi9JKAVk945jbY",
-        transaction_id: "25ee8abc-cb63-4889-8c52-4118eac3e24f",
-        bet_amount: "5.00",
-        win_amount: "0.00",
-        win_and_lose: -5,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:14"
-      },
-      {
-        id: 79097059,
-        user_id: 8009962,
-        username: "12452P31989",
-        game_id: "JL_109",
-        bet_id: "r96qSP8r5o4KbivvCkyRCE",
-        transaction_id: "3468b042-d7db-47fa-a717-78df20209a43",
-        bet_amount: "1.00",
-        win_amount: "0.00",
-        win_and_lose: -1,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:14"
-      },
-      {
-        id: 79097060,
-        user_id: 8017637,
-        username: "12449P28930",
-        game_id: "PGS_1492288",
-        bet_id: "W83FGtf36hnH94BtKnPmh9",
-        transaction_id: "a3156ad1-81c4-46fe-8f12-2a292247a83d",
-        bet_amount: "5.00",
-        win_amount: "0.00",
-        win_and_lose: -5,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:14"
-      },
-      {
-        id: 79097061,
-        user_id: 8016389,
-        username: "12449P28844",
-        game_id: "PGS_123",
-        bet_id: "VvucMoLnYiK72DBWUbzfqi",
-        transaction_id: "b070c8a7-7c46-4264-bda6-6433e9f7e758",
-        bet_amount: "1.00",
-        win_amount: "0.00",
-        win_and_lose: -1,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:14"
-      },
-      {
-        id: 79097062,
-        user_id: 8017648,
-        username: "12451P22004",
-        game_id: "PGS_1834850",
-        bet_id: "CFzCiKCLKkGSBnPAboo68F",
-        transaction_id: "103b5458-1277-4ba6-af5f-e63de9ba948a",
-        bet_amount: "0.00",
-        win_amount: "0.00",
-        win_and_lose: 0,
-        status_text: "未中奖",
-        createtime: "2025-12-18 15:57:14"
-      }
-    ]
-  }
-};
-
 // 获取列表数据
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    // TODO: 临时使用模拟数据，等后端接口优化后再切换回真实API
-    // 模拟网络延迟
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const { page, pageSize } = pageInfo.value;
+    const { id, user_id, username, game_id, bet_id, transaction_id, status, createTime } = searchData.value;
+    const params: TransferBettingListParams = {
+      pageNumber: page,
+      pageSize,
+      id: id || undefined,
+      user_id: user_id || undefined,
+      username: username || undefined,
+      game_id: game_id || undefined,
+      bet_id: bet_id || undefined,
+      transaction_id: transaction_id || undefined,
+      status: status || undefined
+    };
 
-    // 使用模拟数据
-    const res = mockData;
+    // 处理创建时间范围
+    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
+      params.create_start_time = createTime[0];
+      params.create_end_time = createTime[1];
+    }
 
-    // 真实API调用（暂时注释）
-    // const params: TransferBettingListParams = {
-    //   pageNumber: pageInfo.value.page,
-    //   pageSize: pageInfo.value.pageSize
-    // };
-    // if (searchData.value.user_id) {
-    //   params.user_id = searchData.value.user_id;
-    // }
-    // if (searchData.value.username) {
-    //   params.username = searchData.value.username;
-    // }
-    // if (searchData.value.game_id) {
-    //   params.game_id = searchData.value.game_id;
-    // }
-    // if (searchData.value.bet_id) {
-    //   params.bet_id = searchData.value.bet_id;
-    // }
-    // if (searchData.value.transaction_id) {
-    //   params.transaction_id = searchData.value.transaction_id;
-    // }
-    // if (searchData.value.status) {
-    //   params.status = searchData.value.status;
-    // }
-    // if (
-    //   searchData.value.createTime &&
-    //   Array.isArray(searchData.value.createTime) &&
-    //   searchData.value.createTime.length === 2
-    // ) {
-    //   params.create_start_time = searchData.value.createTime[0];
-    //   params.create_end_time = searchData.value.createTime[1];
-    // }
-    // const res = await getTransferBettingList(params);
+    const { data } = await getTransferBettingList(params);
 
-    if (res.code === 0) {
-      tableData.value = res.data.rows;
-      total.value = res.data.total;
+    if (data && data.rows) {
+      tableData.value = data.rows;
+      total.value = data.total;
 
       // 计算统计信息
-      totalBet.value = res.data.rows.reduce((sum, item) => {
+      totalBet.value = data.rows.reduce((sum, item) => {
         const bet = parseFloat(item.bet_amount) || 0;
         return sum + bet;
       }, 0);
-      totalWinLoss.value = res.data.rows.reduce((sum, item) => {
+      totalWinLoss.value = data.rows.reduce((sum, item) => {
         return sum + (item.win_and_lose || 0);
       }, 0);
-      totalCount.value = res.data.total;
+      totalCount.value = data.total;
     } else {
-      message(res.msg || "获取列表数据失败", { type: "error" });
       tableData.value = [];
       total.value = 0;
       totalBet.value = 0;
@@ -541,9 +424,9 @@ const handlePageChange = () => {
 
 // 初始化加载数据
 onMounted(() => {
-  // 如果URL中有playerId，设置到搜索表单的user_id字段
-  if (playerId.value) {
-    searchData.value.user_id = playerId.value;
+  // 如果URL中有userId，设置到搜索表单的user_id字段
+  if (userId.value) {
+    searchData.value.user_id = userId.value;
     pageInfo.value.page = 1;
   }
   getList();
@@ -551,10 +434,10 @@ onMounted(() => {
 
 // 监听路由参数变化，自动设置搜索表单的user_id
 watch(
-  () => route.query.playerId,
-  (newPlayerId) => {
-    if (newPlayerId && typeof newPlayerId === "string") {
-      searchData.value.user_id = newPlayerId;
+  () => route.query.userId,
+  (newUserId) => {
+    if (newUserId && typeof newUserId === "string") {
+      searchData.value.user_id = newUserId;
       // 重置到第一页并重新获取数据
       pageInfo.value.page = 1;
       getList();
@@ -611,9 +494,8 @@ const exportJson = () => {
 <template>
   <div class="single-betting-details-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
-        v-show="showSearch"
         v-model="searchData"
         :columns="searchColumns"
         label-width="80"
@@ -624,36 +506,6 @@ const exportJson = () => {
         @search="handleSearch"
         @reset="handleRest"
       />
-    </el-card>
-
-    <!-- 统计信息 -->
-    <el-card class="stats-card" shadow="never" style="margin: 20px">
-      <div class="stats-content">
-        <div class="stat-item">
-          <span class="stat-label">总投注:</span>
-          <el-input
-            v-model="totalBet"
-            readonly
-            style="width: 200px; margin-left: 10px"
-          />
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">总输赢:</span>
-          <el-input
-            v-model="totalWinLoss"
-            readonly
-            style="width: 200px; margin-left: 10px"
-          />
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">总笔数:</span>
-          <el-input
-            v-model="totalCount"
-            readonly
-            style="width: 200px; margin-left: 10px"
-          />
-        </div>
-      </div>
     </el-card>
 
     <!-- 表格 -->
@@ -673,6 +525,38 @@ const exportJson = () => {
         height="90%"
         @selection-change="handleSelectionChange"
       >
+        <!-- 表格标题：统计信息 -->
+        <template #title>
+          <div class="stats-content" style="margin-left: 5px">
+            <div class="stat-item">
+              <span class="stat-label">总投注:</span>
+              <el-input
+                v-model="totalBet"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">总输赢:</span>
+              <el-input
+                v-model="totalWinLoss"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">总笔数:</span>
+              <el-input
+                v-model="totalCount"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+          </div>
+        </template>
         <!-- 工具栏 -->
         <template #density-icon>
           <el-tooltip content="密度" placement="top">
@@ -764,10 +648,6 @@ const exportJson = () => {
 </template>
 
 <style scoped>
-.stats-card {
-  border: 1px dashed #409eff;
-}
-
 .stats-content {
   display: flex;
   gap: 30px;

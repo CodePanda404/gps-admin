@@ -62,7 +62,8 @@ const searchData = ref({
   currency_id: "",
   login_ip: "",
   join_ip: "",
-  registerTime: [] as string[]
+  registerTime: [] as string[],
+  loginTime: [] as string[]
 });
 // 搜索表单显示控制
 const showSearch = ref(true);
@@ -96,6 +97,25 @@ const searchColumns: PlusColumn[] = [
       placeholder: t("player.transfer.adminIdPlaceholder")
     }))
   },
+   {
+    label: "币种",
+    prop: "currency_id",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择",
+      filterable: true
+    })),
+    options: computed(() => [
+      {
+        label: "全部",
+        value: ""
+      },
+      ...currencyOptions.value.map(item => ({
+        label: item.label,
+        value: item.value.toString()
+      }))
+    ])
+  },
   {
     label: "状态",
     renderLabel: () => t("player.transfer.status"),
@@ -123,25 +143,6 @@ const searchColumns: PlusColumn[] = [
     ]
   },
   {
-    label: "币种",
-    prop: "currency_id",
-    valueType: "select",
-    fieldProps: computed(() => ({
-      placeholder: "请选择",
-      filterable: true
-    })),
-    options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
-      ...currencyOptions.value.map(item => ({
-        label: item.label,
-        value: item.value.toString()
-      }))
-    ])
-  },
-  {
     label: "登录IP",
     prop: "login_ip",
     valueType: "copy",
@@ -158,16 +159,16 @@ const searchColumns: PlusColumn[] = [
     }))
   },
   {
-    label: "注册时间",
-    renderLabel: () => t("player.transfer.registerTime"),
-    prop: "registerTime",
+    label: "登录时间",
+    renderLabel: () => t("player.transfer.loginTime"),
+    prop: "loginTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: t("player.transfer.registerTimePlaceholder"),
-      endPlaceholder: t("player.transfer.registerTimePlaceholder"),
+      startPlaceholder: "开始日期时间",
+      endPlaceholder: "结束日期时间",
       shortcuts: [
         {
           text: "今天",
@@ -233,7 +234,85 @@ const searchColumns: PlusColumn[] = [
         }
       ]
     }))
-  }
+  },
+  {
+    label: "注册时间",
+    renderLabel: () => t("player.transfer.registerTime"),
+    prop: "registerTime",
+    valueType: "date-picker",
+    fieldProps: computed(() => ({
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      startPlaceholder: "开始日期时间",
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
+    }))
+  },
+
 ];
 
 // 点击搜索按钮
@@ -254,7 +333,8 @@ const handleRest = () => {
     currency_id: "",
     login_ip: "",
     join_ip: "",
-    registerTime: []
+    registerTime: [],
+    loginTime: []
   };
   // 重置到第一页
   pageInfo.value.page = 1;
@@ -276,70 +356,106 @@ const tableConfig: any = ref([
   {
     label: "ID",
     renderHeader: () => t("player.transfer.id"),
-    prop: "id"
+    prop: "id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "用户名",
     renderHeader: () => t("player.transfer.name"),
     prop: "username",
-    width: "210"
+    minWidth: "200",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "余额",
     renderHeader: () => t("player.transfer.balance"),
-    prop: "money"
+    prop: "money",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "币种",
     renderHeader: () => t("player.transfer.currency"),
-    prop: "currency"
+    prop: "currency",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "商户ID",
     renderHeader: () => t("player.transfer.merchantID"),
-    prop: "admin_id"
+    prop: "admin_id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "累计投注",
     renderHeader: () => t("player.transfer.totalBet"),
     prop: "bet_all",
-    width: "100"
+    width: "100",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "累计派彩",
     renderHeader: () => t("player.transfer.totalPet"),
     prop: "win_all",
-    width: "100"
+    width: "100",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "累计输赢",
     renderHeader: () => t("player.transfer.totalWinLoss"),
     prop: "company_win_all",
-    width: "100"
+    width: "100",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "登录时间",
     renderHeader: () => t("player.transfer.loginTime"),
     prop: "logintime",
-    width: "160"
+    minWidth: "160",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "登录IP",
     renderHeader: () => t("player.transfer.loginIP"),
     prop: "loginip",
-    width: "140"
+    minWidth: "140",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "注册时间",
     renderHeader: () => t("player.transfer.registerTime"),
     prop: "jointime",
-    width: "160"
+    width: "160",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "注册IP",
     renderHeader: () => t("player.transfer.registerIP"),
     prop: "joinip",
-    width: "140"
+    width: "140",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "状态",
@@ -353,7 +469,8 @@ const tableConfig: any = ref([
     },
     tableColumnProps: {
        sortable: true,
-       fixed: "right"
+       fixed: "right",
+       align: "center"
     }
   }
 ]);
@@ -368,12 +485,11 @@ buttons.value = [
     },
     onClick: (params: any) => {
       const row = params.row as TableRow;
-      // 跳转到存取款明细页面，传递玩家ID
+      // 跳转到存取款明细页面，传递用户ID
       router.push({
         name: "DepositWithdrawalDetails",
         query: {
-          playerId: row.id.toString(),
-          playerName: row.username
+          userId: row.id.toString()
         }
       });
     }
@@ -389,8 +505,7 @@ buttons.value = [
       router.push({
         name: "BettingDetails",
         query: {
-          playerId: row.id.toString(),
-          playerName: row.username
+          userId: row.id.toString()
         }
       });
     }
@@ -488,7 +603,7 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, username, status, currency_id, login_ip, join_ip, registerTime } = searchData.value;
+    const { id, username, status, currency_id, login_ip, join_ip, registerTime, loginTime } = searchData.value;
     const params: any = {
       pageNumber: page,
       pageSize,
@@ -503,6 +618,11 @@ const getList = async () => {
     if (registerTime && registerTime.length === 2) {
       params.create_start_time = registerTime[0];
       params.create_end_time = registerTime[1];
+    }
+
+    if (loginTime && loginTime.length === 2) {
+      params.login_start_time = loginTime[0];
+      params.login_end_time = loginTime[1];
     }
 
     const { data } = await getTransferPlayerList(params);
@@ -582,9 +702,8 @@ const exportJson = () => {
 <template>
   <div class="transfer-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
-        v-show="showSearch"
         v-model="searchData"
         :columns="searchColumns"
         label-width="80"
@@ -604,7 +723,6 @@ const exportJson = () => {
         :table-data="tableData"
         :stripe="true"
         :is-selection="true"
-        :adaptive="true"
         :action-bar="{
           buttons,
           width: '220px',

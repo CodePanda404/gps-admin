@@ -194,6 +194,35 @@ export const deleteSupplier = (params: DeleteSupplierParams) => {
   );
 };
 
+/** 批量删除供应商参数 */
+export type DeleteBatchSupplierParams = {
+  ids: string; // 多个ID用逗号分隔，如 "38,39"
+};
+
+/** 批量删除供应商响应 */
+export type DeleteBatchSupplierResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量删除供应商 */
+export const deleteBatchSupplier = (params: DeleteBatchSupplierParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+
+  return http.request<DeleteBatchSupplierResult>(
+    "post",
+    baseUrlApi("/provider/provider/del_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
 /** 玩法类型列表项 */
 export type GamePlayTypeItem = {
   id: number;
@@ -626,6 +655,64 @@ export const deleteWlgAccount = (params: DeleteWlgAccountParams) => {
   );
 };
 
+/** 批量删除WLG账号参数 */
+export type DeleteBatchWlgAccountParams = {
+  ids: string; // 多个ID用逗号分隔，如 "38,39"
+};
+
+/** 批量删除WLG账号响应 */
+export type DeleteBatchWlgAccountResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量删除WLG账号 */
+export const deleteBatchWlgAccount = (params: DeleteBatchWlgAccountParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+
+  return http.request<DeleteBatchWlgAccountResult>(
+    "post",
+    baseUrlApi("/game/wlg/del_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 批量解绑WLG账号关联商户参数 */
+export type UnbindBatchWlgAccountParams = {
+  ids: string; // 多个ID用逗号分隔，如 "106,107"
+};
+
+/** 批量解绑WLG账号关联商户响应 */
+export type UnbindBatchWlgAccountResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量解绑WLG账号关联商户 */
+export const unbindBatchWlgAccount = (params: UnbindBatchWlgAccountParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+
+  return http.request<UnbindBatchWlgAccountResult>(
+    "post",
+    baseUrlApi("/game/wlg/unbind_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
 /** PGF账号列表项 */
 export type PgfAccountItem = {
   id: number;
@@ -787,6 +874,64 @@ export const deletePgfAccount = (params: DeletePgfAccountParams) => {
   );
 };
 
+/** 批量删除PGF账号参数 */
+export type DeleteBatchPgfAccountParams = {
+  ids: string; // 多个ID用逗号分隔，如 "38,39"
+};
+
+/** 批量删除PGF账号响应 */
+export type DeleteBatchPgfAccountResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量删除PGF账号 */
+export const deleteBatchPgfAccount = (params: DeleteBatchPgfAccountParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+
+  return http.request<DeleteBatchPgfAccountResult>(
+    "post",
+    baseUrlApi("/game/pgf/del_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 批量解绑PGF账号关联商户参数 */
+export type UnbindBatchPgfAccountParams = {
+  ids: string; // 多个ID用逗号分隔，如 "14,15"
+};
+
+/** 批量解绑PGF账号关联商户响应 */
+export type UnbindBatchPgfAccountResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量解绑PGF账号关联商户 */
+export const unbindBatchPgfAccount = (params: UnbindBatchPgfAccountParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+
+  return http.request<UnbindBatchPgfAccountResult>(
+    "post",
+    baseUrlApi("/game/pgf/unbind_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
 /** 新增玩法类型参数 */
 export type AddGamePlayTypeParams = {
   name: string;
@@ -887,6 +1032,35 @@ export const deleteGamePlayType = (params: DeleteGamePlayTypeParams) => {
   return http.request<DeleteGamePlayTypeResult>(
     "post",
     baseUrlApi("/game/gametype/del"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 批量删除玩法类型参数 */
+export type DeleteBatchGamePlayTypeParams = {
+  ids: string; // 多个ID用逗号分隔，如 "38,39"
+};
+
+/** 批量删除玩法类型响应 */
+export type DeleteBatchGamePlayTypeResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量删除玩法类型 */
+export const deleteBatchGamePlayType = (params: DeleteBatchGamePlayTypeParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+
+  return http.request<DeleteBatchGamePlayTypeResult>(
+    "post",
+    baseUrlApi("/game/gametype/del_batch"),
     {
       data: formData,
       headers: {

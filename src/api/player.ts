@@ -130,6 +130,7 @@ export type DepositWithdrawalItem = {
   before: string; // 变动前余额
   after: string; // 变动后余额
   createtime: string; // 创建时间
+  remark?: string; // 备注
 };
 
 /** 存取款明细查询参数 */
@@ -309,12 +310,16 @@ export type TransferBettingItem = {
 
 /** 转账模式玩家投注明细查询参数 */
 export type TransferBettingListParams = {
+  /** ID */
+  id?: string | number;
   /** 用户ID */
   user_id?: string | number;
   /** 用户名 */
   username?: string;
   /** 游戏ID */
   game_id?: string;
+  /** 币种ID */
+  currency_id?: string | number;
   /** 投注ID */
   bet_id?: string;
   /** 交易ID */

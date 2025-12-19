@@ -13,13 +13,12 @@ import {
   getSupplierList,
   addSupplier,
   editSupplier,
-  deleteSupplier,
+  deleteBatchSupplier,
   uploadImage,
   type SupplierListParams,
   type SupplierItem,
   type AddSupplierParams,
-  type EditSupplierParams,
-  type DeleteSupplierParams
+  type EditSupplierParams
 } from "@/api/game";
 import { ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElSwitch, ElUpload, ElButton, ElRadioGroup, ElRadio } from "element-plus";
 import Upload from "~icons/ep/upload";
@@ -201,11 +200,17 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    prop: "id"
+    prop: "id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "供应商名称",
-    prop: "name"
+    prop: "name",
+    tableColumnProps: {
+      align: "center"
+    }
   },
  {
     label: 'logo',
@@ -213,22 +218,32 @@ const tableConfig: any = ref([
     valueType: 'img',
     fieldProps: {
       fit:"cover"
-   }
+   },
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "备注",
-    prop: "remark"
+    prop: "remark",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "排序",
-    prop: "sort_no"
+    prop: "sort_no",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "创建时间",
     prop: "createtime",
     width: "160",
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   },
   {
@@ -236,7 +251,8 @@ const tableConfig: any = ref([
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   },
   {
@@ -248,7 +264,8 @@ const tableConfig: any = ref([
       }, () => value === '1' ? '正常' : '隐藏');
     },
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   }
 ]);
@@ -722,25 +739,17 @@ const handleDelete = async () => {
     });
 
     // 批量删除选中的供应商
-    const deletePromises = multipleSelection.value.map(item =>
-      deleteSupplier({ id: item.id })
-    );
+    const ids = multipleSelection.value.map(item => item.id).join(",");
+    const res = await deleteBatchSupplier({ ids });
 
-    const results = await Promise.all(deletePromises);
-    
-    // 检查是否全部成功
-    const failedCount = results.filter(res => res.code !== 0).length;
-    
-    if (failedCount === 0) {
+    if (res.code === 0) {
       message("删除成功", { type: "success" });
       // 清空选中数据
       multipleSelection.value = [];
       // 刷新列表
       getList();
     } else {
-      message(`删除失败 ${failedCount} 条数据`, { type: "error" });
-      // 即使有失败，也刷新列表
-      getList();
+      message(res.msg || "删除失败", { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
@@ -805,9 +814,8 @@ const exportJson = () => {
 <template>
   <div class="supplier-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
-        v-show="showSearch"
         v-model="searchData"
         :columns="searchColumns"
         label-width="80"

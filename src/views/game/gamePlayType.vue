@@ -13,13 +13,12 @@ import {
   getGamePlayTypeList,
   addGamePlayType,
   editGamePlayType,
-  deleteGamePlayType,
+  deleteBatchGamePlayType,
   uploadImage,
   type GamePlayTypeListParams,
   type GamePlayTypeItem,
   type AddGamePlayTypeParams,
-  type EditGamePlayTypeParams,
-  type DeleteGamePlayTypeParams
+  type EditGamePlayTypeParams
 } from "@/api/game";
 import { ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElRadioGroup, ElRadio, ElButton, ElUpload } from "element-plus";
 import Upload from "~icons/ep/upload";
@@ -211,19 +210,31 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    prop: "id"
+    prop: "id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "玩法类型",
-    prop: "name"
+    prop: "name",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "玩法缩写",
-    prop: "shortname"
+    prop: "shortname",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "中文名称",
-    prop: "name_cn"
+    prop: "name_cn",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "图片",
@@ -231,18 +242,25 @@ const tableConfig: any = ref([
     valueType: "img",
     fieldProps: {
       fit: "cover"
+    },
+    tableColumnProps: {
+      align: "center"
     }
   },
   {
     label: "排序",
-    prop: "sort_no"
+    prop: "sort_no",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "创建时间",
     prop: "createtime",
     width: "160",
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   },
   {
@@ -250,7 +268,8 @@ const tableConfig: any = ref([
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   },
   {
@@ -263,7 +282,8 @@ const tableConfig: any = ref([
       }, () => value === '1' ? '正常' : '停用');
     },
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   }
 ]);
@@ -683,25 +703,17 @@ const handleDelete = async () => {
     });
 
     // 批量删除选中的玩法类型
-    const deletePromises = multipleSelection.value.map(item =>
-      deleteGamePlayType({ id: item.id })
-    );
+    const ids = multipleSelection.value.map(item => item.id).join(",");
+    const res = await deleteBatchGamePlayType({ ids });
 
-    const results = await Promise.all(deletePromises);
-    
-    // 检查是否全部成功
-    const failedCount = results.filter(res => res.code !== 0).length;
-    
-    if (failedCount === 0) {
+    if (res.code === 0) {
       message("删除成功", { type: "success" });
       // 清空选中数据
       multipleSelection.value = [];
       // 刷新列表
       getList();
     } else {
-      message(`删除失败 ${failedCount} 条数据`, { type: "error" });
-      // 即使有失败，也刷新列表
-      getList();
+      message(res.msg || "删除失败", { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
@@ -766,9 +778,8 @@ const exportJson = () => {
 <template>
   <div class="game-play-type-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
-        v-show="showSearch"
         v-model="searchData"
         :columns="searchColumns"
         label-width="80"

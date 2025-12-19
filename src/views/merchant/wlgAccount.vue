@@ -14,13 +14,13 @@ import {
   getCurrencyList,
   addWlgAccount,
   editWlgAccount,
-  deleteWlgAccount,
+  deleteBatchWlgAccount,
+  unbindBatchWlgAccount,
   type WlgAccountListParams,
   type WlgAccountItem,
   type CurrencyItem,
   type AddWlgAccountParams,
-  type EditWlgAccountParams,
-  type DeleteWlgAccountParams
+  type EditWlgAccountParams
 } from "@/api/game";
 import { ElMessageBox, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElRadioGroup, ElRadio } from "element-plus";
 import Upload from "~icons/ep/upload";
@@ -465,7 +465,10 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    prop: "id"
+    prop: "id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "钱包类型",
@@ -475,7 +478,10 @@ const tableConfig: any = ref([
         type: value === 1 ? "success" : "warning"
       }, () => value === 1 ? "单一模式" : value === 2 ? "转账模式" : value);
     },
-    width: 100
+    width: 100,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "账户类型",
@@ -485,7 +491,10 @@ const tableConfig: any = ref([
         type: value === 1 ? "success" : "warning"
       }, () => value === 1 ? "正式账号" : value === 2 ? "测试账号" : value);
     },
-    width: 100
+    width: 100,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "币种",
@@ -493,12 +502,18 @@ const tableConfig: any = ref([
     render: (value: number) => {
       const currency = currencyOptions.value.find(item => item.value === value);
       return currency ? currency.label : value;
+    },
+    tableColumnProps: {
+      align: "center"
     }
   },
   {
     label: "总社名称",
     prop: "dealer_name",
-    width: 160
+    width: 160,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "绑定商户",
@@ -507,67 +522,104 @@ const tableConfig: any = ref([
       // TODO: 绑定商户字段需要从其他接口获取，暂时显示空
       return h("span", "SB商户");
     },
-    width: 140
+    width: 140,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "总社ID",
-    prop: "dealer_id"
+    prop: "dealer_id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "代理ID",
-    prop: "agent_id"
+    prop: "agent_id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "API密钥",
     prop: "key",
-    width: 280
+    width: 280,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "API地址",
     prop: "api_host",
-    width: 220
+    width: 220,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "总社账号",
     prop: "dealer_account",
-    width: 140
+    width: 140,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "总社密码",
     prop: "dealer_pwd",
-    width: 160
+    width: 160,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "代理账号",
     prop: "agent_account",
-    width: 140
+    width: 140,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "代理密码",
     prop: "agent_pwd",
-    width: 160
+    width: 160,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "总社后台",
     prop: "sn_url",
-    width: 220
+    width: 220,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "代理后台",
     prop: "agent_url",
-    width: 220
+    width: 220,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "备注",
     prop: "remark",
-    width: 160
+    width: 160,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "创建时间",
     prop: "createtime",
     width: "160",
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   },
   {
@@ -575,7 +627,8 @@ const tableConfig: any = ref([
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
-      sortable: true
+      sortable: true,
+      align: "center"
     }
   },
   {
@@ -588,7 +641,8 @@ const tableConfig: any = ref([
     },
     tableColumnProps: {
        sortable: true,
-       fixed: "right"
+       fixed: "right",
+       align: "center"
     }
   }
 ]);
@@ -986,25 +1040,17 @@ const handleDelete = async () => {
     });
 
     // 批量删除选中的账号
-    const deletePromises = multipleSelection.value.map(item =>
-      deleteWlgAccount({ id: item.id })
-    );
+    const ids = multipleSelection.value.map(item => item.id).join(",");
+    const res = await deleteBatchWlgAccount({ ids });
 
-    const results = await Promise.all(deletePromises);
-    
-    // 检查是否全部成功
-    const failedCount = results.filter(res => res.code !== 0).length;
-    
-    if (failedCount === 0) {
+    if (res.code === 0) {
       message("删除成功", { type: "success" });
       // 清空选中数据
       multipleSelection.value = [];
       // 刷新列表
       getList();
     } else {
-      message(`删除失败 ${failedCount} 条数据`, { type: "error" });
-      // 即使有失败，也刷新列表
-      getList();
+      message(res.msg || "删除失败", { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
@@ -1015,13 +1061,39 @@ const handleDelete = async () => {
 };
 
 // 解绑商户
-const handleUnbindMerchant = () => {
+const handleUnbindMerchant = async () => {
   if (!multipleSelection.value.length) {
     message("请先选择要解绑的数据！", { type: "warning" });
     return;
   }
-  message("解绑商户功能待实现", { type: "info" });
-  // TODO: 实现解绑商户功能
+
+  try {
+    await ElMessageBox.confirm("是否确定解绑商户?", "解绑商户", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      draggable: true,
+      type: "warning"
+    });
+
+    // 批量解绑选中的账号
+    const ids = multipleSelection.value.map(item => item.id).join(",");
+    const res = await unbindBatchWlgAccount({ ids });
+
+    if (res.code === 0) {
+      message("解绑成功", { type: "success" });
+      // 清空选中数据
+      multipleSelection.value = [];
+      // 刷新列表
+      getList();
+    } else {
+      message(res.msg || "解绑失败", { type: "error" });
+    }
+  } catch (error: any) {
+    if (error !== "cancel") {
+      console.error("解绑失败:", error);
+      message(error?.message || "解绑失败", { type: "error" });
+    }
+  }
 };
 
 // 导出到excel
@@ -1085,9 +1157,8 @@ const exportJson = () => {
 <template>
   <div class="wlg-account-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
-        v-show="showSearch"
         v-model="searchData"
         :columns="searchColumns"
         label-width="80"

@@ -77,15 +77,15 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
         .then(res => {
           if (res.code === 0) {
             message(res.msg || transformI18n($t("login.passwordRecovery.resetSuccess")), { type: "success" });
-            // 重置状态并返回登录页
-            setTimeout(() => {
-              useUserStoreHook().SET_CURRENTPAGE(0);
-              useUserStoreHook().SET_USERNAME("");
+      // 重置状态并返回登录页
+      setTimeout(() => {
+        useUserStoreHook().SET_CURRENTPAGE(0);
+        useUserStoreHook().SET_USERNAME("");
               useUserStoreHook().SET_EMAIL_CODE("");
               useUserStoreHook().SET_GOOGLE_CODE("");
               useUserStoreHook().SET_RECOVERY_EMAIL("");
               useUserStoreHook().SET_GOOGLE_STATUS(0);
-            }, 1500);
+      }, 1500);
           } else {
             message(res.msg || transformI18n($t("login.passwordRecovery.resetFailed")), { type: "error" });
           }

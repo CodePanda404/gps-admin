@@ -29,7 +29,7 @@ const route = useRoute();
 const router = useRouter();
 
 // 获取路由参数
-const playerId = computed(() => (route.query.playerId as string) || "");
+const userId = computed(() => (route.query.userId as string) || "");
 
 // 国际化
 const { t } = useI18n();
@@ -204,6 +204,7 @@ type TableDepositWithdrawalItem = {
   beforeAmount: string; // 变动前余额
   afterAmount: string; // 变动后余额
   createTime: string; // 创建时间
+  remark: string; // 备注
 };
 
 // 多选选中数据
@@ -216,37 +217,69 @@ const { tableData, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    prop: "id"
+    prop: "id",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "用户ID",
-    prop: "userId"
+    prop: "userId",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "用户名",
     prop: "name",
-    width: 220
+    width: 220,
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "类型",
-    prop: "type"
+    prop: "type",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "变动游戏币",
-    prop: "changedAmount"
+    prop: "changedAmount",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "变动前",
-    prop: "beforeAmount"
+    prop: "beforeAmount",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "变动后",
-    prop: "afterAmount"
+    prop: "afterAmount",
+    tableColumnProps: {
+      align: "center"
+    }
   },
   {
     label: "创建时间",
     prop: "createTime",
-    width: 160
+    width: 160,
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "备注",
+    prop: "remark",
+    width: 200,
+    tableColumnProps: {
+      align: "center"
+    }
   }
 ]);
 
@@ -289,7 +322,8 @@ const getList = async () => {
         changedAmount: item.money,
         beforeAmount: item.before,
         afterAmount: item.after,
-        createTime: item.createtime
+        createTime: item.createtime,
+        remark: (item as any).remark || ""
       }));
       total.value = res.data.total;
     } else {
@@ -321,20 +355,20 @@ const handlePageChange = () => {
 
 // 初始化加载数据
 onMounted(() => {
-  // 如果URL中有playerId，设置到搜索表单的ID字段
-  if (playerId.value) {
-    searchData.value.id = playerId.value;
+  // 如果URL中有userId，设置到搜索表单的user_id字段
+  if (userId.value) {
+    searchData.value.user_id = userId.value;
     pageInfo.value.page = 1;
   }
   getList();
 });
 
-// 监听路由参数变化，自动设置搜索表单的ID
+// 监听路由参数变化，自动设置搜索表单的user_id
 watch(
-  () => route.query.playerId,
-  (newPlayerId) => {
-    if (newPlayerId && typeof newPlayerId === "string") {
-      searchData.value.id = newPlayerId;
+  () => route.query.userId,
+  (newUserId) => {
+    if (newUserId && typeof newUserId === "string") {
+      searchData.value.user_id = newUserId;
       // 重置到第一页并重新获取数据
       pageInfo.value.page = 1;
       getList();
@@ -388,9 +422,8 @@ const exportJson = () => {
 <template>
   <div class="deposit-withdrawal-details-container">
     <!-- 搜索表单 -->
-    <el-card class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
-        v-show="showSearch"
         v-model="searchData"
         :columns="searchColumns"
         label-width="80"
