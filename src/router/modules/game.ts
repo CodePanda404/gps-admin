@@ -35,9 +35,9 @@ export default {
       }
     },
     {
-      path: "/game/games",
-      name: "Games",
-      component: () => import("@/views/game/games.vue"),
+      path: "/game/game-list",
+      name: "GameList",
+      component: () => import("@/views/game/gameList.vue"),
       meta: {
         title: "游戏列表",
         showLink: true,

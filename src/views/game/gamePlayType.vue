@@ -220,7 +220,8 @@ const tableConfig: any = ref([
     prop: "name",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 140
   },
   {
     label: "玩法缩写",
@@ -366,6 +367,9 @@ const handlePageChange = () => {
 
 // 初始化加载数据
 getList();
+
+// 操作按钮 loading 状态
+const deleteLoading = ref(false);
 
 // 新增玩法类型对话框相关
 const showAddDialog = ref(false);
@@ -702,23 +706,30 @@ const handleDelete = async () => {
       type: "warning"
     });
 
-    // 批量删除选中的玩法类型
-    const ids = multipleSelection.value.map(item => item.id).join(",");
-    const res = await deleteBatchGamePlayType({ ids });
+    deleteLoading.value = true;
+    try {
+      // 批量删除选中的玩法类型
+      const ids = multipleSelection.value.map(item => item.id).join(",");
+      const res = await deleteBatchGamePlayType({ ids });
 
-    if (res.code === 0) {
-      message("删除成功", { type: "success" });
-      // 清空选中数据
-      multipleSelection.value = [];
-      // 刷新列表
-      getList();
-    } else {
-      message(res.msg || "删除失败", { type: "error" });
+      if (res.code === 0) {
+        message("删除成功", { type: "success" });
+        // 清空选中数据
+        multipleSelection.value = [];
+        // 刷新列表
+        getList();
+      } else {
+        message(res.msg || "删除失败", { type: "error" });
+      }
+    } catch (error: any) {
+      console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
+    } finally {
+      deleteLoading.value = false;
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
     }
   }
 };
@@ -830,6 +841,7 @@ const exportJson = () => {
             @click="handleDelete" 
             size="default"
             :disabled="multipleSelection.length === 0"
+            :loading="deleteLoading"
           >
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>

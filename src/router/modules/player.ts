@@ -63,7 +63,7 @@ export default {
             showLink: true,
             showParent: true
           }
-        }
+      }
       ]
     }
   ]

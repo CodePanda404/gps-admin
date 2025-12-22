@@ -330,7 +330,7 @@ function addAsyncRoutes(arrRoutes: Array<RouteRecordRaw>) {
         ? modulesRoutesKeys.findIndex(ev => ev.includes(v.component as any))
         : modulesRoutesKeys.findIndex(ev => ev.includes(v.path));
       if (index !== -1) {
-        v.component = modulesRoutes[modulesRoutesKeys[index]];
+      v.component = modulesRoutes[modulesRoutesKeys[index]];
       } else {
         console.warn(`路由组件未找到: path=${v.path}, component=${v.component}`);
       }

@@ -241,33 +241,33 @@ function resolvePath(routePath) {
         <SidebarExtraIcon v-if="!isCollapse" :extraIcon="item.meta.extraIcon" />
       </div>
       <div v-else style="width: 100%; display: flex; align-items: center;">
-        <div
-          v-if="toRaw(item.meta.icon)"
-          :style="getSubMenuIconStyle"
-          class="sub-menu-icon"
-        >
-          <component :is="useRenderIcon(item.meta && toRaw(item.meta.icon))" />
-        </div>
-        <ReText
-          v-if="
-            layout === 'mix' && toRaw(item.meta.icon)
-              ? !isCollapse || item?.pathList?.length !== 2
-              : !(
-                  layout === 'vertical' &&
-                  isCollapse &&
-                  toRaw(item.meta.icon) &&
-                  item.parentId === null
-                )
-          "
-          :tippyProps="{
-            offset: [0, -10],
-            theme: tooltipEffect
-          }"
-          :class="textClass"
-        >
-          {{ transformI18n(item.meta.title) }}
-        </ReText>
-        <SidebarExtraIcon v-if="!isCollapse" :extraIcon="item.meta.extraIcon" />
+      <div
+        v-if="toRaw(item.meta.icon)"
+        :style="getSubMenuIconStyle"
+        class="sub-menu-icon"
+      >
+        <component :is="useRenderIcon(item.meta && toRaw(item.meta.icon))" />
+      </div>
+      <ReText
+        v-if="
+          layout === 'mix' && toRaw(item.meta.icon)
+            ? !isCollapse || item?.pathList?.length !== 2
+            : !(
+                layout === 'vertical' &&
+                isCollapse &&
+                toRaw(item.meta.icon) &&
+                item.parentId === null
+              )
+        "
+        :tippyProps="{
+          offset: [0, -10],
+          theme: tooltipEffect
+        }"
+        :class="textClass"
+      >
+        {{ transformI18n(item.meta.title) }}
+      </ReText>
+      <SidebarExtraIcon v-if="!isCollapse" :extraIcon="item.meta.extraIcon" />
       </div>
     </template>
 

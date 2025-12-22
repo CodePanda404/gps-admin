@@ -336,6 +336,9 @@ const handlePageChange = () => {
 // 初始化加载数据
 getList();
 
+// 操作按钮 loading 状态
+const deleteLoading = ref(false);
+
 // 新增币种对话框相关
 const showAddDialog = ref(false);
 const addFormRef = ref();
@@ -510,31 +513,38 @@ const handleDelete = async () => {
       type: "warning"
     });
 
-    // 批量删除选中的币种
-    const deletePromises = multipleSelection.value.map(item =>
-      deleteCurrency({ id: item.id })
-    );
+    deleteLoading.value = true;
+    try {
+      // 批量删除选中的币种
+      const deletePromises = multipleSelection.value.map(item =>
+        deleteCurrency({ id: item.id })
+      );
 
-    const results = await Promise.all(deletePromises);
-    
-    // 检查是否全部成功
-    const failedCount = results.filter(res => res.code !== 0).length;
-    
-    if (failedCount === 0) {
-      message("删除成功", { type: "success" });
-      // 清空选中数据
-      multipleSelection.value = [];
-      // 刷新列表
-      getList();
-    } else {
-      message(`删除失败 ${failedCount} 条数据`, { type: "error" });
-      // 即使有失败，也刷新列表
-      getList();
+      const results = await Promise.all(deletePromises);
+      
+      // 检查是否全部成功
+      const failedCount = results.filter(res => res.code !== 0).length;
+      
+      if (failedCount === 0) {
+        message("删除成功", { type: "success" });
+        // 清空选中数据
+        multipleSelection.value = [];
+        // 刷新列表
+        getList();
+      } else {
+        message(`删除失败 ${failedCount} 条数据`, { type: "error" });
+        // 即使有失败，也刷新列表
+        getList();
+      }
+    } catch (error: any) {
+      console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
+    } finally {
+      deleteLoading.value = false;
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
     }
   }
 };
@@ -641,6 +651,7 @@ const exportJson = () => {
             @click="handleDelete" 
             size="default"
             :disabled="multipleSelection.length === 0"
+            :loading="deleteLoading"
           >
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>

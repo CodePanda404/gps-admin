@@ -88,7 +88,7 @@ const searchColumns: PlusColumn[] = [
       placeholder: t("player.transfer.namePlaceholder")
     }))
   },
-   {
+  {
     label: "商户ID",
     renderLabel: () => t("player.transfer.admin_id"),
     prop: "admin_id",
@@ -581,16 +581,16 @@ const handleStatusChange = async (params: {
       // 失败恢复 - 通过更新 tableData 中对应的项来触发响应式更新
       tableData.value[index] = {
         ...tableData.value[index],
-        status: originalStatus
-      };
+          status: originalStatus
+        };
       message(res.msg || "玩家状态切换失败", { type: "error" });
     }
   } catch (error: any) {
     //取消或出错恢复 - 通过更新 tableData 中对应的项来触发响应式更新
     tableData.value[index] = {
       ...tableData.value[index],
-      status: originalStatus
-    };
+        status: originalStatus
+      };
     if (error !== "cancel") {
       console.error("状态切换失败:", error);
       message(error?.message || "状态切换失败", { type: "error" });
@@ -701,38 +701,38 @@ const exportJson = () => {
 
 <template>
   <div class="transfer-container">
-    <!-- 搜索表单 -->
+  <!-- 搜索表单 -->
     <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
-      <PlusSearch
-        v-model="searchData"
-        :columns="searchColumns"
-        label-width="80"
-        label-position="right"
-        :has-unfold="false"
-        :searchText="t('player.transfer.search')"
-        :resetText="t('player.transfer.reset')"
-        @search="handleSearch"
-        @reset="handleRest"
-      />
-    </el-card>
-    <!-- 表格 -->
-    <el-card class="table-card" shadow="never" style="margin: 20px">
-      <PlusTable
-        v-loading="loadingStatus"
-        :columns="tableConfig"
-        :table-data="tableData"
+    <PlusSearch
+      v-model="searchData"
+      :columns="searchColumns"
+      label-width="80"
+      label-position="right"
+      :has-unfold="false"
+      :searchText="t('player.transfer.search')"
+      :resetText="t('player.transfer.reset')"
+      @search="handleSearch"
+      @reset="handleRest"
+    />
+  </el-card>
+  <!-- 表格 -->
+  <el-card class="table-card" shadow="never" style="margin: 20px">
+    <PlusTable
+      v-loading="loadingStatus"
+      :columns="tableConfig"
+      :table-data="tableData"
         :stripe="true"
-        :is-selection="true"
-        :action-bar="{
-          buttons,
-          width: '220px',
-          label: t('player.transfer.action')
-        }"
+      :is-selection="true"
+      :action-bar="{
+        buttons,
+        width: '220px',
+        label: t('player.transfer.action')
+      }"
         width="100%"
         height="90%"
-        @selection-change="handleSelectionChange"
-        @formChange="handleStatusChange"
-      >
+      @selection-change="handleSelectionChange"
+      @formChange="handleStatusChange"
+    >
         <!-- 工具栏 -->
         <template #density-icon>
           <el-tooltip content="密度" placement="top">
@@ -747,7 +747,7 @@ const exportJson = () => {
         </template>
         <template #column-settings-icon>
           <el-tooltip content="列设置" placement="top">
-            <el-icon
+          <el-icon
               :size="18"
               style="margin-right: 5px; cursor: pointer; outline: none"
               color="#606266"
@@ -784,34 +784,34 @@ const exportJson = () => {
                 <el-icon
                   :size="18"
                   style="margin-right: 15px; cursor: pointer; outline: none"
-                  color="#606266"
-                >
-                  <component :is="Upload" />
-                </el-icon>
-                <template #dropdown>
-                  <el-dropdown-menu>
-                    <el-dropdown-item class="export-active" @click="exportJson"
-                      >Json</el-dropdown-item
-                    >
+            color="#606266"
+          >
+            <component :is="Upload" />
+          </el-icon>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item class="export-active" @click="exportJson"
+                >Json</el-dropdown-item
+              >
                     <el-dropdown-item @click="exportExcel"
                       >Excel</el-dropdown-item
                     >
-                  </el-dropdown-menu>
-                </template>
-              </el-dropdown>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
             </span>
           </el-tooltip>
-        </template>
-      </PlusTable>
-      <PlusPagination
-        v-model="pageInfo"
-        :total="total"
-        :small="true"
-        :page-sizes="[10, 20, 50, 100]"
-        :layout="'total, sizes, prev, pager, next, jumper'"
-        @change="handlePageChange"
-      />
-    </el-card>
+      </template>
+    </PlusTable>
+    <PlusPagination
+      v-model="pageInfo"
+      :total="total"
+      :small="true"
+      :page-sizes="[10, 20, 50, 100]"
+      :layout="'total, sizes, prev, pager, next, jumper'"
+      @change="handlePageChange"
+    />
+  </el-card>
   </div>
 </template>
 

@@ -2,7 +2,7 @@
 import { ref, computed, h } from "vue";
 import dayjs from "dayjs";
 defineOptions({
-  name: "GameBrand"
+  name: "GameList"
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
@@ -10,20 +10,20 @@ import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import { ElMessageBox, ElTag, ElTooltip, ElDialog, ElForm, ElFormItem, ElInput, ElSelect, ElOption, ElRadioGroup, ElRadio, ElInputNumber, ElUpload, ElDropdown, ElDropdownMenu, ElDropdownItem } from "element-plus";
 import {
-  getGameBrandList,
+  getGameList,
   getSupplierList,
-  addGameBrand,
-  editGameBrand,
-  deleteBatchGameBrand,
-  syncGameBrand,
-  syncGameBrandPics,
-  testGameBrand,
+  getCurrencyList,
+  addGame,
+  editGame,
+  deleteBatchGame,
+  testGames,
   uploadImage,
-  type GameBrandListParams,
-  type GameBrandItem,
+  type GameListParams,
+  type GameListItem,
   type SupplierItem,
-  type AddGameBrandParams,
-  type EditGameBrandParams
+  type CurrencyItem,
+  type AddGameParams,
+  type EditGameParams
 } from "@/api/game";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
@@ -37,6 +37,8 @@ import More from "~icons/ep/more";
 /*  -----搜索表单相关-----  */
 // 供应商列表（用于下拉选择）
 const supplierOptions = ref<Array<{ label: string; value: number }>>([]);
+// 币种列表（用于下拉选择）
+const currencyOptions = ref<Array<{ label: string; value: number }>>([]);
 
 // 获取供应商列表
 const fetchSupplierList = async () => {
@@ -53,23 +55,44 @@ const fetchSupplierList = async () => {
   }
 };
 
-// 初始化时获取供应商列表
+// 获取币种列表
+const fetchCurrencyList = async () => {
+  try {
+    const res = await getCurrencyList({ pageSize: 1000 });
+    if (res.code === 0 && res.data && res.data.rows) {
+      currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取币种列表失败:", error);
+  }
+};
+
+// 初始化时获取列表
 fetchSupplierList();
+fetchCurrencyList();
 
 // 搜索表单数据
 const searchData = ref({
   id: "",
   wallet_type: "",
-  name: "",
-  type: "",
-  shortname: "",
-  game_count: "",
   provider: "",
-  product_id: "",
+  game_id: "",
+  game_code: "",
+  name: "",
+  name_cn: "",
+  common_name: "",
+  product_code: "",
+  common_content: "",
+  type_id: "",
+  is_local: "",
+  has_pic: "",
   currency: "",
-  type_code: "",
-  status: "",
-  updateTime: null as string[] | null
+  createTime: null as string[] | null,
+  updateTime: null as string[] | null,
+  status: ""
 });
 // 搜索表单显示控制
 const showSearch = ref(true);
@@ -92,51 +115,10 @@ const searchColumns: PlusColumn[] = [
       placeholder: "请选择钱包类型"
     })),
     options: [
-      {
-        label: "全部",
-        value: ""
-      },
-      {
-        label: "单一模式",
-        value: "1"
-      },
-      {
-        label: "转账模式",
-        value: "2"
-      }
+      { label: "全部", value: "" },
+      { label: "单一模式", value: "1" },
+      { label: "转账模式", value: "2" }
     ]
-  },
-  {
-    label: "产品名称",
-    prop: "name",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入产品名称"
-    }))
-  },
-  {
-    label: "类型",
-    prop: "type",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入类型"
-    }))
-  },
-  {
-    label: "缩写",
-    prop: "shortname",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入缩写"
-    }))
-  },
-  {
-    label: "游戏数量",
-    prop: "game_count",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入游戏数量"
-    }))
   },
   {
     label: "供应商",
@@ -147,65 +129,175 @@ const searchColumns: PlusColumn[] = [
       filterable: true
     })),
     options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
+      { label: "全部", value: "" },
       ...supplierOptions.value.map(item => ({
         label: item.label,
-        value: item.value.toString()
+        value: item.label
       }))
     ])
   },
   {
+    label: "游戏ID",
+    prop: "game_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入游戏ID"
+    }))
+  },
+  {
+    label: "游戏code",
+    prop: "game_code",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入游戏code"
+    }))
+  },
+  {
+    label: "游戏英文名称",
+    prop: "name",
+    valueType: "copy",
+    width: 180,
+    fieldProps: computed(() => ({
+      placeholder: "请输入游戏英文名称"
+    }))
+  },
+  {
+    label: "游戏中文名称",
+    prop: "name_cn",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入游戏中文名称"
+    }))
+  },
+  {
+    label: "产品缩写",
+    prop: "common_name",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入产品缩写"
+    }))
+  },
+  {
     label: "产品ID",
-    prop: "product_id",
+    prop: "product_code",
     valueType: "copy",
     fieldProps: computed(() => ({
       placeholder: "请输入产品ID"
     }))
   },
   {
-    label: "币种",
-    prop: "currency",
+    label: "所属玩法",
+    prop: "common_content",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入币种"
+      placeholder: "请输入所属玩法"
     }))
   },
   {
-    label: "类型代码",
-    prop: "type_code",
+    label: "所属分类",
+    prop: "type_id",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择所属分类",
+      filterable: true
+    })),
+    options: [
+      { label: "全部", value: "" }
+      // TODO: 需要获取分类列表
+    ]
+  },
+  {
+    label: "标签",
+    prop: "tag",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入类型代码"
+      placeholder: "请输入标签"
     }))
   },
   {
-    label: "状态",
-    prop: "status",
+    label: "有无图片",
+    prop: "has_pic",
     valueType: "select",
     fieldProps: computed(() => ({
       placeholder: "请选择"
     })),
     options: [
-      {
-        label: "全部",
-        value: ""
-      },
-      {
-        label: "正常",
-        value: "1"
-      },
-      {
-        label: "隐藏",
-        value: "-1"
-      },
-      {
-        label: "维护",
-        value: "0"
-      }
+      { label: "全部", value: "" },
+      { label: "有", value: "1" },
+      { label: "无", value: "0" }
     ]
+  },
+  {
+    label: "支持币种",
+    prop: "currency",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入支持币种"
+    }))
+  },
+  {
+    label: "已停用币种",
+    prop: "disabled_currency",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入已停用币种"
+    }))
+  },
+  {
+    label: "创建时间",
+    prop: "createTime",
+    valueType: "date-picker",
+    fieldProps: computed(() => ({
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      startPlaceholder: "开始日期时间",
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
+    }))
   },
   {
     label: "更新时间",
@@ -259,29 +351,22 @@ const searchColumns: PlusColumn[] = [
               end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
             ];
           }
-        },
-        {
-          text: "本月",
-          value: () => {
-            const now = dayjs();
-            return [
-              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
-              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "上月",
-          value: () => {
-            const lastMonth = dayjs().subtract(1, "month");
-            return [
-              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
-              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
         }
       ]
     }))
+  },
+  {
+    label: "状态",
+    prop: "status",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择状态"
+    })),
+    options: [
+      { label: "全部", value: "" },
+      { label: "开启", value: "1" },
+      { label: "关闭", value: "0" }
+    ]
   }
 ];
 
@@ -296,23 +381,28 @@ const handleRest = () => {
   searchData.value = {
     id: "",
     wallet_type: "",
-    name: "",
-    type: "",
-    shortname: "",
-    game_count: "",
     provider: "",
-    product_id: "",
+    game_id: "",
+    game_code: "",
+    name: "",
+    name_cn: "",
+    common_name: "",
+    product_code: "",
+    common_content: "",
+    type_id: "",
+    is_local: "",
+    has_pic: "",
     currency: "",
-    type_code: "",
-    status: "",
-    updateTime: null
+    createTime: null,
+    updateTime: null,
+    status: ""
   };
   pageInfo.value.page = 1;
   getList();
 };
 
 // 表格数据类型
-type TableRow = GameBrandItem;
+type TableRow = GameListItem;
 
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
@@ -327,7 +417,8 @@ const tableConfig: any = ref([
     prop: "id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "钱包类型",
@@ -343,20 +434,87 @@ const tableConfig: any = ref([
     width: 100
   },
   {
-    label: "产品名称",
+    label: "供应商",
+    prop: "provider",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 120
+  },
+  {
+    label: "游戏ID",
+    prop: "game_id",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 160
+  },
+  {
+    label: "游戏code",
+    prop: "game_code",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 120
+  },
+  {
+    label: "游戏英文名称",
     prop: "name",
     tableColumnProps: {
       align: "center"
     },
-    width: 200
+    width: 180
   },
   {
-    label: "产品名称 (原厂商)",
-    prop: "name_original",
+    label: "游戏中文名称",
+    prop: "name_cn",
     tableColumnProps: {
       align: "center"
     },
-    width: 200
+    width: 180
+  },
+  {
+    label: "产品缩写",
+    prop: "common_name",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 120
+  },
+  {
+    label: "产品ID",
+    prop: "product_code",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 120
+  },
+  {
+    label: "所属玩法",
+    prop: "common_content",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 140
+  },
+  {
+    label: "所属分类",
+    prop: "type_id",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 120
+  },
+  {
+    label: "标签",
+    prop: "tag",
+    render: (value: string) => {
+      return value || "-";
+    },
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 120
   },
   {
     label: "产品主图",
@@ -365,52 +523,73 @@ const tableConfig: any = ref([
     fieldProps: {
       fit: "cover"
     },
+    fieldSlots: {
+      error: () => (h("div", ""))
+    },
     tableColumnProps: {
       align: "center"
     },
     width: 100
   },
   {
-    label: "类型",
-    prop: "category",
+    label: "演示站游戏图",
+    prop: "web_pic",
+    valueType: "img",
+    fieldProps: {
+      fit: "cover"
+    },
+    render: (value: string) => {
+      if (!value) return "-";
+      return h("img", { src: value, style: { width: "50px", height: "50px", objectFit: "cover" } });
+    },
     tableColumnProps: {
       align: "center"
     },
-    width: 220
+    width: 120
   },
   {
-    label: "缩写",
-    prop: "shortname",
+    label: "webp游戏图",
+    prop: "webp_pic",
+    valueType: "img",
+    fieldProps: {
+      fit: "cover"
+    },
+    render: (value: string) => {
+      if (!value) return "-";
+      return h("img", { src: value, style: { width: "50px", height: "50px", objectFit: "cover" } });
+    },
     tableColumnProps: {
       align: "center"
     },
-    width: 160
+    width: 120
   },
   {
-    label: "游戏数量",
-    prop: "game_count",
+    label: "图片存储",
+    prop: "is_local",
+    render: (value: string | number) => {
+      if (value === "1" || value === 1) return "本地";
+      return "远程";
+    },
     tableColumnProps: {
       align: "center"
     },
     width: 100
   },
   {
-    label: "供应商",
-    prop: "provider",
+    label: "有无图片",
+    prop: "has_pic",
+    render: (value: string | number, row: TableRow) => {
+      // 根据是否有 pic 字段判断
+      if (row.pic) return "有";
+      return "无";
+    },
     tableColumnProps: {
       align: "center"
     },
-    width: 160
+    width: 100
   },
   {
-    label: "产品ID",
-    prop: "product_id",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "币种",
+    label: "支持币种",
     prop: "currency",
     render: (value: string) => {
       if (!value) return "-";
@@ -446,66 +625,54 @@ const tableConfig: any = ref([
     width: 430
   },
   {
-    label: "亚洲成本价",
-    prop: "cost_price_asia",
+    label: "已停用币种",
+    prop: "disabled_currency",
+    render: (value: string) => {
+      if (!value) return "-";
+      // 将币种字符串按逗号分割
+      const currencies = value.split(",").map((c: string) => c.trim()).filter((c: string) => c);
+      const maxDisplay = 10;
+      
+      if (currencies.length <= maxDisplay) {
+        return h("span", currencies.join(", "));
+      } else {
+        const displayCurrencies = currencies.slice(0, maxDisplay);
+        const displayText = displayCurrencies.join(", ") + "...";
+        const fullText = currencies.join(", ");
+        
+        return h(
+          ElTooltip,
+          {
+            content: fullText,
+            placement: "top",
+            effect: "dark"
+          },
+          {
+            default: () => h("span", { style: { cursor: "help" } }, displayText)
+          }
+        );
+      }
+    },
     tableColumnProps: {
       align: "center"
     },
-    width: 120
+    width: 300
   },
   {
-    label: "欧洲成本价",
-    prop: "cost_price",
+    label: "创建时间",
+    prop: "createtime",
     tableColumnProps: {
-      align: "center"
+      align: "center",
+      sortable: true
     },
-    width: 120
-  },
-  {
-    label: "亚洲市场价",
-    prop: "market_price_asia",
-    tableColumnProps: {
-      align: "center"
-    },
-    width: 120
-  },
-  {
-    label: "欧洲市场价",
-    prop: "market_price",
-    tableColumnProps: {
-      align: "center"
-    },
-    width: 120
-  },
-  {
-    label: "排序",
-    prop: "sort_no",
-    tableColumnProps: {
-      align: "center"
-    },
-    width: 100
-  },
-  {
-    label: "类型代码",
-    prop: "type_code",
-    tableColumnProps: {
-      align: "center"
-    },
-    width: 100
-  },
-  {
-    label: "类型说明",
-    prop: "type_description",
-    tableColumnProps: {
-      align: "center"
-    },
-    minWidth: 180
+    width: 160
   },
   {
     label: "更新时间",
-    prop: "update_time",
+    prop: "updatetime",
     tableColumnProps: {
-      align: "center"
+      align: "center",
+      sortable: true
     },
     width: 160
   },
@@ -518,12 +685,9 @@ const tableConfig: any = ref([
       if (value === "1") {
         type = "success";
         label = "开启";
-      } else if (value === "-1") {
-        type = "warning";
-        label = "隐藏";
       } else if (value === "0") {
         type = "danger";
-        label = "维护";
+        label = "关闭";
       }
       return h(ElTag, { type }, () => label);
     },
@@ -534,6 +698,7 @@ const tableConfig: any = ref([
     width: 100
   }
 ]);
+
 
 // 表格操作栏按钮定义
 buttons.value = [
@@ -546,17 +711,6 @@ buttons.value = [
     onClick: (params: any) => {
       const row = params.row as TableRow;
       handleEditRow(row);
-    }
-  },
-  {
-    text: "切换状态",
-    code: "switchStatus",
-    props: {
-      type: "primary"
-    },
-    onClick: (params: any) => {
-      const row = params.row as TableRow;
-      handleSwitchStatus(row);
     }
   }
 ];
@@ -571,22 +725,51 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, wallet_type, name, type, shortname, game_count, provider, product_id, currency, type_code, status, updateTime } = searchData.value;
-    const params: GameBrandListParams = {
+    const { 
+      id, 
+      wallet_type, 
+      provider, 
+      game_id, 
+      game_code, 
+      name, 
+      name_cn, 
+      common_name, 
+      product_code, 
+      common_content, 
+      type_id, 
+      is_local, 
+      has_pic, 
+      currency, 
+      createTime, 
+      updateTime, 
+      status 
+    } = searchData.value;
+    
+    const params: GameListParams = {
       pageNumber: page,
       pageSize,
       id: id || undefined,
       wallet_type: wallet_type || undefined,
-      name: name || undefined,
-      type: type || undefined,
-      shortname: shortname || undefined,
-      game_count: game_count || undefined,
       provider: provider || undefined,
-      product_id: product_id || undefined,
+      game_id: game_id || undefined,
+      game_code: game_code || undefined,
+      name: name || undefined,
+      name_cn: name_cn || undefined,
+      common_name: common_name || undefined,
+      product_code: product_code || undefined,
+      common_content: common_content || undefined,
+      type_id: type_id || undefined,
+      is_local: is_local || undefined,
+      has_pic: has_pic || undefined,
       currency: currency || undefined,
-      type_code: type_code || undefined,
       status: status || undefined
     };
+
+    // 处理创建时间范围
+    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
+      params.create_start_time = createTime[0];
+      params.create_end_time = createTime[1];
+    }
 
     // 处理更新时间范围
     if (updateTime && Array.isArray(updateTime) && updateTime.length === 2) {
@@ -594,14 +777,15 @@ const getList = async () => {
       params.update_end_time = updateTime[1];
     }
 
-    const { data } = await getGameBrandList(params);
+    const res = await getGameList(params);
 
-    if (data && data.rows) {
-      tableData.value = data.rows;
-      total.value = data.total;
+    if (res.code === 0 && res.data && res.data.rows) {
+      tableData.value = res.data.rows;
+      total.value = res.data.total;
     } else {
       tableData.value = [];
       total.value = 0;
+      message(res.msg || "获取列表数据失败", { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
@@ -628,52 +812,62 @@ const handlePageChange = () => {
 // 初始化加载数据
 getList();
 
-// 游戏品牌对话框相关（新增和编辑共用）
+// 操作按钮 loading 状态
+const deleteLoading = ref(false);
+const testGameLoading = ref(false);
+const submitLoading = ref(false);
+const switchStatusLoading = ref(false);
+
+// 状态切换对话框相关
+const showStatusDialog = ref(false);
+const statusDialogRow = ref<TableRow | null>(null);
+const statusDialogStatus = ref("1");
+
+// 游戏对话框相关（新增和编辑共用）
 const showDialog = ref(false);
 const isEditMode = ref(false);
 const formRef = ref();
 const formData = ref({
   id: 0,
+  game_id: "",
+  game_code: "",
   name: "",
-  name_original: "",
+  name_cn: "",
   wallet_type: "",
   provider: "",
-  category: "",
-  pic: "",
-  shortname: "",
-  type_code: "",
-  type_desc: "",
+  common_name: "",
   product_code: "",
-  sort_no: 0,
-  cost_price: "",
-  cost_price_asia: "",
-  market_price: "",
-  market_price_asia: "",
+  common_content: "",
+  type_id: "",
   currency: "",
-  syn_currecny_to_games: "1",
+  pic: "",
+  web_pic: "",
+  webp_pic: "",
+  weigh: 0,
+  ranking: 0,
+  fee_rate: "",
+  prize_rate: "",
+  tag: "",
+  pic_text: "",
+  pic_text_status: "0",
+  recommend: "0",
   status: "1"
 });
 const formRules = {
+  game_id: [
+    { required: true, message: "请输入游戏ID", trigger: "blur" }
+  ],
   name: [
-    { required: true, message: "请输入产品名称", trigger: "blur" }
+    { required: true, message: "请输入游戏名称", trigger: "blur" }
   ]
 };
 const imageUrl = ref("");
+const webPicUrl = ref("");
+const webpPicUrl = ref("");
 const uploading = ref(false);
 const imageUploadRef = ref();
-
-// 操作按钮 loading 状态
-const deleteLoading = ref(false);
-const syncGamesLoading = ref(false);
-const syncImagesLoading = ref(false);
-const testGameLoading = ref(false);
-const submitLoading = ref(false); // 表单提交 loading
-const switchStatusLoading = ref(false); // 切换状态 loading
-
-// 状态切换对话框相关
-const showStatusDialog = ref(false);
-const statusDialogRow = ref<TableRow | null>(null);
-const statusDialogStatus = ref("1"); // 默认开启
+const webPicUploadRef = ref();
+const webpPicUploadRef = ref();
 
 // 钱包类型选项
 const walletTypeOptions = [
@@ -698,7 +892,7 @@ const beforeUpload = (file: File) => {
 };
 
 // 处理图片上传
-const handleImageUpload = async (options: any) => {
+const handleImageUpload = async (options: any, type: "pic" | "web_pic" | "webp_pic") => {
   const { file } = options;
   uploading.value = true;
   
@@ -709,8 +903,16 @@ const handleImageUpload = async (options: any) => {
     });
 
     if (res.code === 0) {
-      imageUrl.value = res.data;
-      formData.value.pic = res.data;
+      if (type === "pic") {
+        imageUrl.value = res.data;
+        formData.value.pic = res.data;
+      } else if (type === "web_pic") {
+        webPicUrl.value = res.data;
+        formData.value.web_pic = res.data;
+      } else if (type === "webp_pic") {
+        webpPicUrl.value = res.data;
+        formData.value.webp_pic = res.data;
+      }
       message("图片上传成功", { type: "success" });
     } else {
       message(res.msg || "图片上传失败", { type: "error" });
@@ -724,43 +926,66 @@ const handleImageUpload = async (options: any) => {
 };
 
 // 触发图片上传
-const triggerImageUpload = () => {
-  const uploadEl = imageUploadRef.value?.$el?.querySelector('input[type="file"]');
+const triggerImageUpload = (type: "pic" | "web_pic" | "webp_pic") => {
+  let uploadRef;
+  if (type === "pic") {
+    uploadRef = imageUploadRef.value;
+  } else if (type === "web_pic") {
+    uploadRef = webPicUploadRef.value;
+  } else {
+    uploadRef = webpPicUploadRef.value;
+  }
+  const uploadEl = uploadRef?.$el?.querySelector('input[type="file"]');
   if (uploadEl) {
     uploadEl.click();
   }
 };
 
 // 移除图片
-const handleRemoveImage = () => {
-  imageUrl.value = "";
-  formData.value.pic = "";
+const handleRemoveImage = (type: "pic" | "web_pic" | "webp_pic") => {
+  if (type === "pic") {
+    imageUrl.value = "";
+    formData.value.pic = "";
+  } else if (type === "web_pic") {
+    webPicUrl.value = "";
+    formData.value.web_pic = "";
+  } else if (type === "webp_pic") {
+    webpPicUrl.value = "";
+    formData.value.webp_pic = "";
+  }
 };
 
 // 重置表单数据
 const resetFormData = () => {
   formData.value = {
     id: 0,
+    game_id: "",
+    game_code: "",
     name: "",
-    name_original: "",
+    name_cn: "",
     wallet_type: "",
     provider: "",
-    category: "",
-    pic: "",
-    shortname: "",
-    type_code: "",
-    type_desc: "",
+    common_name: "",
     product_code: "",
-    sort_no: 0,
-    cost_price: "",
-    cost_price_asia: "",
-    market_price: "",
-    market_price_asia: "",
+    common_content: "",
+    type_id: "",
     currency: "",
-    syn_currecny_to_games: "1",
+    pic: "",
+    web_pic: "",
+    webp_pic: "",
+    weigh: 0,
+    ranking: 0,
+    fee_rate: "",
+    prize_rate: "",
+    tag: "",
+    pic_text: "",
+    pic_text_status: "0",
+    recommend: "0",
     status: "1"
   };
   imageUrl.value = "";
+  webPicUrl.value = "";
+  webpPicUrl.value = "";
 };
 
 // 打开新增对话框
@@ -786,72 +1011,72 @@ const handleSubmit = async () => {
       submitLoading.value = true;
       try {
         if (isEditMode.value) {
-          // 编辑模式
-          const params: EditGameBrandParams = {
+          // 编辑模式 - 除了id，其余字段和新增相同
+          const params: EditGameParams = {
             id: formData.value.id,
             name: formData.value.name || undefined,
-            shortname: formData.value.shortname || undefined,
+            name_cn: formData.value.name_cn || undefined,
             wallet_type: formData.value.wallet_type || undefined,
             provider: formData.value.provider || undefined,
-            category: formData.value.category || undefined,
-            currency: formData.value.currency || undefined,
+            common_name: formData.value.common_name || undefined,
             product_code: formData.value.product_code || undefined,
-            type_code: formData.value.type_code || undefined,
-            type_desc: formData.value.type_desc || undefined,
-            cost_price: formData.value.cost_price || undefined,
-            cost_price_asia: formData.value.cost_price_asia || undefined,
-            market_price: formData.value.market_price || undefined,
-            market_price_asia: formData.value.market_price_asia || undefined,
+            common_content: formData.value.common_content || undefined,
+            type_id: formData.value.type_id || undefined,
             pic: formData.value.pic || undefined,
-            sort_no: formData.value.sort_no || undefined,
-            syn_currecny_to_games: formData.value.syn_currecny_to_games || "1",
-            status: formData.value.status || "1"
+            web_pic: formData.value.web_pic || undefined,
+            webp_pic: formData.value.webp_pic || undefined,
+            weigh: formData.value.weigh || undefined,
+            ranking: formData.value.ranking || undefined,
+            fee_rate: formData.value.fee_rate || undefined,
+            prize_rate: formData.value.prize_rate || undefined,
+            tag: formData.value.tag || undefined,
+            pic_text: formData.value.pic_text || undefined,
+            pic_text_status: formData.value.pic_text_status || undefined,
+            recommend: formData.value.recommend || undefined,
+            status: formData.value.status || undefined,
+            currency: formData.value.currency || undefined
           };
 
-          const res = await editGameBrand(params);
+          const res = await editGame(params);
 
           if (res.code === 0) {
-            message("编辑游戏品牌成功", { type: "success" });
+            message("编辑游戏成功", { type: "success" });
             handleCloseDialog();
             getList();
           } else {
-            message(res.msg || "编辑游戏品牌失败", { type: "error" });
+            message(res.msg || "编辑游戏失败", { type: "error" });
           }
         } else {
           // 新增模式
-          const params: AddGameBrandParams = {
+          const params: AddGameParams = {
+            game_id: formData.value.game_id,
             name: formData.value.name,
-            shortname: formData.value.shortname || undefined,
+            name_cn: formData.value.name_cn || undefined,
             wallet_type: formData.value.wallet_type || undefined,
             provider: formData.value.provider || undefined,
-            category: formData.value.category || undefined,
-            currency: formData.value.currency || undefined,
+            common_name: formData.value.common_name || undefined,
             product_code: formData.value.product_code || undefined,
-            type_code: formData.value.type_code || undefined,
-            type_desc: formData.value.type_desc || undefined,
-            cost_price: formData.value.cost_price || undefined,
-            cost_price_asia: formData.value.cost_price_asia || undefined,
-            market_price: formData.value.market_price || undefined,
-            market_price_asia: formData.value.market_price_asia || undefined,
+            common_content: formData.value.common_content || undefined,
+            type_id: formData.value.type_id || undefined,
             pic: formData.value.pic || undefined,
-            sort_no: formData.value.sort_no || undefined,
-            syn_currecny_to_games: formData.value.syn_currecny_to_games || "1",
+            weigh: formData.value.weigh || undefined,
+            recommend: formData.value.recommend || undefined,
             status: formData.value.status || "1"
           };
 
-          const res = await addGameBrand(params);
+          const res = await addGame(params);
 
           if (res.code === 0) {
-            message("新增游戏品牌成功", { type: "success" });
+            message("新增游戏成功", { type: "success" });
             handleCloseDialog();
             getList();
           } else {
-            message(res.msg || "新增游戏品牌失败", { type: "error" });
+            message(res.msg || "新增游戏失败", { type: "error" });
           }
         }
       } catch (error: any) {
-        console.error(`${isEditMode.value ? "编辑" : "新增"}游戏品牌失败:`, error);
-        message(error?.message || `${isEditMode.value ? "编辑" : "新增"}游戏品牌失败`, { type: "error" });
+        console.error(`${isEditMode.value ? "编辑" : "新增"}游戏失败:`, error);
+        message(error?.message || `${isEditMode.value ? "编辑" : "新增"}游戏失败`, { type: "error" });
       } finally {
         submitLoading.value = false;
       }
@@ -874,35 +1099,42 @@ const handleEditRow = (row: TableRow) => {
   // 回填数据
   formData.value = {
     id: row.id,
+    game_id: row.game_id || "",
+    game_code: (row as any).game_code || "",
     name: row.name || "",
-    name_original: row.name_original || "",
+    name_cn: row.name_cn || "",
     wallet_type: row.wallet_type ? String(row.wallet_type) : "",
     provider: row.provider || "",
-    category: row.category || "",
-    pic: row.pic || "",
-    shortname: row.shortname || "",
-    type_code: row.type_code || "",
-    type_desc: row.type_desc || row.type_description || "",
-    product_code: row.product_code || row.product_id || "",
-    sort_no: row.sort_no || 0,
-    cost_price: row.cost_price || "",
-    cost_price_asia: row.cost_price_asia || "",
-    market_price: row.market_price || "",
-    market_price_asia: row.market_price_asia || "",
+    common_name: row.common_name || "",
+    product_code: row.product_code || "",
+    common_content: row.common_content || "",
+    type_id: row.type_id ? String(row.type_id) : "",
     currency: row.currency || "",
-    syn_currecny_to_games: row.syn_currecny_to_games || row.sync_currency || "1",
+    pic: row.pic || "",
+    web_pic: (row as any).web_pic || "",
+    webp_pic: (row as any).webp_pic || "",
+    weigh: row.weigh || 0,
+    ranking: (row as any).ranking || 0,
+    fee_rate: (row as any).fee_rate || "",
+    prize_rate: (row as any).prize_rate || "",
+    tag: (row as any).tag || "",
+    pic_text: (row as any).pic_text || "",
+    pic_text_status: (row as any).pic_text_status || "0",
+    recommend: (row as any).recommend || "0",
     status: row.status || "1"
   };
   imageUrl.value = row.pic || "";
+  webPicUrl.value = (row as any).web_pic || "";
+  webpPicUrl.value = (row as any).webp_pic || "";
   showDialog.value = true;
 };
 
 // 删除单行数据
 const handleDeleteRow = async (row: TableRow) => {
-  const confirmMessage = `确定删除游戏品牌 ${row.name}？`;
+  const confirmMessage = `确定删除游戏 ${row.name}？`;
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "删除游戏品牌", {
+    await ElMessageBox.confirm(confirmMessage, "删除游戏", {
       confirmButtonText: "确定",
       cancelButtonText: "取消",
       draggable: true,
@@ -912,7 +1144,7 @@ const handleDeleteRow = async (row: TableRow) => {
     deleteLoading.value = true;
     try {
       // 删除单行数据，使用批量删除API但只传一个id
-      const res = await deleteBatchGameBrand({ ids: row.id.toString() });
+      const res = await deleteBatchGame({ ids: row.id.toString() });
 
       if (res.code === 0) {
         message("删除成功", { type: "success" });
@@ -930,133 +1162,6 @@ const handleDeleteRow = async (row: TableRow) => {
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-    }
-  }
-};
-
-// 批量删除（保留用于表格标题栏的删除按钮）
-const handleDelete = async () => {
-  if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
-    return;
-  }
-
-  // 构建删除确认消息
-  const brandNames = multipleSelection.value.map(item => item.name).join("、");
-  const confirmMessage = `确定删除游戏品牌 ${brandNames}？`;
-
-  try {
-    await ElMessageBox.confirm(confirmMessage, "删除游戏品牌", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      draggable: true,
-      type: "warning"
-    });
-
-    deleteLoading.value = true;
-    try {
-      // 批量删除选中的游戏品牌
-      const ids = multipleSelection.value.map(item => item.id).join(",");
-      const res = await deleteBatchGameBrand({ ids });
-
-      if (res.code === 0) {
-        message("删除成功", { type: "success" });
-        // 清空选中数据
-        multipleSelection.value = [];
-        // 刷新列表
-        getList();
-      } else {
-        message(res.msg || "删除失败", { type: "error" });
-      }
-    } catch (error: any) {
-      console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
-    } finally {
-      deleteLoading.value = false;
-    }
-  } catch (error: any) {
-    if (error !== "cancel") {
-      console.error("删除失败:", error);
-    }
-  }
-};
-
-// 同步游戏
-const handleSyncGames = async () => {
-  if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行同步！", { type: "warning" });
-    return;
-  }
-
-  const brand = multipleSelection.value[0];
-  const confirmMessage = `是否确定同步品牌 ${brand.name} 到游戏？`;
-
-  try {
-    await ElMessageBox.confirm(confirmMessage, "同步游戏", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      draggable: true,
-      type: "warning"
-    });
-
-    syncGamesLoading.value = true;
-    try {
-      const res = await syncGameBrand({ id: brand.id });
-
-      if (res.code === 0) {
-        message("同步游戏成功", { type: "success" });
-      } else {
-        message(res.msg || "同步游戏失败", { type: "error" });
-      }
-    } catch (error: any) {
-      console.error("同步游戏失败:", error);
-      message(error?.message || "同步游戏失败", { type: "error" });
-    } finally {
-      syncGamesLoading.value = false;
-    }
-  } catch (error: any) {
-    if (error !== "cancel") {
-      console.error("同步游戏失败:", error);
-    }
-  }
-};
-
-// 同步图片
-const handleSyncImages = async () => {
-  if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行同步！", { type: "warning" });
-    return;
-  }
-
-  const brand = multipleSelection.value[0];
-  const confirmMessage = `是否确定同步品牌 ${brand.name} 的图片？`;
-
-  try {
-    await ElMessageBox.confirm(confirmMessage, "同步图片", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      draggable: true,
-      type: "warning"
-    });
-
-    syncImagesLoading.value = true;
-    try {
-      const res = await syncGameBrandPics({ id: brand.id });
-
-      if (res.code === 0) {
-        message("同步图片成功", { type: "success" });
-      } else {
-        message(res.msg || "同步图片失败", { type: "error" });
-      }
-    } catch (error: any) {
-      console.error("同步图片失败:", error);
-      message(error?.message || "同步图片失败", { type: "error" });
-    } finally {
-      syncImagesLoading.value = false;
-    }
-  } catch (error: any) {
-    if (error !== "cancel") {
-      console.error("同步图片失败:", error);
     }
   }
 };
@@ -1067,8 +1172,6 @@ const handleSwitchStatus = (row: TableRow) => {
   // 设置当前状态值
   if (row.status === "1") {
     statusDialogStatus.value = "1";
-  } else if (row.status === "-1") {
-    statusDialogStatus.value = "-1";
   } else if (row.status === "0") {
     statusDialogStatus.value = "0";
   } else {
@@ -1117,13 +1220,13 @@ const handleCloseStatusDialog = () => {
 
 // 测试游戏
 const handleTestGame = async () => {
-  if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行测试！", { type: "warning" });
+  if (!multipleSelection.value.length) {
+    message("请先选择要测试的游戏！", { type: "warning" });
     return;
   }
 
-  const brand = multipleSelection.value[0];
-  const confirmMessage = `是否确定测试品牌 ${brand.name} 的游戏？`;
+  const gameNames = multipleSelection.value.map(item => item.name).join("、");
+  const confirmMessage = `是否确定测试游戏 ${gameNames}？`;
 
   try {
     await ElMessageBox.confirm(confirmMessage, "测试游戏", {
@@ -1135,14 +1238,17 @@ const handleTestGame = async () => {
 
     testGameLoading.value = true;
     try {
-      const res = await testGameBrand({ id: brand.id });
+      const ids = multipleSelection.value.map(item => item.id).join(",");
+      const res = await testGames({ ids });
 
-      if (res.code === 0 && res.data && res.data.game_url) {
-        // 在新页面打开游戏网页地址
-        window.open(res.data.game_url, "_blank");
-        message("游戏页面已打开", { type: "success" });
+      if (res.code === 0) {
+        message("测试游戏成功", { type: "success" });
+        // 如果响应中有游戏URL，可以打开
+        if (res.data && (res.data as any).game_url) {
+          window.open((res.data as any).game_url, "_blank");
+        }
       } else {
-        message(res.msg || "获取游戏链接失败", { type: "error" });
+        message(res.msg || "测试游戏失败", { type: "error" });
       }
     } catch (error: any) {
       console.error("测试游戏失败:", error);
@@ -1179,9 +1285,9 @@ const exportExcel = () => {
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "游戏品牌";
+  const sheetName = "游戏列表";
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `游戏品牌.xlsx`;
+  const fileName = `游戏列表.xlsx`;
   writeFile(workBook, fileName);
 };
 
@@ -1196,7 +1302,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "游戏品牌.json";
+  a.download = "游戏列表.json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1205,13 +1311,14 @@ const exportJson = () => {
 </script>
 
 <template>
-  <div class="game-brand-container">
+  <div class="games-container">
     <!-- 搜索表单 -->
     <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="110"
+        inline
         label-position="right"
         :has-unfold="false"
         searchText="搜索"
@@ -1232,7 +1339,7 @@ const exportJson = () => {
         :adaptive="true"
         :action-bar="{
           buttons,
-          width: '150px',
+          width: '120px',
           label: '操作'
         }"
         @selection-change="handleSelectionChange"
@@ -1241,59 +1348,29 @@ const exportJson = () => {
       >
         <!-- 表格操作栏按钮 -->
         <template #title>
-          <div style="display: inline-flex; gap: 10px; align-items: center;">
-            <el-button type="primary" @click="handleAdd" size="default">
-              <el-icon><component :is="Plus" /></el-icon>
-              <span style="margin-left: 3px;">新增</span>
-            </el-button>
-            <el-button 
-              type="success" 
-              @click="handleEdit" 
-              size="default"
-              :disabled="multipleSelection.length !== 1"
-            >
-              <el-icon><component :is="Edit" /></el-icon>
-              <span style="margin-left: 3px;">编辑</span>
-            </el-button>
-            <el-button 
-              type="danger" 
-              @click="handleDelete" 
-              size="default"
-              :disabled="multipleSelection.length === 0"
-              :loading="deleteLoading"
-            >
-              <el-icon><component :is="Delete" /></el-icon>
-              <span style="margin-left: 3px;">删除</span>
-            </el-button>
-            <el-button 
-              @click="handleSyncGames" 
-              type="warning" 
-              size="default"
-              :disabled="multipleSelection.length !== 1"
-              :loading="syncGamesLoading"
-            >
-              <span>同步游戏</span>
-            </el-button>
-            <el-button 
-              @click="handleSyncImages" 
-              color="#626aef" 
-              size="default"
-              :disabled="multipleSelection.length !== 1"
-              :loading="syncImagesLoading"
-            >
-              <span>同步图片</span>
-            </el-button>
-            <el-button 
-              @click="handleTestGame" 
-              type="info" 
-              size="default"
-              :disabled="multipleSelection.length !== 1"
-              :loading="testGameLoading"
-            >
-              <span>测试游戏</span>
-            </el-button>
-          </div>
-</template>
+          <el-button type="primary" @click="handleAdd" size="default">
+            <el-icon><component :is="Plus" /></el-icon>
+            <span style="margin-left: 3px;">新增</span>
+          </el-button>
+          <el-button 
+            type="success" 
+            @click="handleEdit" 
+            size="default"
+            :disabled="multipleSelection.length !== 1"
+          >
+            <el-icon><component :is="Edit" /></el-icon>
+            <span style="margin-left: 3px;">编辑</span>
+          </el-button>
+          <el-button 
+            @click="handleTestGame" 
+            type="info" 
+            size="default"
+            :disabled="multipleSelection.length === 0"
+            :loading="testGameLoading"
+          >
+            <span>测试游戏</span>
+          </el-button>
+        </template>
         <!-- 工具栏 -->
         <template #density-icon>
           <el-tooltip content="密度" placement="top">
@@ -1382,10 +1459,10 @@ const exportJson = () => {
       />
     </el-card>
 
-    <!-- 游戏品牌对话框（新增和编辑共用） -->
+    <!-- 游戏对话框（新增和编辑共用） -->
     <el-dialog
       v-model="showDialog"
-      :title="isEditMode ? '编辑游戏品牌' : '新增游戏品牌'"
+      :title="isEditMode ? '编辑游戏' : '新增游戏'"
       width="800px"
       :close-on-click-modal="false"
       @close="handleCloseDialog"
@@ -1397,21 +1474,14 @@ const exportJson = () => {
         label-width="140px"
         class="dialog-form"
       >
-        <el-form-item label="产品名称" prop="name">
+        <el-form-item label="备注">
           <el-input
-            v-model="formData.name"
+            v-model="formData.tag"
             placeholder="请输入"
-            maxlength="100"
+            maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="产品名称(原厂商)">
-          <el-input
-            v-model="formData.name_original"
-            placeholder="请输入"
-            maxlength="100"
-          />
-        </el-form-item>
-        <el-form-item label="钱包类型">
+        <el-form-item label="钱包模式">
           <el-select
             v-model="formData.wallet_type"
             placeholder="请选择"
@@ -1425,9 +1495,52 @@ const exportJson = () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="供应商">
+        <el-form-item label="游戏ID" prop="game_id">
+          <el-input
+            v-model="formData.game_id"
+            placeholder="请输入"
+            maxlength="100"
+            :disabled="isEditMode"
+          />
+        </el-form-item>
+        <el-form-item label="游戏Code">
+          <el-input
+            v-model="formData.game_code"
+            placeholder="请输入"
+            maxlength="100"
+          />
+        </el-form-item>
+        <el-form-item label="游戏英文名称" prop="name">
+          <el-input
+            v-model="formData.name"
+            placeholder="请输入"
+            maxlength="100"
+          />
+        </el-form-item>
+        <el-form-item label="游戏中文名称">
+          <el-input
+            v-model="formData.name_cn"
+            placeholder="请输入"
+            maxlength="100"
+          />
+        </el-form-item>
+        <el-form-item label="产品缩写">
+          <el-input
+            v-model="formData.common_name"
+            placeholder="请输入"
+            maxlength="50"
+          />
+        </el-form-item>
+        <el-form-item label="产品ID">
+          <el-input
+            v-model="formData.product_code"
+            placeholder="请输入"
+            maxlength="50"
+          />
+        </el-form-item>
+        <el-form-item label="分类">
           <el-select
-            v-model="formData.provider"
+            v-model="formData.type_id"
             placeholder="请选择"
             filterable
             style="width: 100%"
@@ -1436,18 +1549,43 @@ const exportJson = () => {
               v-for="item in supplierOptions"
               :key="item.value"
               :label="item.label"
-              :value="item.label"
+              :value="item.value.toString()"
             />
           </el-select>
+          <div v-if="isEditMode" style="margin-top: 5px; color: #909399; font-size: 12px;">
+            原分类: {{ (formData as any).original_category || "-" }}
+          </div>
         </el-form-item>
-        <el-form-item label="分类名称">
+        <el-form-item label="支持币种">
           <el-input
-            v-model="formData.category"
+            v-model="formData.currency"
+            placeholder="请输入"
+            maxlength="500"
+          />
+        </el-form-item>
+        <el-form-item label="游戏类型">
+          <el-input
+            v-model="formData.common_content"
             placeholder="请输入"
             maxlength="100"
           />
         </el-form-item>
-        <el-form-item label="Logo">
+        <el-form-item label="当前自定义游戏类型">
+          <el-input
+            :model-value="formData.common_content"
+            placeholder="请输入"
+            maxlength="100"
+            readonly
+          />
+        </el-form-item>
+        <el-form-item label="修改自定义游戏类型">
+          <el-input
+            v-model="formData.common_content"
+            placeholder="请输入"
+            maxlength="100"
+          />
+        </el-form-item>
+        <el-form-item label="游戏主图">
           <div class="image-upload-container">
             <div class="image-input-group">
               <el-input
@@ -1455,9 +1593,12 @@ const exportJson = () => {
                 placeholder="请输入"
                 readonly
               />
-              <el-button type="primary" @click="triggerImageUpload" :loading="uploading">
+              <el-button type="primary" @click="triggerImageUpload('pic')" :loading="uploading">
                 <el-icon><Upload /></el-icon>
                 上传
+              </el-button>
+              <el-button type="default" @click="triggerImageUpload('pic')">
+                选择
               </el-button>
             </div>
             <div class="image-upload-area">
@@ -1468,14 +1609,14 @@ const exportJson = () => {
                 :auto-upload="true"
                 :show-file-list="false"
                 :before-upload="beforeUpload"
-                :http-request="handleImageUpload"
+                :http-request="(options) => handleImageUpload(options, 'pic')"
                 style="display: none"
               >
               </el-upload>
               <div
                 v-if="!imageUrl"
                 class="upload-placeholder"
-                @click="triggerImageUpload"
+                @click="triggerImageUpload('pic')"
               >
                 <el-icon class="upload-icon"><Plus /></el-icon>
                 <div class="upload-text">点击上传图片</div>
@@ -1486,7 +1627,7 @@ const exportJson = () => {
                   type="primary"
                   link
                   class="delete-btn"
-                  @click="handleRemoveImage"
+                  @click="handleRemoveImage('pic')"
                 >
                   删除
                 </el-button>
@@ -1494,79 +1635,108 @@ const exportJson = () => {
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="缩写">
-          <el-input
-            v-model="formData.shortname"
-            placeholder="请输入"
-            maxlength="50"
-          />
+        <el-form-item label="演示站游戏图">
+          <div class="image-upload-container">
+            <div class="image-input-group">
+              <el-input
+                v-model="formData.web_pic"
+                placeholder="请输入"
+                readonly
+              />
+              <el-button type="primary" @click="triggerImageUpload('web_pic')" :loading="uploading">
+                <el-icon><Upload /></el-icon>
+                上传
+              </el-button>
+              <el-button type="default" @click="triggerImageUpload('web_pic')">
+                选择
+              </el-button>
+            </div>
+            <div class="image-upload-area">
+              <el-upload
+                ref="webPicUploadRef"
+                class="avatar-uploader"
+                :action="''"
+                :auto-upload="true"
+                :show-file-list="false"
+                :before-upload="beforeUpload"
+                :http-request="(options) => handleImageUpload(options, 'web_pic')"
+                style="display: none"
+              >
+              </el-upload>
+              <div
+                v-if="!webPicUrl"
+                class="upload-placeholder"
+                @click="triggerImageUpload('web_pic')"
+              >
+                <el-icon class="upload-icon"><Plus /></el-icon>
+                <div class="upload-text">点击上传图片</div>
+              </div>
+              <div v-else class="image-preview">
+                <img :src="webPicUrl" class="preview-image" />
+                <el-button
+                  type="primary"
+                  link
+                  class="delete-btn"
+                  @click="handleRemoveImage('web_pic')"
+                >
+                  删除
+                </el-button>
+              </div>
+            </div>
+          </div>
         </el-form-item>
-        <el-form-item label="类型代码">
-          <el-input
-            v-model="formData.type_code"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="类型说明">
-          <el-input
-            v-model="formData.type_desc"
-            placeholder="请输入"
-            maxlength="200"
-          />
-        </el-form-item>
-        <el-form-item label="产品代码">
-          <el-input
-            v-model="formData.product_code"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item label="热门排序">
           <el-input-number
-            v-model="formData.sort_no"
+            v-model="formData.weigh"
             :min="0"
             :max="9999"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="欧洲区成本价">
+        <el-form-item label="排序">
+          <el-input-number
+            v-model="formData.ranking"
+            :min="0"
+            :max="9999"
+            style="width: 100%"
+          />
+        </el-form-item>
+        <el-form-item label="宣传费率">
           <el-input
-            v-model="formData.cost_price"
+            v-model="formData.fee_rate"
             placeholder="请输入"
             maxlength="20"
           />
         </el-form-item>
-        <el-form-item label="亚洲区成本价">
+        <el-form-item label="RTP">
           <el-input
-            v-model="formData.cost_price_asia"
+            v-model="formData.prize_rate"
             placeholder="请输入"
             maxlength="20"
           />
         </el-form-item>
-        <el-form-item label="欧洲区市场价">
+        <el-form-item label="标签">
           <el-input
-            v-model="formData.market_price"
+            v-model="formData.tag"
             placeholder="请输入"
-            maxlength="20"
+            maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="亚洲区市场价">
+        <el-form-item label="封面文字内容">
           <el-input
-            v-model="formData.market_price_asia"
+            v-model="formData.pic_text"
             placeholder="请输入"
-            maxlength="20"
+            maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="币种">
-          <el-input
-            v-model="formData.currency"
-            placeholder="请输入"
-            maxlength="500"
-          />
+        <el-form-item label="封面文字显示">
+          <el-radio-group v-model="formData.pic_text_status">
+            <el-radio label="1">开启</el-radio>
+            <el-radio label="0">关闭</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="同步币种到游戏列表">
-          <el-radio-group v-model="formData.syn_currecny_to_games">
+        <el-form-item label="推荐">
+          <el-radio-group v-model="formData.recommend">
             <el-radio label="1">开启</el-radio>
             <el-radio label="0">关闭</el-radio>
           </el-radio-group>
@@ -1582,7 +1752,7 @@ const exportJson = () => {
         <div class="dialog-footer">
           <el-button @click="handleCloseDialog">取消</el-button>
           <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
-            确认
+            确定
           </el-button>
         </div>
       </template>
@@ -1600,12 +1770,10 @@ const exportJson = () => {
         <div style="font-size: 14px; color: #606266; display: flex; align-items: center;">
           <span>状态：</span>
           <el-radio-group v-model="statusDialogStatus">
-          <el-radio label="1">开启</el-radio>
-          <el-radio label="-1">隐藏</el-radio>
-          <el-radio label="0">维护</el-radio>
-        </el-radio-group>
+            <el-radio label="1">开启</el-radio>
+            <el-radio label="0">关闭</el-radio>
+          </el-radio-group>
         </div>
-        
       </div>
       <template #footer>
         <div class="dialog-footer">

@@ -750,6 +750,10 @@ const handlePageChange = () => {
 // 初始化加载数据
 getList();
 
+// 操作按钮 loading 状态
+const deleteLoading = ref(false);
+const unbindLoading = ref(false);
+
 // 新增WLG账号对话框相关
 const showAddDialog = ref(false);
 const addFormRef = ref();
@@ -1039,23 +1043,30 @@ const handleDelete = async () => {
       type: "warning"
     });
 
-    // 批量删除选中的账号
-    const ids = multipleSelection.value.map(item => item.id).join(",");
-    const res = await deleteBatchWlgAccount({ ids });
+    deleteLoading.value = true;
+    try {
+      // 批量删除选中的账号
+      const ids = multipleSelection.value.map(item => item.id).join(",");
+      const res = await deleteBatchWlgAccount({ ids });
 
-    if (res.code === 0) {
-      message("删除成功", { type: "success" });
-      // 清空选中数据
-      multipleSelection.value = [];
-      // 刷新列表
-      getList();
-    } else {
-      message(res.msg || "删除失败", { type: "error" });
+      if (res.code === 0) {
+        message("删除成功", { type: "success" });
+        // 清空选中数据
+        multipleSelection.value = [];
+        // 刷新列表
+        getList();
+      } else {
+        message(res.msg || "删除失败", { type: "error" });
+      }
+    } catch (error: any) {
+      console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
+    } finally {
+      deleteLoading.value = false;
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
     }
   }
 };
@@ -1075,23 +1086,30 @@ const handleUnbindMerchant = async () => {
       type: "warning"
     });
 
-    // 批量解绑选中的账号
-    const ids = multipleSelection.value.map(item => item.id).join(",");
-    const res = await unbindBatchWlgAccount({ ids });
+    unbindLoading.value = true;
+    try {
+      // 批量解绑选中的账号
+      const ids = multipleSelection.value.map(item => item.id).join(",");
+      const res = await unbindBatchWlgAccount({ ids });
 
-    if (res.code === 0) {
-      message("解绑成功", { type: "success" });
-      // 清空选中数据
-      multipleSelection.value = [];
-      // 刷新列表
-      getList();
-    } else {
-      message(res.msg || "解绑失败", { type: "error" });
+      if (res.code === 0) {
+        message("解绑成功", { type: "success" });
+        // 清空选中数据
+        multipleSelection.value = [];
+        // 刷新列表
+        getList();
+      } else {
+        message(res.msg || "解绑失败", { type: "error" });
+      }
+    } catch (error: any) {
+      console.error("解绑失败:", error);
+      message(error?.message || "解绑失败", { type: "error" });
+    } finally {
+      unbindLoading.value = false;
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("解绑失败:", error);
-      message(error?.message || "解绑失败", { type: "error" });
     }
   }
 };
@@ -1208,6 +1226,7 @@ const exportJson = () => {
             @click="handleDelete" 
             size="default"
             :disabled="multipleSelection.length === 0"
+            :loading="deleteLoading"
           >
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>
@@ -1217,6 +1236,7 @@ const exportJson = () => {
             @click="handleUnbindMerchant" 
             size="default"
             :disabled="multipleSelection.length === 0"
+            :loading="unbindLoading"
           >
             <span>解绑商户</span>
           </el-button>
@@ -1337,6 +1357,7 @@ const exportJson = () => {
         :model="addFormData"
         :rules="addFormRules"
         label-width="100px"
+        class="dialog-form"
       >
         <el-form-item label="钱包模式" prop="wallet_type">
           <el-select
@@ -1512,6 +1533,7 @@ const exportJson = () => {
         :model="editFormData"
         :rules="editFormRules"
         label-width="100px"
+        class="dialog-form"
       >
         <el-form-item label="钱包模式" prop="wallet_type">
           <el-select
@@ -1699,6 +1721,12 @@ const exportJson = () => {
 
 .custom-export-dropdown .el-dropdown-item:not(.export-active):hover {
   background-color: #f5f7fa !important;
+}
+
+/* 对话框表单样式 */
+.dialog-form {
+  margin: 0 auto;
+  padding-right: 20px;
 }
 </style>
 

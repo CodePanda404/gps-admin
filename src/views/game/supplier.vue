@@ -421,6 +421,9 @@ const handlePageChange = () => {
 // 初始化加载数据
 getList();
 
+// 操作按钮 loading 状态
+const deleteLoading = ref(false);
+
 // 新增供应商对话框相关
 const showAddDialog = ref(false);
 const addFormRef = ref();
@@ -738,23 +741,30 @@ const handleDelete = async () => {
       type: "warning"
     });
 
-    // 批量删除选中的供应商
-    const ids = multipleSelection.value.map(item => item.id).join(",");
-    const res = await deleteBatchSupplier({ ids });
+    deleteLoading.value = true;
+    try {
+      // 批量删除选中的供应商
+      const ids = multipleSelection.value.map(item => item.id).join(",");
+      const res = await deleteBatchSupplier({ ids });
 
-    if (res.code === 0) {
-      message("删除成功", { type: "success" });
-      // 清空选中数据
-      multipleSelection.value = [];
-      // 刷新列表
-      getList();
-    } else {
-      message(res.msg || "删除失败", { type: "error" });
+      if (res.code === 0) {
+        message("删除成功", { type: "success" });
+        // 清空选中数据
+        multipleSelection.value = [];
+        // 刷新列表
+        getList();
+      } else {
+        message(res.msg || "删除失败", { type: "error" });
+      }
+    } catch (error: any) {
+      console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
+    } finally {
+      deleteLoading.value = false;
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
     }
   }
 };
@@ -862,15 +872,16 @@ const exportJson = () => {
             <el-icon><component :is="Edit" /></el-icon>
             <span style="margin-left: 3px;">编辑</span>
           </el-button>
-          <el-button 
-            type="danger" 
-            @click="handleDelete" 
-            size="default"
-            :disabled="multipleSelection.length === 0"
-          >
-            <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
-          </el-button>
+            <el-button 
+              type="danger" 
+              @click="handleDelete" 
+              size="default"
+              :disabled="multipleSelection.length === 0"
+              :loading="deleteLoading"
+            >
+              <el-icon><component :is="Delete" /></el-icon>
+              <span style="margin-left: 3px;">删除</span>
+            </el-button>
           <el-dropdown style="margin-left: 15px;">
             <el-button type="info" size="default" >
               <span>更多</span>

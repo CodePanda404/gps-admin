@@ -9,6 +9,7 @@ import { createApp, type Directive } from "vue";
 import { useElementPlus } from "@/plugins/elementPlus";
 import { injectResponsiveStorage } from "@/utils/responsive";
 
+
 import Table from "@pureadmin/table";
 // import PureDescriptions from "@pureadmin/descriptions";
 
@@ -29,7 +30,6 @@ import 'plus-pro-components/index.css'
 // 国际化
 import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
-
 import plusZhCn from 'plus-pro-components/es/locale/lang/zh-cn'
 
 const app = createApp(App);

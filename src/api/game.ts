@@ -1070,3 +1070,510 @@ export const deleteBatchGamePlayType = (params: DeleteBatchGamePlayTypeParams) =
   );
 };
 
+/** 游戏品牌列表项 */
+export type GameBrandItem = {
+  id: number;
+  name: string;
+  shortname: string;
+  status: string; // "1"-正常, "-1"-隐藏, "0"-维护
+  wallet_type?: string;
+  category?: string;
+  provider?: string;
+  product_code?: string;
+  currency?: string;
+  update_time?: string;
+  [key: string]: any; // 允许其他字段
+};
+
+/** 游戏品牌列表查询参数 */
+export type GameBrandListParams = {
+  /** ID */
+  id?: string | number;
+  /** 产品名称 */
+  name?: string;
+  /** 产品缩写 */
+  shortname?: string;
+  /** 状态 */
+  status?: string;
+  /** 更新开始时间 */
+  update_start_time?: string;
+  /** 更新结束时间 */
+  update_end_time?: string;
+  /** 钱包类型 */
+  wallet_type?: string | number;
+  /** 分类 */
+  category?: string;
+  /** 供应商 */
+  provider?: string;
+  /** 产品代码 */
+  product_code?: string;
+  /** 产品ID */
+  product_id?: string | number;
+  /** 类型 */
+  type?: string;
+  /** 游戏数量 */
+  game_count?: string | number;
+  /** 币种 */
+  currency?: string;
+  /** 类型代码 */
+  type_code?: string;
+  /** 当前页码 */
+  pageNumber?: number;
+  /** 每页数量 */
+  pageSize?: number;
+};
+
+/** 游戏品牌列表响应 */
+export type GameBrandListResult = {
+  code: number;
+  msg: string;
+  data: {
+    total: number;
+    pages: number;
+    pageNumber: string | number;
+    pageSize: string | number;
+    rows: GameBrandItem[];
+  };
+};
+
+/** 获取游戏品牌列表 */
+export const getGameBrandList = (params?: GameBrandListParams) => {
+  return http.request<GameBrandListResult>(
+    "get",
+    baseUrlApi("/game/producttype/index"),
+    { params }
+  );
+};
+
+/** 新增游戏品牌参数 */
+export type AddGameBrandParams = {
+  name: string; // 产品名称（必填）
+  shortname?: string; // 缩写
+  wallet_type?: string | number; // 钱包类型
+  provider?: string; // 供应商
+  category?: string; // 分类名称
+  currency?: string; // 币种
+  product_code?: string; // 产品代码
+  type_code?: string; // 类型代码
+  type_desc?: string; // 类型说明
+  cost_price?: string; // 欧洲区成本价
+  cost_price_asia?: string; // 亚洲区成本价
+  market_price?: string; // 欧洲区市场价
+  market_price_asia?: string; // 亚洲区市场价
+  pic?: string; // Logo
+  sort_no?: number; // 排序
+  syn_currecny_to_games?: string; // 同步币种到游戏列表 "1"-开启, "0"-关闭（注意拼写）
+  status?: string; // 状态 "1"-开启, "0"-关闭
+};
+
+/** 新增游戏品牌响应 */
+export type AddGameBrandResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 新增游戏品牌 */
+export const addGameBrand = (params: AddGameBrandParams) => {
+  const formData = new FormData();
+  Object.keys(params).forEach((key) => {
+    const value = params[key as keyof AddGameBrandParams];
+    if (value !== undefined && value !== null && value !== "") {
+      formData.append(key, String(value));
+    }
+  });
+  return http.request<AddGameBrandResult>(
+    "post",
+    baseUrlApi("/game/producttype/add"),
+    { data: formData }
+  );
+};
+
+/** 编辑游戏品牌参数 */
+export type EditGameBrandParams = {
+  id: number; // ID（必填）
+  name?: string; // 产品名称
+  shortname?: string; // 缩写
+  wallet_type?: string | number; // 钱包类型
+  provider?: string; // 供应商
+  category?: string; // 分类名称
+  currency?: string; // 币种
+  product_code?: string; // 产品代码
+  type_code?: string; // 类型代码
+  type_desc?: string; // 类型说明
+  cost_price?: string; // 欧洲区成本价
+  cost_price_asia?: string; // 亚洲区成本价
+  market_price?: string; // 欧洲区市场价
+  market_price_asia?: string; // 亚洲区市场价
+  pic?: string; // Logo
+  sort_no?: number; // 排序
+  syn_currecny_to_games?: string; // 同步币种到游戏列表 "1"-开启, "0"-关闭（注意拼写）
+  status?: string; // 状态 "1"-开启, "0"-关闭
+};
+
+/** 编辑游戏品牌响应 */
+export type EditGameBrandResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 编辑游戏品牌 */
+export const editGameBrand = (params: EditGameBrandParams) => {
+  const formData = new FormData();
+  Object.keys(params).forEach((key) => {
+    const value = params[key as keyof EditGameBrandParams];
+    if (value !== undefined && value !== null && value !== "") {
+      formData.append(key, String(value));
+    }
+  });
+  return http.request<EditGameBrandResult>(
+    "post",
+    baseUrlApi("/game/producttype/edit"),
+    { data: formData }
+  );
+};
+
+/** 批量删除游戏品牌参数 */
+export type DeleteBatchGameBrandParams = {
+  ids: string; // 逗号分隔的ID字符串，如 "298,299"
+};
+
+/** 批量删除游戏品牌响应 */
+export type DeleteBatchGameBrandResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量删除游戏品牌 */
+export const deleteBatchGameBrand = (params: DeleteBatchGameBrandParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+
+  return http.request<DeleteBatchGameBrandResult>(
+    "post",
+    baseUrlApi("/game/producttype/del_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 同步游戏品牌到游戏参数 */
+export type SyncGameBrandParams = {
+  id: number | string; // 游戏品牌ID
+};
+
+/** 同步游戏品牌到游戏响应 */
+export type SyncGameBrandResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 同步游戏品牌到游戏 */
+export const syncGameBrand = (params: SyncGameBrandParams) => {
+  const formData = new FormData();
+  formData.append("id", String(params.id));
+
+  return http.request<SyncGameBrandResult>(
+    "post",
+    baseUrlApi("/game/producttype/syn_games"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 同步游戏品牌图片参数 */
+export type SyncGameBrandPicsParams = {
+  id: number | string; // 游戏品牌ID
+};
+
+/** 同步游戏品牌图片响应 */
+export type SyncGameBrandPicsResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 同步游戏品牌图片 */
+export const syncGameBrandPics = (params: SyncGameBrandPicsParams) => {
+  const formData = new FormData();
+  formData.append("id", String(params.id));
+
+  return http.request<SyncGameBrandPicsResult>(
+    "post",
+    baseUrlApi("/game/producttype/syn_pics"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 测试游戏品牌参数 */
+export type TestGameBrandParams = {
+  id: number | string; // 游戏品牌ID
+};
+
+/** 测试游戏品牌响应 */
+export type TestGameBrandResult = {
+  code: number;
+  msg: string;
+  data?: {
+    game_url: string; // 游戏网页地址
+  };
+};
+
+/** 测试游戏品牌 */
+export const testGameBrand = (params: TestGameBrandParams) => {
+  const formData = new FormData();
+  formData.append("id", String(params.id));
+
+  return http.request<TestGameBrandResult>(
+    "post",
+    baseUrlApi("/game/producttype/test_game"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+// ==================== 游戏列表相关接口 ====================
+
+/** 游戏列表项 */
+export type GameListItem = {
+  id: number;
+  game_id: string;
+  name: string;
+  name_cn: string | null;
+  pic: string;
+  provider: string;
+  wallet_type: number;
+  currency: string;
+  product_code: string;
+  type_id: number;
+  common_name: string;
+  common_content: string;
+  is_local: number;
+  weigh: number;
+  status: string; // "1"-开启, "0"-关闭
+  createtime: string;
+  updatetime: string;
+};
+
+/** 游戏列表查询参数 */
+export type GameListParams = {
+  id?: string | number;
+  game_id?: string;
+  name?: string;
+  game_code?: string;
+  status?: string;
+  create_start_time?: string;
+  create_end_time?: string;
+  update_start_time?: string;
+  update_end_time?: string;
+  pageNumber?: number;
+  pageSize?: number;
+  wallet_type?: string | number;
+  name_cn?: string;
+  provider?: string;
+  common_name?: string;
+  product_code?: string;
+  common_content?: string;
+  type_id?: string | number;
+  is_local?: string | number;
+  has_pic?: string | number;
+  currency?: string;
+};
+
+/** 游戏列表响应 */
+export type GameListResult = {
+  code: number;
+  msg: string;
+  data: {
+    total: number;
+    pages: number;
+    pageNumber: string | number;
+    pageSize: string | number;
+    rows: GameListItem[];
+  };
+};
+
+/** 获取游戏列表 */
+export const getGameList = (params?: GameListParams) => {
+  const queryParams = new URLSearchParams();
+  if (params) {
+    Object.keys(params).forEach(key => {
+      const value = params[key as keyof GameListParams];
+      if (value !== undefined && value !== null && value !== "") {
+        queryParams.append(key, String(value));
+      }
+    });
+  }
+  return http.request<GameListResult>(
+    "get",
+    baseUrlApi(`/game/product/index?${queryParams.toString()}`)
+  );
+};
+
+/** 新增游戏参数 */
+export type AddGameParams = {
+  game_id: string;
+  name: string;
+  name_cn?: string;
+  wallet_type?: string | number;
+  provider?: string;
+  common_name?: string;
+  product_code?: string;
+  common_content?: string;
+  type_id?: string | number;
+  pic?: string;
+  weigh?: string | number;
+  recommend?: string | number;
+  status?: string | number;
+};
+
+/** 新增游戏响应 */
+export type AddGameResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 新增游戏 */
+export const addGame = (params: AddGameParams) => {
+  const formData = new FormData();
+  Object.keys(params).forEach(key => {
+    const value = params[key as keyof AddGameParams];
+    if (value !== undefined && value !== null && value !== "") {
+      formData.append(key, String(value));
+    }
+  });
+  return http.request<AddGameResult>("post", baseUrlApi("/game/product/add"), {
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+};
+
+/** 编辑游戏参数 */
+export type EditGameParams = {
+  id: string | number;
+  name?: string;
+  name_cn?: string;
+  wallet_type?: string | number;
+  provider?: string;
+  common_name?: string;
+  product_code?: string;
+  common_content?: string;
+  type_id?: string | number;
+  pic?: string;
+  web_pic?: string;
+  webp_pic?: string;
+  weigh?: string | number;
+  ranking?: string | number;
+  fee_rate?: string | number;
+  prize_rate?: string | number;
+  tag?: string;
+  pic_text?: string;
+  pic_text_status?: string | number;
+  recommend?: string | number;
+  status?: string | number;
+  currency?: string;
+};
+
+/** 编辑游戏响应 */
+export type EditGameResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 编辑游戏 */
+export const editGame = (params: EditGameParams) => {
+  const formData = new FormData();
+  Object.keys(params).forEach(key => {
+    const value = params[key as keyof EditGameParams];
+    if (value !== undefined && value !== null && value !== "") {
+      formData.append(key, String(value));
+    }
+  });
+  return http.request<EditGameResult>("post", baseUrlApi("/game/product/edit"), {
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+};
+
+/** 批量删除游戏参数 */
+export type DeleteBatchGameParams = {
+  ids: string;
+};
+
+/** 批量删除游戏响应 */
+export type DeleteBatchGameResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量删除游戏 */
+export const deleteBatchGame = (params: DeleteBatchGameParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+  return http.request<DeleteBatchGameResult>(
+    "post",
+    baseUrlApi("/game/product/del_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 测试游戏参数 */
+export type TestGamesParams = {
+  ids: string;
+};
+
+/** 测试游戏响应 */
+export type TestGamesResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 测试游戏（可批量） */
+export const testGames = (params: TestGamesParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+  return http.request<TestGamesResult>(
+    "post",
+    baseUrlApi("/game/product/test_games"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+

@@ -2,7 +2,7 @@
 import { ref, computed, h } from "vue";
 import dayjs from "dayjs";
 defineOptions({
-  name: "MerchantList"
+  name: "AgentList"
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
@@ -10,16 +10,11 @@ import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import { ElMessageBox, ElTag, ElTooltip, ElButton, ElDropdown, ElDropdownMenu, ElDropdownItem } from "element-plus";
 import {
-  getMerchantList,
-  switchMerchantStatus,
   getAgentList,
-  type MerchantListParams,
-  type MerchantItem
+  switchAgentStatus,
+  type AgentListParams,
+  type AgentItem
 } from "@/api/agent";
-import {
-  getCurrencyList,
-  type CurrencyItem
-} from "@/api/game";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -28,57 +23,17 @@ import Plus from "~icons/ep/plus";
 import Edit from "~icons/ep/edit";
 
 /*  -----搜索表单相关-----  */
-// 币种列表（用于下拉选择）
-const currencyOptions = ref<Array<{ label: string; value: string }>>([]);
-// 代理列表（用于下拉选择）
-const agentOptions = ref<Array<{ label: string; value: string }>>([]);
-
-// 获取币种列表
-const fetchCurrencyList = async () => {
-  try {
-    const res = await getCurrencyList({ pageSize: 1000 });
-    if (res.code === 0 && res.data && res.data.rows) {
-      currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
-        label: item.name,
-        value: item.name
-      }));
-    }
-  } catch (error: any) {
-    console.error("获取币种列表失败:", error);
-  }
-};
-
-// 获取代理列表
-const fetchAgentList = async () => {
-  try {
-    const res = await getAgentList({ pageSize: 1000 });
-    if (res.code === 0 && res.data && res.data.rows) {
-      agentOptions.value = res.data.rows.map((item) => ({
-        label: item.username,
-        value: item.username
-      }));
-    }
-  } catch (error: any) {
-    console.error("获取代理列表失败:", error);
-  }
-};
-
-// 初始化时获取列表
-fetchCurrencyList();
-fetchAgentList();
-
 // 搜索表单数据
 const searchData = ref({
   id: "",
   username: "",
-  currency: "",
-  type: "",
-  wallet_type: "",
-  wlg_account_id: "",
-  pid: "",
-  parent_name: "",
-  status: "",
-  loginTime: null as string[] | null
+  nickname: "",
+  email: "",
+  merchant: "",
+  whitelist_ip: "",
+  loginTime: null as string[] | null,
+  createTime: null as string[] | null,
+  status: ""
 });
 // 搜索表单显示控制
 const showSearch = ref(true);
@@ -86,134 +41,44 @@ const showSearch = ref(true);
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
   {
-    label: "商户ID",
-    prop: "id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
-    }))
-  },
-  {
-    label: "商户名称",
+    label: "代理账号",
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户名称"
+      placeholder: "请输入代理账号"
     }))
   },
   {
-    label: "币种",
-    prop: "currency",
-    valueType: "select",
-    fieldProps: computed(() => ({
-      placeholder: "请选择币种",
-      filterable: true
-    })),
-    options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
-      ...currencyOptions.value
-    ])
-  },
-  {
-    label: "商户类型",
-    prop: "type",
-    valueType: "select",
-    fieldProps: computed(() => ({
-      placeholder: "请选择商户类型"
-    })),
-    options: [
-      {
-        label: "全部",
-        value: ""
-      },
-      {
-        label: "正式",
-        value: "1"
-      },
-      {
-        label: "测试",
-        value: "2"
-      }
-    ]
-  },
-  {
-    label: "钱包类型",
-    prop: "wallet_type",
-    valueType: "select",
-    fieldProps: computed(() => ({
-      placeholder: "请选择钱包类型"
-    })),
-    options: [
-      {
-        label: "全部",
-        value: ""
-      },
-      {
-        label: "单一/免转",
-        value: "1"
-      },
-      {
-        label: "转账",
-        value: "2"
-      }
-    ]
-  },
-  {
-    label: "WLG账户ID",
-    prop: "wlg_account_id",
+    label: "昵称",
+    prop: "nickname",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入WLG账户ID"
+      placeholder: "请输入昵称"
     }))
   },
   {
-    label: "关联产品",
-    prop: "pid",
+    label: "关联邮箱",
+    prop: "email",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入关联产品ID"
+      placeholder: "请输入关联邮箱"
     }))
   },
   {
-    label: "所属代理",
-    prop: "parent_name",
-    valueType: "select",
+    label: "关联商户",
+    prop: "merchant",
+    valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请选择所属代理",
-      filterable: true
-    })),
-    options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
-      ...agentOptions.value
-    ])
+      placeholder: "请输入关联商户"
+    }))
   },
   {
-    label: "状态",
-    prop: "status",
-    valueType: "select",
+    label: "白名单IP",
+    prop: "whitelist_ip",
+    valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请选择状态"
-    })),
-    options: [
-      {
-        label: "全部",
-        value: ""
-      },
-      {
-        label: "正常",
-        value: "normal"
-      },
-      {
-        label: "隐藏",
-        value: "hidden"
-      }
-    ]
+      placeholder: "请输入白名单IP"
+    }))
   },
   {
     label: "登录时间",
@@ -290,6 +155,104 @@ const searchColumns: PlusColumn[] = [
         }
       ]
     }))
+  },
+  {
+    label: "创建时间",
+    prop: "createTime",
+    valueType: "date-picker",
+    fieldProps: computed(() => ({
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      startPlaceholder: "开始日期时间",
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
+    }))
+  },
+  {
+    label: "状态",
+    prop: "status",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择状态"
+    })),
+    options: [
+      {
+        label: "全部",
+        value: ""
+      },
+      {
+        label: "正常",
+        value: "normal"
+      },
+      {
+        label: "隐藏",
+        value: "hidden"
+      }
+    ]
   }
 ];
 
@@ -306,14 +269,13 @@ const handleRest = () => {
   searchData.value = {
     id: "",
     username: "",
-    currency: "",
-    type: "",
-    wallet_type: "",
-    wlg_account_id: "",
-    pid: "",
-    parent_name: "",
-    status: "",
-    loginTime: null
+    nickname: "",
+    email: "",
+    merchant: "",
+    whitelist_ip: "",
+    loginTime: null,
+    createTime: null,
+    status: ""
   };
   // 重置到第一页
   pageInfo.value.page = 1;
@@ -333,27 +295,9 @@ const handleEdit = (row: TableRow) => {
   message("编辑功能待实现", { type: "info" });
 };
 
-// 额度调整按钮处理
-const handleCreditAdjust = (row: TableRow) => {
-  // TODO: 实现额度调整功能
-  message("额度调整功能待实现", { type: "info" });
-};
-
-// 调额记录按钮处理
-const handleAdjustRecord = (row: TableRow) => {
-  // TODO: 实现调额记录功能
-  message("调额记录功能待实现", { type: "info" });
-};
-
-// 查看API秘钥按钮处理
-const handleViewApiKey = (row: TableRow) => {
-  // TODO: 实现查看API秘钥功能
-  message("查看API秘钥功能待实现", { type: "info" });
-};
-
 // /  *----表格相关-----  */ */
 // 表格数据类型
-type TableRow = MerchantItem;
+type TableRow = AgentItem;
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
 // 表格相关数据和操作
@@ -363,15 +307,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 // 表格配置
 const tableConfig: any = ref([
   {
-    label: "商户ID",
-    prop: "id",
-    minWidth: 100,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "商户名称",
+    label: "代理账号",
     prop: "username",
     minWidth: 120,
     tableColumnProps: {
@@ -379,96 +315,77 @@ const tableConfig: any = ref([
     }
   },
   {
-    label: "商户类型",
-    prop: "type",
-    minWidth: 100,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "币种",
-    prop: "currency",
-    minWidth: 100,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "授信额度",
-    prop: "credit_limit",
+    label: "昵称",
+    prop: "nickname",
     minWidth: 120,
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "授信余额",
-    prop: "credit_balance",
+    label: "正式商户数",
+    prop: "merchant_pro_num",
     minWidth: 120,
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "保证金余额",
-    prop: "deposit_balance",
-    minWidth: 120,
-    tableColumnProps: {
-      align: "center"
-    },
-  },
-  {
-    label: "钱包类型",
-    prop: "wallet_type",
+    label: "测试商户数",
+    prop: "merchant_test_num",
     minWidth: 120,
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "API-KEY",
-    prop: "api_key",
+    label: "关联邮箱",
+    prop: "email",
     minWidth: 150,
+    render: () => "-",
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "WLG账号ID",
-    prop: "wlg_account_id",
+    label: "谷歌验证",
+    prop: "google_verify",
     minWidth: 120,
+    render: () => "-",
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "关联产品",
-    prop: "pid",
-    minWidth: 120,
+    label: "关联商户",
+    prop: "merchant",
+    minWidth: 150,
+    render: () => "-",
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "所属代理",
-    prop: "parent_name",
-    minWidth: 120,
+    label: "白名单IP",
+    prop: "whitelist_ip",
+    minWidth: 150,
+    render: () => "-",
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "角色组",
-    prop: "groups_text",
-    minWidth: 100,
+    label: "最近登录时间",
+    prop: "last_login_time",
+    minWidth: 160,
+    render: () => "-",
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "登录时间",
-    prop: "updatetime",
+    label: "创建时间",
+    prop: "createtime",
     minWidth: 160,
     tableColumnProps: {
       align: "center"
@@ -492,44 +409,22 @@ const tableConfig: any = ref([
   {
     label: "操作",
     prop: "action",
-    width: 200,
+    width: 100,
     tableColumnProps: {
       align: "center",
       fixed: "right"
     },
     render: (_value: any, row: TableRow) => {
-      return h("div", { style: { display: "flex", gap: "8px", justifyContent: "center" } }, [
-        h(
-          ElButton,
-          {
-            type: "success",
-            size: "small",
-            link: true,
-            onClick: () => handleCreditAdjust(row)
-          },
-          () => "额度调整"
-        ),
-        h(
-          ElButton,
-          {
-            type: "success",
-            size: "small",
-            link: true,
-            onClick: () => handleAdjustRecord(row)
-          },
-          () => "调额记录"
-        ),
-        h(
-          ElButton,
-          {
-            type: "success",
-            size: "small",
-            link: true,
-            onClick: () => handleEdit(row)
-          },
-          () => "编辑"
-        )
-      ]);
+      return h(
+        ElButton,
+        {
+          type: "success",
+          size: "small",
+          link: true,
+          onClick: () => handleEdit(row)
+        },
+        () => "编辑"
+      );
     }
   }
 ]);
@@ -539,7 +434,7 @@ const handleSelectionChange = (val: TableRow[]) => {
   multipleSelection.value = val;
 };
 
-// 商户状态切换处理
+// 代理状态切换处理
 const handleStatusChange = async (params: {
   row: TableRow;
   prop: string;
@@ -564,8 +459,8 @@ const handleStatusChange = async (params: {
   // 提示文字
   const confirmMessage =
     value === "normal"
-      ? `是否确定将商户${row.username}设置为正常状态?`
-      : `是否确定将商户${row.username}设置为隐藏状态?`;
+      ? `是否确定将代理${row.username}设置为正常状态?`
+      : `是否确定将代理${row.username}设置为隐藏状态?`;
 
   // 查找当前行在 tableData 中的索引
   const index = tableData.value.findIndex(item => item.id === row.id);
@@ -582,13 +477,13 @@ const handleStatusChange = async (params: {
       draggable: true
     });
 
-    const res = await switchMerchantStatus({
+    const res = await switchAgentStatus({
       id: row.id,
       status: value
     });
 
     if (res.code === 0) {
-      message(value === "normal" ? "商户已设置为正常状态" : "商户已设置为隐藏状态", {
+      message(value === "normal" ? "代理已设置为正常状态" : "代理已设置为隐藏状态", {
         type: "success"
       });
       // 更新本地数据
@@ -602,7 +497,7 @@ const handleStatusChange = async (params: {
         ...tableData.value[index],
         status: originalStatus
       };
-      message(res.msg || "商户状态切换失败", { type: "error" });
+      message(res.msg || "代理状态切换失败", { type: "error" });
     }
   } catch (error: any) {
     // 取消或出错恢复
@@ -622,30 +517,26 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, username, currency, type, wallet_type, wlg_account_id, pid, parent_name, status, loginTime } = searchData.value;
-    const params: MerchantListParams = {
+    const { username, loginTime, createTime, status } = searchData.value;
+    const params: AgentListParams = {
       pageNumber: page,
       pageSize,
-      id: id || undefined,
       username: username || undefined,
-      currency: currency || undefined,
-      type: type || undefined,
-      wallet_type: wallet_type || undefined,
-      pid: pid || undefined,
       status: status || undefined
     };
-
-    // 注意：API中没有parent_name参数，这里暂时不处理
-    // if (parent_name) {
-    //   params.parent_name = parent_name;
-    // }
 
     if (loginTime && loginTime.length === 2) {
       params.login_start_time = loginTime[0];
       params.login_end_time = loginTime[1];
     }
 
-    const { data } = await getMerchantList(params);
+    // 注意：API中没有创建时间的参数，这里暂时不处理
+    // if (createTime && createTime.length === 2) {
+    //   params.create_start_time = createTime[0];
+    //   params.create_end_time = createTime[1];
+    // }
+
+    const { data } = await getAgentList(params);
 
     if (data && data.rows) {
       tableData.value = data.rows;
@@ -696,7 +587,7 @@ const exportExcel = () => {
   const workBook = utils.book_new();
   const sheetName = "数据报表";
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `商户列表.xlsx`;
+  const fileName = `代理列表.xlsx`;
   writeFile(workBook, fileName);
 };
 
@@ -711,7 +602,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "商户列表.json";
+  a.download = "代理列表.json";
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -720,13 +611,13 @@ const exportJson = () => {
 </script>
 
 <template>
-  <div class="merchant-list-container">
+  <div class="agent-container">
     <!-- 搜索表单 -->
     <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="100"
+        label-width="80"
         label-position="right"
         :has-unfold="false"
         searchText="搜索"
@@ -746,6 +637,7 @@ const exportJson = () => {
         width="100%"
         height="90%"
         @selection-change="handleSelectionChange"
+        @formChange="handleStatusChange"
       >
         <!-- 工具栏 -->
         <template #title>
@@ -863,3 +755,4 @@ const exportJson = () => {
   background-color: #f5f7fa !important;
 }
 </style>
+
