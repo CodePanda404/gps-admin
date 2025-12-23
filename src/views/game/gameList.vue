@@ -13,6 +13,7 @@ import {
   getGameList,
   getSupplierList,
   getCurrencyList,
+  getGameBrandList,
   addGame,
   editGame,
   deleteBatchGame,
@@ -22,6 +23,7 @@ import {
   type GameListItem,
   type SupplierItem,
   type CurrencyItem,
+  type GameBrandItem,
   type AddGameParams,
   type EditGameParams
 } from "@/api/game";
@@ -39,6 +41,8 @@ import More from "~icons/ep/more";
 const supplierOptions = ref<Array<{ label: string; value: number }>>([]);
 // 币种列表（用于下拉选择）
 const currencyOptions = ref<Array<{ label: string; value: number }>>([]);
+// 游戏品牌列表（用于所属分类下拉选择）
+const brandOptions = ref<Array<{ label: string; value: number }>>([]);
 
 // 获取供应商列表
 const fetchSupplierList = async () => {
@@ -70,9 +74,25 @@ const fetchCurrencyList = async () => {
   }
 };
 
+// 获取游戏品牌列表（用于所属分类）
+const fetchBrandList = async () => {
+  try {
+    const res = await getGameBrandList({ pageSize: 1000 });
+    if (res.code === 0 && res.data && res.data.rows) {
+      brandOptions.value = res.data.rows.map((item: GameBrandItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取游戏品牌列表失败:", error);
+  }
+};
+
 // 初始化时获取列表
 fetchSupplierList();
 fetchCurrencyList();
+fetchBrandList();
 
 // 搜索表单数据
 const searchData = ref({
@@ -201,10 +221,13 @@ const searchColumns: PlusColumn[] = [
       placeholder: "请选择所属分类",
       filterable: true
     })),
-    options: [
-      { label: "全部", value: "" }
-      // TODO: 需要获取分类列表
-    ]
+    options: computed(() => [
+      { label: "全部", value: "" },
+      ...brandOptions.value.map(item => ({
+        label: item.label,
+        value: item.value
+      }))
+    ])
   },
   {
     label: "标签",
@@ -224,7 +247,7 @@ const searchColumns: PlusColumn[] = [
     options: [
       { label: "全部", value: "" },
       { label: "有", value: "1" },
-      { label: "无", value: "0" }
+      { label: "无", value: "2" }
     ]
   },
   {
@@ -499,7 +522,7 @@ const tableConfig: any = ref([
   },
   {
     label: "所属分类",
-    prop: "type_id",
+    prop: "common_name",
     tableColumnProps: {
       align: "center"
     },
@@ -518,7 +541,7 @@ const tableConfig: any = ref([
   },
   {
     label: "产品主图",
-    prop: "pic",
+    prop: "product_pic",
     valueType: "img",
     fieldProps: {
       fit: "cover"
@@ -538,9 +561,8 @@ const tableConfig: any = ref([
     fieldProps: {
       fit: "cover"
     },
-    render: (value: string) => {
-      if (!value) return "-";
-      return h("img", { src: value, style: { width: "50px", height: "50px", objectFit: "cover" } });
+    fieldSlots: {
+      error: () => (h("div", ""))
     },
     tableColumnProps: {
       align: "center"
@@ -549,14 +571,13 @@ const tableConfig: any = ref([
   },
   {
     label: "webp游戏图",
-    prop: "webp_pic",
+    prop: "pic",
     valueType: "img",
     fieldProps: {
       fit: "cover"
     },
-    render: (value: string) => {
-      if (!value) return "-";
-      return h("img", { src: value, style: { width: "50px", height: "50px", objectFit: "cover" } });
+    fieldSlots: {
+      error: () => (h("div", ""))
     },
     tableColumnProps: {
       align: "center"
@@ -577,10 +598,10 @@ const tableConfig: any = ref([
   },
   {
     label: "有无图片",
-    prop: "has_pic",
-    render: (value: string | number, row: TableRow) => {
+    prop: "pic",
+    render: (value: string) => {
       // 根据是否有 pic 字段判断
-      if (row.pic) return "有";
+      if (value && value !== "") return "有";
       return "无";
     },
     tableColumnProps: {
@@ -765,13 +786,7 @@ const getList = async () => {
       status: status || undefined
     };
 
-    // 处理创建时间范围
-    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
-      params.create_start_time = createTime[0];
-      params.create_end_time = createTime[1];
-    }
-
-    // 处理更新时间范围
+    // 处理更新时间范围（新接口只支持更新时间，不支持创建时间）
     if (updateTime && Array.isArray(updateTime) && updateTime.length === 2) {
       params.update_start_time = updateTime[0];
       params.update_end_time = updateTime[1];

@@ -36,6 +36,7 @@ const searchData = ref({
   name: "",
   remark: "",
   status: "",
+  createTime: [] as string[],
   updateTime: [] as string[]
 });
 
@@ -66,6 +67,82 @@ const searchColumns: PlusColumn[] = [
     valueType: "copy",
     fieldProps: computed(() => ({
       placeholder: "备注"
+    }))
+  },
+  {
+    label: "创建时间",
+    prop: "createTime",
+    valueType: "date-picker",
+    fieldProps: computed(() => ({
+      type: "daterange",
+      format: "YYYY-MM-DD HH:mm:ss",
+      valueFormat: "YYYY-MM-DD HH:mm:ss",
+      startPlaceholder: "开始日期时间",
+      endPlaceholder: "结束日期时间",
+      shortcuts: [
+        {
+          text: "今天",
+          value: () => {
+            const today = dayjs();
+            return [
+              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "昨天",
+          value: () => {
+            const yesterday = dayjs().subtract(1, "day");
+            return [
+              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近7天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(6, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        }
+      ]
     }))
   },
   {
@@ -181,6 +258,7 @@ const handleRest = () => {
     name: "",
     remark: "",
     status: "",
+    createTime: [],
     updateTime: []
   };
   pageInfo.value.page = 1;
@@ -284,7 +362,7 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, name, remark, status, updateTime } = searchData.value;
+    const { id, name, remark, status, createTime, updateTime } = searchData.value;
     
     const params: CurrencyListParams = {
       pageNumber: page,
@@ -295,7 +373,13 @@ const getList = async () => {
       status: status || undefined
     };
 
-    // 处理时间范围
+    // 处理创建时间范围
+    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
+      params.create_start_time = createTime[0];
+      params.create_end_time = createTime[1];
+    }
+
+    // 处理更新时间范围
     if (updateTime && Array.isArray(updateTime) && updateTime.length === 2) {
       params.update_start_time = updateTime[0];
       params.update_end_time = updateTime[1];

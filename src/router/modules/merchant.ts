@@ -1,7 +1,7 @@
 import { $t } from "@/plugins/i18n";
 const { VITE_HIDE_HOME } = import.meta.env;
 const Layout = () => import("@/layout/index.vue");
-import Store from "~icons/ep/shop";
+import Store from "~icons/ep/takeaway-box";
 
 export default {
   path: "/merchant",

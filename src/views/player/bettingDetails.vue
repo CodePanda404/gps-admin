@@ -297,14 +297,6 @@ const tableConfig: any = ref([
     }
   },
   {
-    label: "用户名",
-    prop: "username",
-    width: 140,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
     label: "游戏ID",
     prop: "game_id",
     width: 140,

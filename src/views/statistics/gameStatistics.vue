@@ -1,0 +1,871 @@
+<script setup lang="ts">
+import { ref, computed, watch, onMounted } from "vue";
+import dayjs from "dayjs";
+defineOptions({
+  name: "GameStatistics"
+});
+import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
+import { useTable } from "plus-pro-components";
+import { message } from "@/utils/message";
+import { ElTabs, ElTabPane } from "element-plus";
+import {
+  getCurrencyList,
+  getGameBrandList,
+  getSupplierList,
+  type CurrencyItem,
+  type GameBrandItem,
+  type SupplierItem
+} from "@/api/game";
+import Upload from "~icons/ep/upload";
+import Monitor from "~icons/ep/monitor";
+import Grid from "~icons/ep/grid";
+import Filter from "~icons/ep/filter";
+
+// 当前激活的标签页
+const activeTab = ref("daily");
+
+// 币种选项
+const currencyOptions = ref<Array<{ label: string; value: number }>>([]);
+// 分类选项（游戏品牌）
+const categoryOptions = ref<Array<{ label: string; value: number }>>([]);
+// 厂商选项（供应商）
+const supplierOptions = ref<Array<{ label: string; value: number }>>([]);
+
+// 获取币种列表
+const fetchCurrencyList = async () => {
+  try {
+    const res = await getCurrencyList({ pageSize: 1000 });
+    if (res.code === 0) {
+      currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取币种列表失败:", error);
+  }
+};
+
+// 获取分类列表（游戏品牌）
+const fetchCategoryList = async () => {
+  try {
+    const res = await getGameBrandList({ pageSize: 1000 });
+    if (res.code === 0 && res.data && res.data.rows) {
+      categoryOptions.value = res.data.rows.map((item: GameBrandItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取分类列表失败:", error);
+  }
+};
+
+// 获取厂商列表（供应商）
+const fetchSupplierList = async () => {
+  try {
+    const res = await getSupplierList({ pageSize: 1000, status: "1" });
+    if (res.code === 0 && res.data && res.data.rows) {
+      supplierOptions.value = res.data.rows.map((item: SupplierItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取厂商列表失败:", error);
+  }
+};
+
+// 钱包类型选项
+const walletTypeOptions = [
+  { label: "全部", value: "" },
+  { label: "单一钱包", value: "1" },
+  { label: "转账钱包", value: "2" }
+];
+
+/*  -----日报表搜索表单相关-----  */
+// 日报表搜索表单数据
+const dailySearchData = ref({
+  date: [] as string[],
+  game_id: "",
+  game_name: "",
+  category_id: "",
+  supplier_id: "",
+  merchant_id: "",
+  wallet_type: ""
+});
+
+// 日报表搜索表单配置
+const dailySearchColumns: PlusColumn[] = [
+  {
+    label: "日期",
+    prop: "date",
+    valueType: "date-picker",
+    fieldProps: computed(() => ({
+      type: "daterange",
+      format: "YYYY-MM-DD",
+      valueFormat: "YYYY-MM-DD",
+      startPlaceholder: "开始日期",
+      endPlaceholder: "结束日期"
+    }))
+  },
+  {
+    label: "游戏ID",
+    prop: "game_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入游戏ID"
+    }))
+  },
+  {
+    label: "游戏名称",
+    prop: "game_name",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入游戏名称"
+    }))
+  },
+  {
+    label: "分类",
+    prop: "category_id",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择分类",
+      filterable: true
+    })),
+    options: computed(() => [
+      {
+        label: "全部",
+        value: ""
+      },
+      ...categoryOptions.value.map(item => ({
+        label: item.label,
+        value: item.value.toString()
+      }))
+    ])
+  },
+  {
+    label: "厂商",
+    prop: "supplier_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入厂商"
+    }))
+  },
+  {
+    label: "商户ID",
+    prop: "merchant_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入商户ID"
+    }))
+  },
+  {
+    label: "钱包类型",
+    prop: "wallet_type",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择钱包类型"
+    })),
+    options: walletTypeOptions
+  }
+];
+
+/*  -----月报表搜索表单相关-----  */
+// 月报表搜索表单数据
+const monthlySearchData = ref({
+  month: [] as string[],
+  game_id: "",
+  game_name: "",
+  category_id: "",
+  supplier_id: "",
+  merchant_id: ""
+});
+
+// 月报表搜索表单配置
+const monthlySearchColumns: PlusColumn[] = [
+  {
+    label: "月份",
+    prop: "month",
+    valueType: "date-picker",
+    fieldProps: computed(() => ({
+      type: "monthrange",
+      format: "YYYY-MM",
+      valueFormat: "YYYY-MM",
+      startPlaceholder: "开始月份",
+      endPlaceholder: "结束月份"
+    }))
+  },
+  {
+    label: "游戏ID",
+    prop: "game_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入游戏ID"
+    }))
+  },
+  {
+    label: "游戏名称",
+    prop: "game_name",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入游戏名称"
+    }))
+  },
+  {
+    label: "分类",
+    prop: "category_id",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择分类",
+      filterable: true
+    })),
+    options: computed(() => [
+      {
+        label: "全部",
+        value: ""
+      },
+      ...categoryOptions.value.map(item => ({
+        label: item.label,
+        value: item.value.toString()
+      }))
+    ])
+  },
+  {
+    label: "厂商",
+    prop: "supplier_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入厂商"
+    }))
+  },
+  {
+    label: "商户ID",
+    prop: "merchant_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入商户ID"
+    }))
+  }
+];
+
+// 搜索表单显示控制
+const showSearch = ref(true);
+
+// 点击搜索按钮
+const handleSearch = (values: any) => {
+  pageInfo.value.page = 1;
+  getList();
+};
+
+// 重置搜索表单
+const handleRest = () => {
+  if (activeTab.value === "daily") {
+    dailySearchData.value = {
+      date: [],
+      game_id: "",
+      game_name: "",
+      category_id: "",
+      supplier_id: "",
+      merchant_id: "",
+      wallet_type: ""
+    };
+  } else {
+    monthlySearchData.value = {
+      month: [],
+      game_id: "",
+      game_name: "",
+      category_id: "",
+      supplier_id: "",
+      merchant_id: ""
+    };
+  }
+  pageInfo.value.page = 1;
+  getList();
+};
+
+// 表格数据类型
+type DailyTableRow = {
+  date: string;
+  game_id: string;
+  game_name: string;
+  currency_id: string;
+  category_id: string;
+  supplier_id: string;
+  merchant_id: number;
+  merchant_number: string;
+  wallet_type: string;
+  order_total_amount: string;
+  payout_total_amount: string;
+  win_loss: string;
+  cost_price: string;
+  agent_point: string;
+  merchant_point: string;
+  cost: string;
+  agent_sales: string;
+  platform_sales: string;
+  agent_profit: string;
+  platform_profit: string;
+};
+
+type MonthlyTableRow = {
+  month: string;
+  game_id: string;
+  game_name: string;
+  currency_id: string;
+  category_id: string;
+  supplier_id: string;
+  merchant_id: number;
+  merchant_number: string;
+  order_total_amount: string;
+  payout_total_amount: string;
+  win_loss: string;
+  cost_price: string;
+  agent_point: string;
+  merchant_point: string;
+  cost: string;
+  agent_sales: string;
+  platform_sales: string;
+  agent_profit: string;
+  platform_profit: string;
+};
+
+// 多选选中数据
+const multipleSelection = ref<(DailyTableRow | MonthlyTableRow)[]>([]);
+// 表格相关数据和操作
+const { tableData, buttons, pageInfo, total, loadingStatus } =
+  useTable<(DailyTableRow | MonthlyTableRow)[]>();
+
+// 统计信息
+const totalOrderAmount = ref(0);
+const totalPayoutAmount = ref(0);
+const totalWinLoss = ref(0);
+
+// 日报表表格配置
+const dailyTableConfig: any = ref([
+  {
+    label: "日期",
+    prop: "date",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "游戏ID",
+    prop: "game_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "游戏名称",
+    prop: "game_name",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "币种",
+    prop: "currency_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "分类",
+    prop: "category_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "厂商",
+    prop: "supplier_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "商户ID",
+    prop: "merchant_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "商户号",
+    prop: "merchant_number",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "钱包类型",
+    prop: "wallet_type",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "下单总额",
+    prop: "order_total_amount",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "派彩总额",
+    prop: "payout_total_amount",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "输赢",
+    prop: "win_loss",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "成本价",
+    prop: "cost_price",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "代理点位",
+    prop: "agent_point",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "商户点位",
+    prop: "merchant_point",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "成本",
+    prop: "cost",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "代理销售",
+    prop: "agent_sales",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "平台销售",
+    prop: "platform_sales",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "代理利润",
+    prop: "agent_profit",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "平台利润",
+    prop: "platform_profit",
+    tableColumnProps: {
+      align: "center"
+    }
+  }
+]);
+
+// 月报表表格配置
+const monthlyTableConfig: any = ref([
+  {
+    label: "月份",
+    prop: "month",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "游戏ID",
+    prop: "game_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "游戏名称",
+    prop: "game_name",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "币种",
+    prop: "currency_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "分类",
+    prop: "category_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "厂商",
+    prop: "supplier_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "商户ID",
+    prop: "merchant_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "商户号",
+    prop: "merchant_number",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "下单总额",
+    prop: "order_total_amount",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "派彩总额",
+    prop: "payout_total_amount",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "输赢",
+    prop: "win_loss",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "成本价",
+    prop: "cost_price",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "代理点位",
+    prop: "agent_point",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "商户点位",
+    prop: "merchant_point",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "成本",
+    prop: "cost",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "代理销售",
+    prop: "agent_sales",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "平台销售",
+    prop: "platform_sales",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "代理利润",
+    prop: "agent_profit",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "平台利润",
+    prop: "platform_profit",
+    tableColumnProps: {
+      align: "center"
+    }
+  }
+]);
+
+// 当前表格配置（根据标签页切换）
+const currentTableConfig = computed(() => {
+  return activeTab.value === "daily" ? dailyTableConfig.value : monthlyTableConfig.value;
+});
+
+// 获取列表数据
+const getList = async () => {
+  loadingStatus.value = true;
+  try {
+    // TODO: 对接实际API
+    await new Promise(resolve => setTimeout(resolve, 500));
+    tableData.value = [];
+    total.value = 0;
+    
+    // 计算统计信息
+    totalOrderAmount.value = 0;
+    totalPayoutAmount.value = 0;
+    totalWinLoss.value = 0;
+  } catch (error: any) {
+    console.error("获取列表数据失败:", error);
+    message(error?.message || "获取列表数据失败", { type: "error" });
+    tableData.value = [];
+    total.value = 0;
+    totalOrderAmount.value = 0;
+    totalPayoutAmount.value = 0;
+    totalWinLoss.value = 0;
+  } finally {
+    loadingStatus.value = false;
+  }
+};
+
+// 记录上一次的 pageSize
+const previousPageSize = ref(pageInfo.value.pageSize);
+
+// 分页处理
+const handlePageChange = () => {
+  if (pageInfo.value.pageSize !== previousPageSize.value) {
+    pageInfo.value.page = 1;
+    previousPageSize.value = pageInfo.value.pageSize;
+  }
+  getList();
+};
+
+// 标签页切换处理
+const handleTabChange = (tabName: string) => {
+  activeTab.value = tabName;
+  pageInfo.value.page = 1;
+  multipleSelection.value = [];
+  getList();
+};
+
+// 监听标签页切换，重置搜索表单
+watch(activeTab, () => {
+  handleRest();
+});
+
+// 初始化加载数据
+onMounted(() => {
+  fetchCurrencyList();
+  fetchCategoryList();
+  fetchSupplierList();
+  getList();
+});
+</script>
+
+<template>
+  <div class="game-statistics-container">
+    <!-- 标签页容器 -->
+    <el-card class="tabs-card" shadow="never" style="margin: 20px">
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+        <el-tab-pane label="日报表" name="daily" />
+        <el-tab-pane label="月报表" name="monthly" />
+      </el-tabs>
+    </el-card>
+
+    <!-- 搜索表单 -->
+    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
+      <PlusSearch
+        v-if="activeTab === 'daily'"
+        v-model="dailySearchData"
+        :columns="dailySearchColumns"
+        label-width="80"
+        label-position="right"
+        :has-unfold="false"
+        searchText="搜索"
+        resetText="重置"
+        @search="handleSearch"
+        @reset="handleRest"
+      />
+      <PlusSearch
+        v-else
+        v-model="monthlySearchData"
+        :columns="monthlySearchColumns"
+        label-width="80"
+        label-position="right"
+        :has-unfold="false"
+        searchText="搜索"
+        resetText="重置"
+        @search="handleSearch"
+        @reset="handleRest"
+      />
+    </el-card>
+
+    <!-- 表格 -->
+    <el-card class="table-card" shadow="never" style="margin: 20px">
+      <PlusTable
+        v-loading="loadingStatus"
+        :columns="currentTableConfig"
+        :table-data="tableData"
+        :stripe="true"
+        :is-selection="true"
+        :adaptive="true"
+        width="100%"
+        height="90%"
+        @selection-change="(val: any[]) => multipleSelection = val"
+      >
+        <!-- 表格标题：统计信息 -->
+        <template #title>
+          <div class="stats-content" style="margin-left: 5px">
+            <div class="stat-item">
+              <span class="stat-label">累计下单总额:</span>
+              <el-input
+                v-model="totalOrderAmount"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">累计派彩总额:</span>
+              <el-input
+                v-model="totalPayoutAmount"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">累计输赢总额:</span>
+              <el-input
+                v-model="totalWinLoss"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+          </div>
+        </template>
+        <!-- 工具栏 -->
+        <template #density-icon>
+          <el-tooltip content="密度" placement="top">
+            <el-icon
+              :size="18"
+              style=" margin-right: 15px;cursor: pointer; outline: none"
+              color="#606266"
+            >
+              <component :is="Monitor" />
+            </el-icon>
+          </el-tooltip>
+        </template>
+        <template #column-settings-icon>
+          <el-tooltip content="列设置" placement="top">
+            <el-icon
+              :size="18"
+              style=" margin-right: 5px;cursor: pointer; outline: none"
+              color="#606266"
+            >
+              <component :is="Grid" />
+            </el-icon>
+          </el-tooltip>
+        </template>
+        <template #toolbar>
+          <!-- 筛选：点击切换搜索表单显示/隐藏 -->
+          <el-tooltip
+            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            placement="top"
+            :trigger="'hover'"
+          >
+            <span style="display: inline-block">
+              <el-icon
+                :size="18"
+                style="
+                  margin-right: 15px;
+                  cursor: pointer;
+                  outline: none;
+                "
+                color="#606266"
+                @click="showSearch = !showSearch"
+              >
+                <component :is="Filter" />
+              </el-icon>
+            </span>
+          </el-tooltip>
+          <!-- 导出下拉菜单 -->
+          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+            <span style="display: inline-block">
+              <el-icon
+                :size="18"
+                style="
+                  display: inline-block;
+                  margin-right: 15px;
+                  cursor: pointer;
+                  outline: none;
+                "
+                color="#606266"
+              >
+                <component :is="Upload" />
+              </el-icon>
+            </span>
+          </el-tooltip>
+        </template>
+      </PlusTable>
+      <PlusPagination
+        v-model="pageInfo"
+        :total="total"
+        :small="true"
+        :page-sizes="[10, 20, 50, 100]"
+        :layout="'total, sizes, prev, pager, next, jumper'"
+        @change="handlePageChange"
+      />
+    </el-card>
+  </div>
+</template>
+
+<style scoped>
+.game-statistics-container {
+  width: 100%;
+}
+
+.stats-content {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #606266;
+}
+</style>
+
+

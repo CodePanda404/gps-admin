@@ -10,7 +10,7 @@ export default {
   meta: {
     icon: User,
     title: "代理管理",
-    rank: 3
+    rank: 4
   },
   children: [
     {

@@ -846,18 +846,6 @@ const exportJson = () => {
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>
           </el-button>
-          <el-dropdown style="margin-left: 15px;">
-            <el-button type="info" size="default">
-              <span>更多</span>
-              <el-icon class="el-icon--right"><component :is="More" /></el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item>操作1</el-dropdown-item>
-                <el-dropdown-item>操作2</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>

@@ -68,6 +68,7 @@ const searchData = ref({
   product_id: "",
   currency: "",
   type_code: "",
+  type_description: "",
   status: "",
   updateTime: null as string[] | null
 });
@@ -179,6 +180,14 @@ const searchColumns: PlusColumn[] = [
     valueType: "copy",
     fieldProps: computed(() => ({
       placeholder: "请输入类型代码"
+    }))
+  },
+  {
+    label: "类型说明",
+    prop: "type_description",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入类型说明"
     }))
   },
   {
@@ -304,6 +313,7 @@ const handleRest = () => {
     product_id: "",
     currency: "",
     type_code: "",
+    type_description: "",
     status: "",
     updateTime: null
   };
@@ -404,7 +414,7 @@ const tableConfig: any = ref([
   },
   {
     label: "产品ID",
-    prop: "product_id",
+    prop: "product_code",
     tableColumnProps: {
       align: "center"
     }
@@ -503,7 +513,7 @@ const tableConfig: any = ref([
   },
   {
     label: "更新时间",
-    prop: "update_time",
+    prop: "updatetime",
     tableColumnProps: {
       align: "center"
     },
@@ -571,7 +581,7 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, wallet_type, name, type, shortname, game_count, provider, product_id, currency, type_code, status, updateTime } = searchData.value;
+    const { id, wallet_type, name, type, shortname, game_count, provider, product_id, currency, type_code, type_description, status, updateTime } = searchData.value;
     const params: GameBrandListParams = {
       pageNumber: page,
       pageSize,
@@ -585,6 +595,7 @@ const getList = async () => {
       product_id: product_id || undefined,
       currency: currency || undefined,
       type_code: type_code || undefined,
+      type_desc: type_description || undefined,
       status: status || undefined
     };
 

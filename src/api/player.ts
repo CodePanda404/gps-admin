@@ -306,6 +306,12 @@ export type TransferBettingItem = {
   win_and_lose: number;
   status_text: string;
   createtime: string;
+  game_type_id?: number | string;
+  type_id?: number | string;
+  provider_id?: number | string;
+  currency_id?: number | string;
+  round_id?: number | string;
+  settle_time?: string;
 };
 
 /** 转账模式玩家投注明细查询参数 */
@@ -326,6 +332,14 @@ export type TransferBettingListParams = {
   transaction_id?: string;
   /** 状态 */
   status?: string;
+  /** 游戏类型ID */
+  game_type_id?: string | number;
+  /** 分类ID */
+  type_id?: string | number;
+  /** 供应商ID */
+  provider_id?: string | number;
+  /** 回合ID */
+  round_id?: string | number;
   /** 创建开始时间 */
   create_start_time?: string;
   /** 创建结束时间 */

@@ -301,6 +301,10 @@ export type CurrencyListParams = {
   remark?: string;
   /** 状态 */
   status?: string;
+  /** 创建开始时间 */
+  create_start_time?: string;
+  /** 创建结束时间 */
+  create_end_time?: string;
   /** 更新开始时间 */
   update_start_time?: string;
   /** 更新结束时间 */
@@ -741,6 +745,7 @@ export type PgfAccountListParams = {
   token?: string;
   key?: string;
   api_host?: string;
+  currency_id?: string | number;
 };
 
 /** PGF账号列表响应 */
@@ -1117,6 +1122,8 @@ export type GameBrandListParams = {
   currency?: string;
   /** 类型代码 */
   type_code?: string;
+  /** 类型说明 */
+  type_desc?: string;
   /** 当前页码 */
   pageNumber?: number;
   /** 每页数量 */

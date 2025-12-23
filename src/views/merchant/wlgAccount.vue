@@ -72,6 +72,7 @@ const searchData = ref({
   sn_url: "",
   agent_url: "",
   remark: "",
+  currency_id: "",
   status: "",
   createTime: [] as string[],
   updateTime: [] as string[]
@@ -134,6 +135,25 @@ const searchColumns: PlusColumn[] = [
         value: "2"
       }
     ]
+  },
+    {
+    label: "币种",
+    prop: "currency_id",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择币种",
+      filterable: true
+    })),
+    options: computed(() => [
+      {
+        label: "全部",
+        value: ""
+      },
+      ...currencyOptions.value.map(item => ({
+        label: item.label,
+        value: item.value.toString()
+      }))
+    ])
   },
   {
     label: "总社名称",
@@ -242,7 +262,6 @@ const searchColumns: PlusColumn[] = [
       placeholder: "备注"
     }))
   },
-  // Row 5
   {
     label: "状态",
     prop: "status",
@@ -444,6 +463,7 @@ const handleRest = () => {
     sn_url: "",
     agent_url: "",
     remark: "",
+    currency_id: "",
     status: "",
     createTime: [],
     updateTime: []
@@ -689,6 +709,7 @@ const getList = async () => {
       sn_url, 
       agent_url, 
       remark, 
+      currency_id,
       status, 
       createTime, 
       updateTime 
@@ -712,6 +733,7 @@ const getList = async () => {
       sn_url: sn_url || undefined,
       agent_url: agent_url || undefined,
       remark: remark || undefined,
+      currency_id: currency_id || undefined,
       status: status || undefined
     };
 
@@ -1240,18 +1262,6 @@ const exportJson = () => {
           >
             <span>解绑商户</span>
           </el-button>
-          <el-dropdown style="margin-left: 15px;">
-            <el-button type="info" size="default" >
-              <span>更多</span>
-              <el-icon class="el-icon--right"><component :is="More" /></el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item>操作1</el-dropdown-item>
-                <el-dropdown-item>操作2</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>

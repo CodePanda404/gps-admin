@@ -55,25 +55,6 @@ const permissionRouter = {
   ]
 };
 
-const testRouter = {
-  path: "/test",
-  meta: {
-    title: "测试管理",
-    icon: "streamline-kameleon-color:aid-kit",
-    rank: 10
-  },
-  children: [
-    {
-      path: "/test/index",
-      name: "Test",
-      component: "test/index",
-      meta: {
-        title: "测试页面",
-      }
-    },
-  ]
-}
-
 export default defineFakeRoute([
   {
     url: "/get-async-routes",
@@ -81,7 +62,7 @@ export default defineFakeRoute([
     response: () => {
       return {
         success: true,
-        data: [permissionRouter, testRouter]
+        data: [permissionRouter]
       };
     }
   }
