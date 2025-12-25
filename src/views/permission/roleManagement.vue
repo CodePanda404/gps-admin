@@ -1,124 +1,35 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, h, onMounted } from "vue";
 import dayjs from "dayjs";
 defineOptions({
   name: "RoleManagement"
 });
-import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
+import { type PlusColumn, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
 import { message } from "@/utils/message";
+import { ElMessageBox, ElTag, ElDialog, ElForm, ElFormItem, ElInput, ElButton, ElSelect, ElOption, ElTree, ElCheckbox, type FormInstance } from "element-plus";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
-import Filter from "~icons/ep/filter";
 import Plus from "~icons/ep/plus";
 import Edit from "~icons/ep/edit";
 import Delete from "~icons/ep/delete";
-
-/*  -----搜索表单相关-----  */
-// 搜索表单数据
-const searchData = ref({
-  id: "",
-  name: "",
-  status: "",
-  createTime: [] as string[]
-});
-
-// 搜索表单显示控制
-const showSearch = ref(true);
-
-// 搜索表单配置
-const searchColumns: PlusColumn[] = [
-  {
-    label: "ID",
-    prop: "id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入ID"
-    }))
-  },
-  {
-    label: "角色名称",
-    prop: "name",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入角色名称"
-    }))
-  },
-  {
-    label: "状态",
-    prop: "status",
-    valueType: "select",
-    fieldProps: computed(() => ({
-      placeholder: "请选择"
-    })),
-    options: [
-      { label: "全部", value: "" },
-      { label: "启用", value: "1" },
-      { label: "禁用", value: "0" }
-    ]
-  },
-  {
-    label: "创建时间",
-    prop: "createTime",
-    valueType: "date-picker",
-    fieldProps: computed(() => ({
-      type: "daterange",
-      format: "YYYY-MM-DD HH:mm:ss",
-      valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
-      shortcuts: [
-        {
-          text: "今天",
-          value: () => {
-            const today = dayjs();
-            return [
-              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "昨天",
-          value: () => {
-            const yesterday = dayjs().subtract(1, "day");
-            return [
-              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        }
-      ]
-    }))
-  }
-];
-
-// 点击搜索按钮
-const handleSearch = (values: any) => {
-  pageInfo.value.page = 1;
-  getList();
-};
-
-// 重置搜索表单
-const handleRest = () => {
-  searchData.value = {
-    id: "",
-    name: "",
-    status: "",
-    createTime: []
-  };
-  pageInfo.value.page = 1;
-  getList();
-};
+import { constantMenus } from "@/router/index";
 
 // 表格数据类型
 type TableRow = {
   id: number;
+  parent: string;
   name: string;
-  description: string;
   status: string;
-  createtime: string;
+};
+
+// 权限树节点类型
+type PermissionNode = {
+  id: string;
+  label: string;
+  path: string;
+  children?: PermissionNode[];
 };
 
 // 多选选中数据
@@ -132,20 +43,23 @@ const tableConfig: any = ref([
   {
     label: "ID",
     prop: "id",
+    width: 80,
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "角色名称",
+    label: "父级",
+    prop: "parent",
+    minWidth: 120,
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "名称",
     prop: "name",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "描述",
-    prop: "description",
+    minWidth: 120,
     tableColumnProps: {
       align: "center"
     }
@@ -153,14 +67,12 @@ const tableConfig: any = ref([
   {
     label: "状态",
     prop: "status",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "创建时间",
-    prop: "createtime",
-    width: "160",
+    width: 100,
+    render: (value: string) => {
+      return h(ElTag, {
+        type: value === "1" ? "success" : "danger"
+      }, () => value === "1" ? "正常" : "停用");
+    },
     tableColumnProps: {
       align: "center"
     }
@@ -177,8 +89,18 @@ buttons.value = [
     },
     onClick: (params: any) => {
       const row = params.row as TableRow;
-      // TODO: 实现编辑功能
-      message("编辑功能待实现", { type: "info" });
+      handleEditRow(row);
+    }
+  },
+  {
+    text: "删除",
+    code: "delete",
+    props: {
+      type: "danger"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleDelete(row);
     }
   }
 ];
@@ -189,8 +111,17 @@ const getList = async () => {
   try {
     // TODO: 对接实际API
     await new Promise(resolve => setTimeout(resolve, 500));
-    tableData.value = [];
-    total.value = 0;
+    
+    // 模拟数据
+    tableData.value = [
+      {
+        id: 1,
+        parent: "代理",
+        name: "商户",
+        status: "1"
+      }
+    ];
+    total.value = tableData.value.length;
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
@@ -215,25 +146,496 @@ const handlePageChange = () => {
 
 // 初始化加载数据
 getList();
+
+// 对话框相关
+const showDialog = ref(false);
+const dialogTitle = ref("新增");
+const isEdit = ref(false);
+const formRef = ref<FormInstance>();
+const formData = ref({
+  id: 0,
+  parent: "",
+  name: "",
+  permissions: [] as string[]
+});
+
+// 父级选项（模拟数据，后续对接API）
+const parentOptions = ref([
+  { label: "无", value: "" },
+  { label: "代理", value: "代理" },
+  { label: "商户", value: "商户" }
+]);
+
+// 表单验证规则
+const formRules = {
+  name: [
+    { required: true, message: "请输入名称", trigger: "blur" }
+  ]
+};
+
+// 权限树数据
+const permissionTreeData = ref<PermissionNode[]>([]);
+const permissionTreeRef = ref();
+const checkAll = ref(false);
+const expandAll = ref(false);
+
+// 从路由结构构建权限树（使用模拟数据）
+const buildPermissionTree = () => {
+  // 模拟权限树数据 - 根据实际路由结构生成
+  // 每个路由节点会显示4个权限复选框：查看、添加、编辑、删除
+  const mockPermissionTree: PermissionNode[] = [
+    {
+      id: "/console",
+      label: "控制台",
+      path: "/console"
+    },
+    {
+      id: "/welcome",
+      label: "欢迎页面",
+      path: "/welcome"
+    },
+    {
+      id: "/system",
+      label: "系统设置",
+      path: "/system"
+    },
+    {
+      id: "/merchant",
+      label: "商户资料",
+      path: "/merchant"
+    },
+    {
+      id: "/player",
+      label: "玩家管理",
+      path: "/player"
+    },
+    {
+      id: "/game",
+      label: "游戏管理",
+      path: "/game",
+      children: [
+        {
+          id: "/game/supplier",
+          label: "供应商",
+          path: "/game/supplier"
+        },
+        {
+          id: "/game/game-play-type",
+          label: "玩法类型",
+          path: "/game/game-play-type"
+        },
+        {
+          id: "/game/game-list",
+          label: "游戏列表",
+          path: "/game/game-list"
+        },
+        {
+          id: "/game/game-brand",
+          label: "游戏品牌",
+          path: "/game/game-brand"
+        }
+      ]
+    },
+    {
+      id: "/agent",
+      label: "代理管理",
+      path: "/agent",
+      children: [
+        {
+          id: "/agent/agent-list",
+          label: "代理列表",
+          path: "/agent/agent-list"
+        }
+      ]
+    },
+    {
+      id: "/merchant-management",
+      label: "商户管理",
+      path: "/merchant-management",
+      children: [
+        {
+          id: "/merchant-management/merchant-list",
+          label: "商户列表",
+          path: "/merchant-management/merchant-list"
+        },
+        {
+          id: "/merchant-management/currency",
+          label: "币种",
+          path: "/merchant-management/currency"
+        },
+        {
+          id: "/merchant-management/pgf-account",
+          label: "PGF账号",
+          path: "/merchant-management/pgf-account"
+        },
+        {
+          id: "/merchant-management/wlg-account",
+          label: "WLG账号",
+          path: "/merchant-management/wlg-account"
+        }
+      ]
+    },
+    {
+      id: "/permission",
+      label: "权限管理",
+      path: "/permission",
+      children: [
+        {
+          id: "/permission/account",
+          label: "账号管理",
+          path: "/permission/account"
+        },
+        {
+          id: "/permission/role",
+          label: "角色管理",
+          path: "/permission/role"
+        },
+        {
+          id: "/permission/menu",
+          label: "菜单管理",
+          path: "/permission/menu"
+        },
+        {
+          id: "/permission/game-test-log",
+          label: "游戏测试日志",
+          path: "/permission/game-test-log"
+        },
+        {
+          id: "/permission/operation-log",
+          label: "操作日志",
+          path: "/permission/operation-log"
+        }
+      ]
+    },
+    {
+      id: "/finance",
+      label: "财务管理",
+      path: "/finance",
+      children: [
+        {
+          id: "/finance/merchant-bill",
+          label: "商户账单",
+          path: "/finance/merchant-bill",
+          children: [
+            {
+              id: "/finance/merchant-bill/detail",
+              label: "明细",
+              path: "/finance/merchant-bill/detail"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      id: "/article",
+      label: "文章管理",
+      path: "/article",
+      children: [
+        {
+          id: "/article/help",
+          label: "帮助管理",
+          path: "/article/help"
+        }
+      ]
+    },
+    {
+      id: "/statistics",
+      label: "数据统计",
+      path: "/statistics",
+      children: [
+        {
+          id: "/statistics/player",
+          label: "玩家统计",
+          path: "/statistics/player"
+        },
+        {
+          id: "/statistics/game",
+          label: "游戏统计",
+          path: "/statistics/game"
+        },
+        {
+          id: "/statistics/product",
+          label: "产品统计",
+          path: "/statistics/product"
+        },
+        {
+          id: "/statistics/merchant-daily",
+          label: "商户日报表",
+          path: "/statistics/merchant-daily"
+        }
+      ]
+    }
+  ];
+
+  permissionTreeData.value = mockPermissionTree;
+};
+
+// 初始化权限树
+onMounted(() => {
+  buildPermissionTree();
+});
+
+// 获取所有权限节点的key（包括权限项）
+const getAllPermissionKeys = (nodes: PermissionNode[]): string[] => {
+  const keys: string[] = [];
+  const traverse = (nodeList: PermissionNode[]) => {
+    nodeList.forEach(node => {
+      // 添加权限项
+      keys.push(`${node.id}-view`);
+      keys.push(`${node.id}-add`);
+      keys.push(`${node.id}-edit`);
+      keys.push(`${node.id}-delete`);
+      
+      if (node.children && node.children.length > 0) {
+        traverse(node.children);
+      }
+    });
+  };
+  traverse(nodes);
+  return keys;
+};
+
+// 获取所有节点key（用于展开）
+const getAllNodeKeys = (nodes: PermissionNode[]): string[] => {
+  const keys: string[] = [];
+  const traverse = (nodeList: PermissionNode[]) => {
+    nodeList.forEach(node => {
+      keys.push(node.id);
+      if (node.children && node.children.length > 0) {
+        traverse(node.children);
+      }
+    });
+  };
+  traverse(nodes);
+  return keys;
+};
+
+// 选中全部
+const handleCheckAll = () => {
+  if (checkAll.value) {
+    const allKeys = getAllPermissionKeys(permissionTreeData.value);
+    permissionCheckedKeys.value = allKeys;
+  } else {
+    permissionCheckedKeys.value = [];
+  }
+};
+
+// 展开全部
+const handleExpandAll = () => {
+  if (expandAll.value) {
+    const expandKeys = getAllNodeKeys(permissionTreeData.value);
+    permissionTreeRef.value?.setExpandedKeys(expandKeys);
+  } else {
+    permissionTreeRef.value?.setExpandedKeys([]);
+  }
+};
+
+// 权限选中状态管理
+const permissionCheckedKeys = ref<string[]>([]);
+
+// 检查权限是否被选中
+const isPermissionChecked = (nodeId: string, permission: string): boolean => {
+  const key = `${nodeId}-${permission}`;
+  return permissionCheckedKeys.value.includes(key);
+};
+
+// 更新权限选中状态
+const updatePermission = (nodeId: string, permission: string, checked: boolean) => {
+  const key = `${nodeId}-${permission}`;
+  const keys = [...permissionCheckedKeys.value];
+  
+  if (checked) {
+    if (!keys.includes(key)) {
+      keys.push(key);
+    }
+  } else {
+    const index = keys.indexOf(key);
+    if (index > -1) {
+      keys.splice(index, 1);
+    }
+  }
+  
+  permissionCheckedKeys.value = keys;
+  
+  // 更新checkAll状态
+  const allKeys = getAllPermissionKeys(permissionTreeData.value);
+  checkAll.value = allKeys.length > 0 && allKeys.every(k => keys.includes(k));
+};
+
+// 打开新增对话框
+const handleAdd = () => {
+  isEdit.value = false;
+  dialogTitle.value = "添加";
+  formData.value = {
+    id: 0,
+    parent: "",
+    name: "",
+    permissions: []
+  };
+  checkAll.value = false;
+  expandAll.value = false;
+  permissionCheckedKeys.value = [];
+  permissionTreeRef.value?.setExpandedKeys([]);
+  showDialog.value = true;
+};
+
+// 打开编辑对话框
+const handleEdit = () => {
+  if (multipleSelection.value.length !== 1) {
+    message("请选择一条数据进行编辑", { type: "warning" });
+    return;
+  }
+  handleEditRow(multipleSelection.value[0]);
+};
+
+// 编辑单行数据
+const handleEditRow = (row: TableRow) => {
+  isEdit.value = true;
+  dialogTitle.value = "编辑";
+  formData.value = {
+    id: row.id,
+    parent: row.parent,
+    name: row.name,
+    permissions: [] // TODO: 从API获取权限数据
+  };
+  
+  // TODO: 根据权限数据设置选中的节点
+  // 这里先模拟一些选中的权限
+  const mockPermissions = [
+    "/game/supplier-view",
+    "/game/supplier-add",
+    "/game/supplier-edit",
+    "/game/supplier-delete"
+  ];
+  permissionCheckedKeys.value = mockPermissions;
+  
+  checkAll.value = false;
+  expandAll.value = true;
+  handleExpandAll();
+  showDialog.value = true;
+};
+
+// 关闭对话框
+const handleCloseDialog = () => {
+  showDialog.value = false;
+  formRef.value?.resetFields();
+};
+
+// 提交表单
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  await formRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        // 获取选中的权限
+        formData.value.permissions = permissionCheckedKeys.value;
+        
+        // TODO: 对接实际API
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        if (isEdit.value) {
+          // 编辑：更新列表中的数据
+          const index = tableData.value.findIndex(item => item.id === formData.value.id);
+          if (index !== -1) {
+            tableData.value[index] = {
+              ...tableData.value[index],
+              parent: formData.value.parent,
+              name: formData.value.name
+            };
+          }
+          message("编辑成功", { type: "success" });
+        } else {
+          // 新增：添加到列表
+          const newId = tableData.value.length > 0 
+            ? Math.max(...tableData.value.map(item => item.id)) + 1 
+            : 1;
+          const newItem: TableRow = {
+            id: newId,
+            parent: formData.value.parent || "无",
+            name: formData.value.name,
+            status: "1"
+          };
+          tableData.value.unshift(newItem);
+          total.value += 1;
+          message("新增成功", { type: "success" });
+        }
+        
+        handleCloseDialog();
+      } catch (error: any) {
+        console.error("提交失败:", error);
+        message(error?.message || "提交失败", { type: "error" });
+      }
+    }
+  });
+};
+
+// 删除单条数据
+const handleDelete = async (row: TableRow) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定删除角色"${row.name}"吗？`,
+      "删除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }
+    );
+    
+    // TODO: 对接实际API
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const index = tableData.value.findIndex(item => item.id === row.id);
+    if (index !== -1) {
+      tableData.value.splice(index, 1);
+      total.value -= 1;
+      message("删除成功", { type: "success" });
+    }
+  } catch (error: any) {
+    if (error !== "cancel") {
+      console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
+    }
+  }
+};
+
+// 批量删除
+const handleBatchDelete = async () => {
+  if (multipleSelection.value.length === 0) {
+    message("请选择要删除的数据", { type: "warning" });
+    return;
+  }
+  
+  try {
+    await ElMessageBox.confirm(
+      `确定删除选中的 ${multipleSelection.value.length} 条数据吗？`,
+      "批量删除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }
+    );
+    
+    // TODO: 对接实际API
+    await new Promise(resolve => setTimeout(resolve, 300));
+    
+    const ids = multipleSelection.value.map(item => item.id);
+    tableData.value = tableData.value.filter(item => !ids.includes(item.id));
+    total.value -= multipleSelection.value.length;
+    multipleSelection.value = [];
+    message("删除成功", { type: "success" });
+  } catch (error: any) {
+    if (error !== "cancel") {
+      console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
+    }
+  }
+};
 </script>
 
 <template>
   <div class="role-management-container">
-    <!-- 搜索表单 -->
-    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
-      <PlusSearch
-        v-model="searchData"
-        :columns="searchColumns"
-        label-width="80"
-        label-position="right"
-        :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
-        @search="handleSearch"
-        @reset="handleRest"
-      />
-    </el-card>
-
     <!-- 表格 -->
     <el-card class="table-card" shadow="never" style="margin: 20px">
       <PlusTable
@@ -242,10 +644,9 @@ getList();
         :table-data="tableData"
         :stripe="true"
         :is-selection="true"
-        :adaptive="true"
         :action-bar="{
           buttons,
-          width: '120px',
+          width: '150px',
           label: '操作'
         }"
         width="100%"
@@ -254,13 +655,22 @@ getList();
       >
         <!-- 表格操作栏按钮 -->
         <template #title>
-          <el-button type="primary" @click="() => message('新增功能待实现', { type: 'info' })" size="default">
+          <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
             <span style="margin-left: 3px;">新增</span>
           </el-button>
           <el-button 
+            type="success" 
+            @click="handleEdit" 
+            size="default"
+            :disabled="multipleSelection.length !== 1"
+          >
+            <el-icon><component :is="Edit" /></el-icon>
+            <span style="margin-left: 3px;">编辑</span>
+          </el-button>
+          <el-button 
             type="danger" 
-            @click="() => message('删除功能待实现', { type: 'info' })" 
+            @click="handleBatchDelete" 
             size="default"
             :disabled="multipleSelection.length === 0"
           >
@@ -292,27 +702,6 @@ getList();
           </el-tooltip>
         </template>
         <template #toolbar>
-          <!-- 筛选：点击切换搜索表单显示/隐藏 -->
-          <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
-            placement="top"
-            :trigger="'hover'"
-          >
-            <span style="display: inline-block">
-              <el-icon
-                :size="18"
-                style="
-                  margin-right: 15px;
-                  cursor: pointer;
-                  outline: none;
-                "
-                color="#606266"
-                @click="showSearch = !showSearch"
-              >
-                <component :is="Filter" />
-              </el-icon>
-            </span>
-          </el-tooltip>
           <!-- 导出下拉菜单 -->
           <el-tooltip content="导出" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
@@ -341,6 +730,101 @@ getList();
         @change="handlePageChange"
       />
     </el-card>
+
+    <!-- 新增/编辑对话框 -->
+    <el-dialog
+      v-model="showDialog"
+      :title="dialogTitle"
+      width="800px"
+      :close-on-click-modal="false"
+      @close="handleCloseDialog"
+    >
+      <el-form
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="100px"
+        class="dialog-form"
+      >
+        <el-form-item label="父级">
+          <el-select
+            v-model="formData.parent"
+            placeholder="请选择"
+            style="width: 100%"
+            filterable
+          >
+            <el-option
+              v-for="item in parentOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="名称" prop="name">
+          <el-input
+            v-model="formData.name"
+            placeholder="请输入"
+            maxlength="50"
+          />
+        </el-form-item>
+        <el-form-item label="权限">
+          <div class="permission-controls">
+            <el-checkbox v-model="checkAll" @change="handleCheckAll">选中全部</el-checkbox>
+            <el-checkbox v-model="expandAll" @change="handleExpandAll" style="margin-left: 20px">展开全部</el-checkbox>
+          </div>
+          <div class="permission-tree-container">
+            <el-tree
+              ref="permissionTreeRef"
+              :data="permissionTreeData"
+              :props="{ children: 'children', label: 'label' }"
+              node-key="id"
+              :default-expand-all="expandAll"
+              :expand-on-click-node="false"
+              style="max-height: 400px; overflow-y: auto; margin-top: 10px"
+            >
+              <template #default="{ node, data }">
+                <div class="permission-node">
+                  <span class="node-label">{{ data.label }}</span>
+                  <div class="permission-checkboxes">
+                    <el-checkbox
+                      :model-value="isPermissionChecked(data.id, 'view')"
+                      @update:model-value="(val: boolean) => updatePermission(data.id, 'view', val)"
+                    >
+                      查看
+                    </el-checkbox>
+                    <el-checkbox
+                      :model-value="isPermissionChecked(data.id, 'add')"
+                      @update:model-value="(val: boolean) => updatePermission(data.id, 'add', val)"
+                    >
+                      添加
+                    </el-checkbox>
+                    <el-checkbox
+                      :model-value="isPermissionChecked(data.id, 'edit')"
+                      @update:model-value="(val: boolean) => updatePermission(data.id, 'edit', val)"
+                    >
+                      编辑
+                    </el-checkbox>
+                    <el-checkbox
+                      :model-value="isPermissionChecked(data.id, 'delete')"
+                      @update:model-value="(val: boolean) => updatePermission(data.id, 'delete', val)"
+                    >
+                      删除xxxxxxxx
+                    </el-checkbox>
+                  </div>
+                </div>
+              </template>
+            </el-tree>
+          </div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCloseDialog">取消</el-button>
+          <el-button type="primary" @click="handleSubmit">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -348,6 +832,52 @@ getList();
 .role-management-container {
   width: 100%;
 }
+
+.dialog-form {
+  padding: 20px 0;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.permission-controls {
+  margin-bottom: 10px;
+}
+
+.permission-tree-container {
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.permission-node {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 5px 0;
+}
+
+.node-label {
+  flex: 1;
+  font-weight: 500;
+}
+
+.permission-checkboxes {
+  display: flex;
+  gap: 15px;
+  margin-left: 20px;
+}
+
+:deep(.el-tree-node__content) {
+  height: auto;
+  min-height: 32px;
+}
+
+:deep(.el-tree-node__label) {
+  width: 100%;
+}
 </style>
-
-

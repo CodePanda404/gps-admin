@@ -123,8 +123,8 @@ const onResendCode = async () => {
   sendEmailCode({ username, email: userEmail })
     .then(res => {
       if (res.code === 0) {
-        message(transformI18n($t("login.passwordRecovery.codeSent")), { type: "success" });
-        startCountdown();
+  message(transformI18n($t("login.passwordRecovery.codeSent")), { type: "success" });
+  startCountdown();
       } else {
         message(res.msg || transformI18n($t("login.passwordRecovery.sendCodeFailed")), { type: "error" });
       }

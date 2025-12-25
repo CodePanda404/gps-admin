@@ -19,6 +19,7 @@ import {
   syncGameBrandPics,
   testGameBrand,
   uploadImage,
+  switchGameBrandStatus,
   type GameBrandListParams,
   type GameBrandItem,
   type SupplierItem,
@@ -527,7 +528,7 @@ const tableConfig: any = ref([
       let label = value;
       if (value === "1") {
         type = "success";
-        label = "开启";
+        label = "正常";
       } else if (value === "-1") {
         type = "warning";
         label = "隐藏";
@@ -1094,23 +1095,29 @@ const handleConfirmSwitchStatus = async () => {
 
   switchStatusLoading.value = true;
   try {
-    // 模拟请求，暂时使用 setTimeout
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 模拟成功响应
-    message("状态切换成功", { type: "success" });
-    
-    // 更新本地数据
-    if (statusDialogRow.value) {
-      statusDialogRow.value.status = statusDialogStatus.value;
+    // 调用接口切换状态
+    const res = await switchGameBrandStatus({
+      ids: statusDialogRow.value.id.toString(),
+      status: statusDialogStatus.value
+    });
+
+    if (res.code === 0) {
+      message("状态切换成功", { type: "success" });
+      
+      // 更新本地数据
+      if (statusDialogRow.value) {
+        statusDialogRow.value.status = statusDialogStatus.value;
+      }
+      
+      // 关闭对话框
+      showStatusDialog.value = false;
+      statusDialogRow.value = null;
+      
+      // 刷新列表
+      getList();
+    } else {
+      message(res.msg || "状态切换失败", { type: "error" });
     }
-    
-    // 关闭对话框
-    showStatusDialog.value = false;
-    statusDialogRow.value = null;
-    
-    // 刷新列表
-    getList();
   } catch (error: any) {
     console.error("状态切换失败:", error);
     message(error?.message || "状态切换失败", { type: "error" });
@@ -1584,8 +1591,9 @@ const exportJson = () => {
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="formData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="0">关闭</el-radio>
+            <el-radio label="1">正常</el-radio>
+            <el-radio label="-1">隐藏</el-radio>
+            <el-radio label="0">维护</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>

@@ -11,6 +11,16 @@ import { ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElButton, ElMessa
 import RichTextEditor from "@/components/RichTextEditor/index.vue";
 import "@wangeditor/editor/dist/css/style.css";
 import { Editor, Toolbar } from "@wangeditor/editor-for-vue";
+import {
+  getHelpList,
+  addHelp,
+  editHelp,
+  deleteBatchHelp,
+  type HelpListParams,
+  type HelpItem,
+  type AddHelpParams,
+  type EditHelpParams
+} from "@/api/article";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -90,6 +100,37 @@ const searchColumns: PlusColumn[] = [
               end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
             ];
           }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
         }
       ]
     }))
@@ -135,6 +176,37 @@ const searchColumns: PlusColumn[] = [
               end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
             ];
           }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
         }
       ]
     }))
@@ -160,14 +232,7 @@ const handleRest = () => {
 };
 
 // 表格数据类型
-type TableRow = {
-  id: number;
-  title: string;
-  content?: string;
-  sort: number;
-  createtime: string;
-  updatetime: string;
-};
+type TableRow = HelpItem;
 
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
@@ -193,7 +258,7 @@ const tableConfig: any = ref([
   },
   {
     label: "排序",
-    prop: "sort",
+    prop: "weigh",
     tableColumnProps: {
       align: "center"
     }
@@ -225,7 +290,7 @@ const formData = ref({
   id: 0,
   title: "",
   content: "",
-  sort: 0
+  weigh: 0
 });
 
 // 表单验证规则
@@ -236,7 +301,7 @@ const formRules = {
   content: [
     { required: true, message: "请输入内容", trigger: "blur" }
   ],
-  sort: [
+  weigh: [
     { required: true, message: "请输入排序", trigger: "blur" },
     { type: "number" as const, min: 0, message: "排序必须大于等于0", trigger: "blur" }
   ]
@@ -250,8 +315,12 @@ const handleAdd = () => {
     id: 0,
     title: "",
     content: "",
-    sort: 0
+    weigh: 0
   };
+  // 重置编辑器内容
+  if (editorRef.value) {
+    editorRef.value.setHtml("");
+  }
   showDialog.value = true;
 };
 
@@ -267,9 +336,13 @@ const handleEdit = (row?: TableRow) => {
   formData.value = {
     id: editRow.id,
     title: editRow.title,
-    content: (editRow as any).content || "",
-    sort: editRow.sort
+    content: editRow.content || "",
+    weigh: editRow.weigh
   };
+  // 设置编辑器内容
+  if (editorRef.value) {
+    editorRef.value.setHtml(editRow.content || "");
+  }
   showDialog.value = true;
 };
 
@@ -277,6 +350,10 @@ const handleEdit = (row?: TableRow) => {
 const handleCloseDialog = () => {
   showDialog.value = false;
   formRef.value?.resetFields();
+  // 清空编辑器内容
+  if (editorRef.value) {
+    editorRef.value.setHtml("");
+  }
 };
 
 // 提交表单
@@ -285,42 +362,45 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        // TODO: 对接实际API
-        // 模拟API调用
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // 获取编辑器内容
+        const content = editorRef.value?.getHtml() || formData.value.content;
         
         if (isEdit.value) {
-          // 编辑：更新列表中的数据
-          const index = tableData.value.findIndex(item => item.id === formData.value.id);
-          if (index !== -1) {
-            tableData.value[index] = {
-              ...tableData.value[index],
-              title: formData.value.title,
-              content: formData.value.content,
-              sort: formData.value.sort,
-              updatetime: dayjs().format("YYYY-MM-DD HH:mm:ss")
-            };
-          }
-          message("编辑成功", { type: "success" });
-        } else {
-          // 新增：添加到列表
-          const newId = tableData.value.length > 0 
-            ? Math.max(...tableData.value.map(item => item.id)) + 1 
-            : 1;
-          const newItem: TableRow = {
-            id: newId,
+          // 编辑
+          const params: EditHelpParams = {
+            id: formData.value.id,
             title: formData.value.title,
-            content: formData.value.content,
-            sort: formData.value.sort,
-            createtime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-            updatetime: dayjs().format("YYYY-MM-DD HH:mm:ss")
+            content: content,
+            weigh: formData.value.weigh
           };
-          tableData.value.unshift(newItem);
-          total.value += 1;
-          message("新增成功", { type: "success" });
+          
+          const res = await editHelp(params);
+          
+          if (res.code === 0) {
+            message("编辑成功", { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || "编辑失败", { type: "error" });
+          }
+        } else {
+          // 新增
+          const params: AddHelpParams = {
+            title: formData.value.title,
+            content: content,
+            weigh: formData.value.weigh
+          };
+          
+          const res = await addHelp(params);
+          
+          if (res.code === 0) {
+            message("新增成功", { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || "新增失败", { type: "error" });
+          }
         }
-        
-        handleCloseDialog();
       } catch (error: any) {
         console.error("提交失败:", error);
         message(error?.message || "提交失败", { type: "error" });
@@ -334,7 +414,7 @@ const handleDelete = async (row: TableRow) => {
   try {
     await ElMessageBox.confirm(
       `确定删除标题为"${row.title}"的数据吗？`,
-      "删除确认",
+      "删除",
       {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -342,14 +422,13 @@ const handleDelete = async (row: TableRow) => {
       }
     );
     
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const res = await deleteBatchHelp({ ids: row.id.toString() });
     
-    const index = tableData.value.findIndex(item => item.id === row.id);
-    if (index !== -1) {
-      tableData.value.splice(index, 1);
-      total.value -= 1;
+    if (res.code === 0) {
       message("删除成功", { type: "success" });
+      getList();
+    } else {
+      message(res.msg || "删除失败", { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
@@ -369,7 +448,7 @@ const handleBatchDelete = async () => {
   try {
     await ElMessageBox.confirm(
       `确定删除选中的 ${multipleSelection.value.length} 条数据吗？`,
-      "批量删除确认",
+      "删除",
       {
         confirmButtonText: "确定",
         cancelButtonText: "取消",
@@ -377,14 +456,15 @@ const handleBatchDelete = async () => {
       }
     );
     
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const ids = multipleSelection.value.map(item => item.id).join(",");
+    const res = await deleteBatchHelp({ ids });
     
-    const ids = multipleSelection.value.map(item => item.id);
-    tableData.value = tableData.value.filter(item => !ids.includes(item.id));
-    total.value -= multipleSelection.value.length;
-    multipleSelection.value = [];
-    message("删除成功", { type: "success" });
+    if (res.code === 0) {
+      message("删除成功", { type: "success" });
+      getList();
+    } else {
+      message(res.msg || "删除失败", { type: "error" });
+    }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
@@ -423,30 +503,38 @@ buttons.value = [
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    // TODO: 对接实际API
-    // 模拟API调用，返回模拟数据
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const { page, pageSize } = pageInfo.value;
+    const { id, title, createTime, updateTime } = searchData.value;
     
-    // 模拟数据
-    tableData.value = [
-      {
-        id: 1,
-        title: "帮助文档1",
-        content: "<p>这是帮助文档1的内容</p>",
-        sort: 1,
-        createtime: "2024-01-01 10:00:00",
-        updatetime: "2024-01-01 10:00:00"
-      },
-      {
-        id: 2,
-        title: "帮助文档2",
-        content: "<p>这是帮助文档2的内容</p>",
-        sort: 2,
-        createtime: "2024-01-02 10:00:00",
-        updatetime: "2024-01-02 10:00:00"
-      }
-    ];
-    total.value = tableData.value.length;
+    const params: HelpListParams = {
+      pageNumber: page,
+      pageSize,
+      id: id || undefined,
+      title: title || undefined
+    };
+    
+    // 处理创建时间范围
+    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
+      params.create_start_time = createTime[0];
+      params.create_end_time = createTime[1];
+    }
+    
+    // 处理更新时间范围
+    if (updateTime && Array.isArray(updateTime) && updateTime.length === 2) {
+      params.update_start_time = updateTime[0];
+      params.update_end_time = updateTime[1];
+    }
+    
+    const res = await getHelpList(params);
+    
+    if (res.code === 0 && res.data && res.data.rows) {
+      tableData.value = res.data.rows;
+      total.value = res.data.total;
+    } else {
+      tableData.value = [];
+      total.value = 0;
+      message(res.msg || "获取列表数据失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
@@ -477,20 +565,10 @@ const mode = "default";
 // 编辑器实例，必须用 shallowRef
 const editorRef = shallowRef();
 
-// 内容 HTML
-const valueHtml = ref("<p>你好</p>");
-
-// 模拟 ajax 异步获取内容
-onMounted(() => {
-  setTimeout(() => {
-    valueHtml.value = "<p>我是模拟的异步数据</p>";
-  }, 1500);
-});
-
 const toolbarConfig: any = { excludeKeys: "fullScreen" };
 const editorConfig = { placeholder: "请输入内容..." };
 
-const handleCreated = editor => {
+const handleCreated = (editor: any) => {
   // 记录 editor 实例，重要！
   editorRef.value = editor;
 };
@@ -672,14 +750,14 @@ onBeforeUnmount(() => {
               v-model="formData.content"
               :defaultConfig="editorConfig"
               :mode="mode"
-              style="min-height: 200px; border: 1px solid #ccc"
+              style="min-height: 320px; border: 1px solid #ccc"
               @onCreated="handleCreated"
             />
           </div>
         </el-form-item>
-        <el-form-item label="排序" prop="sort">
+        <el-form-item label="排序" prop="weigh">
           <el-input-number
-            v-model="formData.sort"
+            v-model="formData.weigh"
             :min="0"
             :max="9999"
             placeholder="请输入排序"

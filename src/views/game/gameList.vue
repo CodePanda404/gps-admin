@@ -19,6 +19,7 @@ import {
   deleteBatchGame,
   testGames,
   uploadImage,
+  switchGameStatus,
   type GameListParams,
   type GameListItem,
   type SupplierItem,
@@ -387,8 +388,9 @@ const searchColumns: PlusColumn[] = [
     })),
     options: [
       { label: "全部", value: "" },
-      { label: "开启", value: "1" },
-      { label: "关闭", value: "0" }
+      { label: "正常", value: "1" },
+      { label: "隐藏", value: "-1" },
+      { label: "维护", value: "0" }
     ]
   }
 ];
@@ -705,10 +707,13 @@ const tableConfig: any = ref([
       let label = value;
       if (value === "1") {
         type = "success";
-        label = "开启";
+        label = "正常";
+      } else if (value === "-1") {
+        type = "warning";
+        label = "隐藏";
       } else if (value === "0") {
         type = "danger";
-        label = "关闭";
+        label = "维护";
       }
       return h(ElTag, { type }, () => label);
     },
@@ -732,6 +737,17 @@ buttons.value = [
     onClick: (params: any) => {
       const row = params.row as TableRow;
       handleEditRow(row);
+    }
+  },
+  {
+    text: "切换状态",
+    code: "switchStatus",
+    props: {
+      type: "primary"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleSwitchStatus(row);
     }
   }
 ];
@@ -1187,6 +1203,8 @@ const handleSwitchStatus = (row: TableRow) => {
   // 设置当前状态值
   if (row.status === "1") {
     statusDialogStatus.value = "1";
+  } else if (row.status === "-1") {
+    statusDialogStatus.value = "-1";
   } else if (row.status === "0") {
     statusDialogStatus.value = "0";
   } else {
@@ -1201,23 +1219,29 @@ const handleConfirmSwitchStatus = async () => {
 
   switchStatusLoading.value = true;
   try {
-    // 模拟请求，暂时使用 setTimeout
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 模拟成功响应
-    message("状态切换成功", { type: "success" });
-    
-    // 更新本地数据
-    if (statusDialogRow.value) {
-      statusDialogRow.value.status = statusDialogStatus.value;
+    // 调用接口切换状态
+    const res = await switchGameStatus({
+      ids: statusDialogRow.value.id.toString(),
+      status: statusDialogStatus.value
+    });
+
+    if (res.code === 0) {
+      message("状态切换成功", { type: "success" });
+      
+      // 更新本地数据
+      if (statusDialogRow.value) {
+        statusDialogRow.value.status = statusDialogStatus.value;
+      }
+      
+      // 关闭对话框
+      showStatusDialog.value = false;
+      statusDialogRow.value = null;
+      
+      // 刷新列表
+      getList();
+    } else {
+      message(res.msg || "状态切换失败", { type: "error" });
     }
-    
-    // 关闭对话框
-    showStatusDialog.value = false;
-    statusDialogRow.value = null;
-    
-    // 刷新列表
-    getList();
   } catch (error: any) {
     console.error("状态切换失败:", error);
     message(error?.message || "状态切换失败", { type: "error" });
@@ -1354,7 +1378,7 @@ const exportJson = () => {
         :adaptive="true"
         :action-bar="{
           buttons,
-          width: '120px',
+          width: '150px',
           label: '操作'
         }"
         @selection-change="handleSelectionChange"
@@ -1758,8 +1782,9 @@ const exportJson = () => {
         </el-form-item>
         <el-form-item label="状态">
           <el-radio-group v-model="formData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="0">关闭</el-radio>
+            <el-radio label="1">正常</el-radio>
+            <el-radio label="-1">隐藏</el-radio>
+            <el-radio label="0">维护</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -1785,8 +1810,9 @@ const exportJson = () => {
         <div style="font-size: 14px; color: #606266; display: flex; align-items: center;">
           <span>状态：</span>
           <el-radio-group v-model="statusDialogStatus">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="0">关闭</el-radio>
+            <el-radio label="1">正常</el-radio>
+            <el-radio label="-1">隐藏</el-radio>
+            <el-radio label="0">维护</el-radio>
           </el-radio-group>
         </div>
       </div>

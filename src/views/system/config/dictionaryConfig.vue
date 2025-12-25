@@ -1,319 +1,337 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import dayjs from "dayjs";
 defineOptions({
   name: "DictionaryConfig"
 });
-import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
-import { useTable } from "plus-pro-components";
+import { ref, onMounted } from "vue";
 import { message } from "@/utils/message";
-import Upload from "~icons/ep/upload";
-import Monitor from "~icons/ep/monitor";
-import Grid from "~icons/ep/grid";
-import Filter from "~icons/ep/filter";
-import Plus from "~icons/ep/plus";
-import Edit from "~icons/ep/edit";
+import { ElForm, ElFormItem, ElButton, ElDialog, ElMessageBox, ElTable, ElTableColumn, ElInput } from "element-plus";
 import Delete from "~icons/ep/delete";
+import Plus from "~icons/ep/plus";
 
-/*  -----搜索表单相关-----  */
-// 搜索表单数据
-const searchData = ref({
-  id: "",
-  key: "",
-  value: "",
-  createTime: [] as string[]
-});
+// 编辑模式状态
+const isEditMode = ref(false);
 
-// 搜索表单显示控制
-const showSearch = ref(true);
-
-// 搜索表单配置
-const searchColumns: PlusColumn[] = [
-  {
-    label: "ID",
-    prop: "id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入ID"
-    }))
-  },
-  {
-    label: "键",
-    prop: "key",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入键"
-    }))
-  },
-  {
-    label: "值",
-    prop: "value",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入值"
-    }))
-  },
-  {
-    label: "创建时间",
-    prop: "createTime",
-    valueType: "date-picker",
-    fieldProps: computed(() => ({
-      type: "daterange",
-      format: "YYYY-MM-DD HH:mm:ss",
-      valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间"
-    }))
-  }
-];
-
-// 点击搜索按钮
-const handleSearch = (values: any) => {
-  pageInfo.value.page = 1;
-  getList();
-};
-
-// 重置搜索表单
-const handleRest = () => {
-  searchData.value = {
-    id: "",
-    key: "",
-    value: "",
-    createTime: []
-  };
-  pageInfo.value.page = 1;
-  getList();
-};
-
-// 表格数据类型
-type TableRow = {
-  id: number;
-  key: string;
-  value: string;
-  description: string;
-  createtime: string;
-};
-
-// 多选选中数据
-const multipleSelection = ref<TableRow[]>([]);
-// 表格相关数据和操作
-const { tableData, buttons, pageInfo, total, loadingStatus } =
-  useTable<TableRow[]>();
-
-// 表格配置
-const tableConfig: any = ref([
-  {
-    label: "ID",
-    prop: "id",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "键",
-    prop: "key",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "值",
-    prop: "value",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "描述",
-    prop: "description",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "创建时间",
-    prop: "createtime",
-    width: "160",
-    tableColumnProps: {
-      align: "center"
-    }
-  }
+// Category type 数据
+const categoryTypeData = ref([
+  { key: "11", value: "会员配置" },
+  { key: "default", value: "默认" },
+  { key: "page", value: "单页" },
+  { key: "article", value: "文章" },
+  { key: "test", value: "test" }
 ]);
 
-// 表格操作栏按钮定义
-buttons.value = [
-  {
-    text: "编辑",
-    code: "edit",
-    props: {
-      type: "primary"
-    },
-    onClick: (params: any) => {
-      const row = params.row as TableRow;
-      // TODO: 实现编辑功能
-      message("编辑功能待实现", { type: "info" });
-    }
-  }
-];
+// Config group 数据
+const configGroupData = ref([
+  { key: "ability", value: "功能控制" },
+  { key: "pay", value: "参数配置" },
+  { key: "game", value: "游戏配置" },
+  { key: "basic", value: "站点配置" },
+  { key: "email", value: "邮件配置" },
+  { key: "dictionary", value: "字典配置" }
+]);
 
-// 获取列表数据
-const getList = async () => {
-  loadingStatus.value = true;
+// 原始数据（用于取消时恢复）
+const originalCategoryTypeData = ref([
+  { key: "11", value: "会员配置" },
+  { key: "default", value: "默认" },
+  { key: "page", value: "单页" },
+  { key: "article", value: "文章" },
+  { key: "test", value: "test" }
+]);
+
+const originalConfigGroupData = ref([
+  { key: "ability", value: "功能控制" },
+  { key: "pay", value: "参数配置" },
+  { key: "game", value: "游戏配置" },
+  { key: "basic", value: "站点配置" },
+  { key: "email", value: "邮件配置" },
+  { key: "dictionary", value: "字典配置" }
+]);
+
+// 保存按钮禁用状态
+const isSaveDisabled = ref(true);
+
+// 谷歌验证码对话框
+const showGoogleVerifyDialog = ref(false);
+const googleVerifyCode = ref("");
+
+// 获取配置数据
+const getConfig = async () => {
   try {
     // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    tableData.value = [];
-    total.value = 0;
+    await new Promise(resolve => setTimeout(resolve, 300));
+    // 模拟数据已在初始化时设置
+    originalCategoryTypeData.value = JSON.parse(JSON.stringify(categoryTypeData.value));
+    originalConfigGroupData.value = JSON.parse(JSON.stringify(configGroupData.value));
   } catch (error: any) {
-    console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
-    tableData.value = [];
-    total.value = 0;
-  } finally {
-    loadingStatus.value = false;
+    console.error("获取配置失败:", error);
+    message(error?.message || "获取配置失败", { type: "error" });
   }
 };
 
-// 记录上一次的 pageSize
-const previousPageSize = ref(pageInfo.value.pageSize);
+// 点击修改按钮
+const handleEdit = () => {
+  isEditMode.value = true;
+  isSaveDisabled.value = false;
+  // 保存当前数据作为原始数据
+  originalCategoryTypeData.value = JSON.parse(JSON.stringify(categoryTypeData.value));
+  originalConfigGroupData.value = JSON.parse(JSON.stringify(configGroupData.value));
+};
 
-// 分页处理
-const handlePageChange = () => {
-  if (pageInfo.value.pageSize !== previousPageSize.value) {
-    pageInfo.value.page = 1;
-    previousPageSize.value = pageInfo.value.pageSize;
+// 保存配置
+const handleSave = () => {
+  showGoogleVerifyDialog.value = true;
+  googleVerifyCode.value = "";
+};
+
+// 关闭谷歌验证码对话框
+const handleCloseGoogleVerifyDialog = () => {
+  showGoogleVerifyDialog.value = false;
+  googleVerifyCode.value = "";
+};
+
+// 确认谷歌验证码
+const handleConfirmGoogleVerify = async () => {
+  if (!googleVerifyCode.value.trim()) {
+    message("请输入谷歌验证码", { type: "warning" });
+    return;
   }
-  getList();
+
+  // 关闭验证码对话框
+  showGoogleVerifyDialog.value = false;
+
+  // 显示确认对话框
+  try {
+    await ElMessageBox.confirm(
+      "确定要保存最新数据 ?",
+      "保存",
+      {
+        confirmButtonText: "确认",
+        cancelButtonText: "取消",
+        type: "warning"
+      }
+    );
+
+    // 确认后发起保存请求
+    await doSave();
+  } catch (error: any) {
+    if (error !== "cancel") {
+      console.error("确认失败:", error);
+    }
+  }
+};
+
+// 执行保存操作
+const doSave = async () => {
+  try {
+    // TODO: 对接实际API，传递 googleVerifyCode.value, categoryTypeData.value, configGroupData.value
+    await new Promise(resolve => setTimeout(resolve, 500));
+    message("保存成功", { type: "success" });
+    isEditMode.value = false;
+    isSaveDisabled.value = true;
+    // 更新原始数据
+    originalCategoryTypeData.value = JSON.parse(JSON.stringify(categoryTypeData.value));
+    originalConfigGroupData.value = JSON.parse(JSON.stringify(configGroupData.value));
+    googleVerifyCode.value = "";
+  } catch (error: any) {
+    console.error("保存失败:", error);
+    message(error?.message || "保存失败", { type: "error" });
+  }
+};
+
+// 取消修改
+const handleCancel = () => {
+  // 恢复原始数据
+  categoryTypeData.value = JSON.parse(JSON.stringify(originalCategoryTypeData.value));
+  configGroupData.value = JSON.parse(JSON.stringify(originalConfigGroupData.value));
+  // 禁用表单
+  isEditMode.value = false;
+  isSaveDisabled.value = true;
+};
+
+// 添加 Category type 行
+const handleAddCategoryTypeRow = () => {
+  categoryTypeData.value.push({
+    key: "",
+    value: ""
+  });
+};
+
+// 删除 Category type 行
+const handleDeleteCategoryTypeRow = (index: number) => {
+  categoryTypeData.value.splice(index, 1);
+};
+
+// 添加 Config group 行
+const handleAddConfigGroupRow = () => {
+  configGroupData.value.push({
+    key: "",
+    value: ""
+  });
+};
+
+// 删除 Config group 行
+const handleDeleteConfigGroupRow = (index: number) => {
+  configGroupData.value.splice(index, 1);
 };
 
 // 初始化加载数据
-getList();
+onMounted(() => {
+  getConfig();
+});
 </script>
 
 <template>
   <div class="dictionary-config-container">
-    <!-- 搜索表单 -->
-    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
-      <PlusSearch
-        v-model="searchData"
-        :columns="searchColumns"
-        label-width="80"
-        label-position="right"
-        :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
-        @search="handleSearch"
-        @reset="handleRest"
-      />
+    <el-card shadow="never" style="margin: 20px">
+      <template #header>
+        <div class="card-header">
+          <el-button type="primary" @click="handleEdit" :disabled="isEditMode">
+            修改
+          </el-button>
+        </div>
+      </template>
+      <el-form label-width="200px">
+        <!-- Category type -->
+        <el-form-item label="Category type">
+          <div class="key-value-table">
+            <el-table :data="categoryTypeData" border style="width: 100%">
+              <el-table-column label="Array key" width="200">
+                <template #default="{ row }">
+                  <el-input
+                    v-model="row.key"
+                    :disabled="!isEditMode"
+                    placeholder="请输入"
+                  />
+                </template>
+              </el-table-column>
+              <el-table-column label="Array value" width="200">
+                <template #default="{ row }">
+                  <el-input
+                    v-model="row.value"
+                    :disabled="!isEditMode"
+                    placeholder="请输入"
+                  />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="80" v-if="isEditMode">
+                <template #default="{ $index }">
+                  <el-button
+                    type="danger"
+                    link
+                    :icon="Delete"
+                    @click="handleDeleteCategoryTypeRow($index)"
+                  >
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <el-button
+              v-if="isEditMode"
+              type="primary"
+              link
+              @click="handleAddCategoryTypeRow"
+              style="margin-top: 10px;"
+            >
+              <el-icon style="margin-right: 5px;"><Plus /></el-icon>
+              追加
+            </el-button>
+          </div>
+        </el-form-item>
+
+        <!-- Config group -->
+        <el-form-item label="Config group">
+          <div class="key-value-table">
+            <el-table :data="configGroupData" border style="width: 100%">
+              <el-table-column label="Array key" width="200">
+                <template #default="{ row }">
+                  <el-input
+                    v-model="row.key"
+                    :disabled="!isEditMode"
+                    placeholder="请输入"
+                  />
+                </template>
+              </el-table-column>
+              <el-table-column label="Array value" width="200">
+                <template #default="{ row }">
+                  <el-input
+                    v-model="row.value"
+                    :disabled="!isEditMode"
+                    placeholder="请输入"
+                  />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="80" v-if="isEditMode">
+                <template #default="{ $index }">
+                  <el-button
+                    type="danger"
+                    link
+                    :icon="Delete"
+                    @click="handleDeleteConfigGroupRow($index)"
+                  >
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
+            <el-button
+              v-if="isEditMode"
+              type="primary"
+              link
+              @click="handleAddConfigGroupRow"
+              style="margin-top: 10px;"
+            >
+              <el-icon style="margin-right: 5px;"><Plus /></el-icon>
+              追加
+            </el-button>
+          </div>
+        </el-form-item>
+
+        <el-form-item>
+          <el-button
+            type="primary"
+            @click="handleSave"
+            :disabled="isSaveDisabled"
+          >
+            保存
+          </el-button>
+          <el-button
+            @click="handleCancel"
+            :disabled="isSaveDisabled"
+            style="margin-left: 10px"
+          >
+            取消
+          </el-button>
+        </el-form-item>
+      </el-form>
     </el-card>
 
-    <!-- 表格 -->
-    <el-card class="table-card" shadow="never" style="margin: 20px">
-      <PlusTable
-        v-loading="loadingStatus"
-        :columns="tableConfig"
-        :table-data="tableData"
-        :stripe="true"
-        :is-selection="true"
-        :adaptive="true"
-        :action-bar="{
-          buttons,
-          width: '120px',
-          label: '操作'
-        }"
-        width="100%"
-        height="90%"
-        @selection-change="(val: TableRow[]) => multipleSelection = val"
-      >
-        <!-- 表格操作栏按钮 -->
-        <template #title>
-          <el-button type="primary" @click="() => message('新增功能待实现', { type: 'info' })" size="default">
-            <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
-          </el-button>
-          <el-button 
-            type="danger" 
-            @click="() => message('删除功能待实现', { type: 'info' })" 
-            size="default"
-            :disabled="multipleSelection.length === 0"
-          >
-            <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
-          </el-button>
-        </template>
-        <!-- 工具栏 -->
-        <template #density-icon>
-          <el-tooltip content="密度" placement="top">
-            <el-icon
-              :size="18"
-              style=" margin-right: 15px;cursor: pointer; outline: none"
-              color="#606266"
-            >
-              <component :is="Monitor" />
-            </el-icon>
-          </el-tooltip>
-        </template>
-        <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
-            <el-icon
-              :size="18"
-              style=" margin-right: 5px;cursor: pointer; outline: none"
-              color="#606266"
-            >
-              <component :is="Grid" />
-            </el-icon>
-          </el-tooltip>
-        </template>
-        <template #toolbar>
-          <!-- 筛选：点击切换搜索表单显示/隐藏 -->
-          <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
-            placement="top"
-            :trigger="'hover'"
-          >
-            <span style="display: inline-block">
-              <el-icon
-                :size="18"
-                style="
-                  margin-right: 15px;
-                  cursor: pointer;
-                  outline: none;
-                "
-                color="#606266"
-                @click="showSearch = !showSearch"
-              >
-                <component :is="Filter" />
-              </el-icon>
-            </span>
-          </el-tooltip>
-          <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
-            <span style="display: inline-block">
-              <el-icon
-                :size="18"
-                style="
-                  display: inline-block;
-                  margin-right: 15px;
-                  cursor: pointer;
-                  outline: none;
-                "
-                color="#606266"
-              >
-                <component :is="Upload" />
-              </el-icon>
-            </span>
-          </el-tooltip>
-        </template>
-      </PlusTable>
-      <PlusPagination
-        v-model="pageInfo"
-        :total="total"
-        :small="true"
-        :page-sizes="[10, 20, 50, 100]"
-        :layout="'total, sizes, prev, pager, next, jumper'"
-        @change="handlePageChange"
-      />
-    </el-card>
+    <!-- 谷歌验证码对话框 -->
+    <el-dialog
+      v-model="showGoogleVerifyDialog"
+      title="保存"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="handleCloseGoogleVerifyDialog"
+    >
+      <div style="margin-bottom: 20px; color: #606266;">
+        请输入谷歌验证码,验证成功后将进行保存
+      </div>
+      <el-form :model="{ code: googleVerifyCode }" label-width="80px">
+        <el-form-item label="验证码">
+          <el-input
+            v-model="googleVerifyCode"
+            placeholder="请输入谷歌验证码"
+            @keyup.enter="handleConfirmGoogleVerify"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCloseGoogleVerifyDialog">取消</el-button>
+          <el-button type="primary" @click="handleConfirmGoogleVerify">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -321,6 +339,20 @@ getList();
 .dictionary-config-container {
   width: 100%;
 }
+
+.card-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.key-value-table {
+  width: 100%;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
 </style>
-
-

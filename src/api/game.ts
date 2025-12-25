@@ -1359,6 +1359,39 @@ export const testGameBrand = (params: TestGameBrandParams) => {
   );
 };
 
+/** 批量切换游戏品牌状态参数 */
+export type SwitchGameBrandStatusParams = {
+  /** 游戏品牌ID列表，多个ID用逗号分隔，如 "301,302" */
+  ids: string;
+  /** 状态值，"1"-开启, "-1"-隐藏, "0"-维护 */
+  status: string;
+};
+
+/** 批量切换游戏品牌状态响应 */
+export type SwitchGameBrandStatusResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量切换游戏品牌状态 */
+export const switchGameBrandStatus = (params: SwitchGameBrandStatusParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+  formData.append("status", params.status);
+
+  return http.request<SwitchGameBrandStatusResult>(
+    "post",
+    baseUrlApi("/game/producttype/status_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
 // ==================== 游戏列表相关接口 ====================
 
 /** 游戏列表项 */
@@ -1547,6 +1580,39 @@ export const deleteBatchGame = (params: DeleteBatchGameParams) => {
   return http.request<DeleteBatchGameResult>(
     "post",
     baseUrlApi("/game/product/del_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 批量切换游戏状态参数 */
+export type SwitchGameStatusParams = {
+  /** 游戏ID列表，多个ID用逗号分隔，如 "52564,52563" */
+  ids: string;
+  /** 状态值，"1"-开启, "0"-关闭 */
+  status: string;
+};
+
+/** 批量切换游戏状态响应 */
+export type SwitchGameStatusResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量切换游戏状态 */
+export const switchGameStatus = (params: SwitchGameStatusParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+  formData.append("status", params.status);
+
+  return http.request<SwitchGameStatusResult>(
+    "post",
+    baseUrlApi("/game/product/status_batch"),
     {
       data: formData,
       headers: {

@@ -77,8 +77,7 @@ const searchData = ref({
   wlg_account_id: "",
   pid: "",
   parent_name: "",
-  status: "",
-  loginTime: null as string[] | null
+  status: ""
 });
 // 搜索表单显示控制
 const showSearch = ref(true);
@@ -214,82 +213,6 @@ const searchColumns: PlusColumn[] = [
         value: "hidden"
       }
     ]
-  },
-  {
-    label: "登录时间",
-    prop: "loginTime",
-    valueType: "date-picker",
-    fieldProps: computed(() => ({
-      type: "daterange",
-      format: "YYYY-MM-DD HH:mm:ss",
-      valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
-      shortcuts: [
-        {
-          text: "今天",
-          value: () => {
-            const today = dayjs();
-            return [
-              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "昨天",
-          value: () => {
-            const yesterday = dayjs().subtract(1, "day");
-            return [
-              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "最近7天",
-          value: () => {
-            const end = dayjs();
-            const start = dayjs().subtract(6, "day");
-            return [
-              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "最近30天",
-          value: () => {
-            const end = dayjs();
-            const start = dayjs().subtract(29, "day");
-            return [
-              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "本月",
-          value: () => {
-            const now = dayjs();
-            return [
-              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
-              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "上月",
-          value: () => {
-            const lastMonth = dayjs().subtract(1, "month");
-            return [
-              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
-              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        }
-      ]
-    }))
   }
 ];
 
@@ -312,8 +235,7 @@ const handleRest = () => {
     wlg_account_id: "",
     pid: "",
     parent_name: "",
-    status: "",
-    loginTime: null
+    status: ""
   };
   // 重置到第一页
   pageInfo.value.page = 1;
@@ -488,51 +410,55 @@ const tableConfig: any = ref([
       fixed: "right",
       align: "center"
     }
-  },
-  {
-    label: "操作",
-    prop: "action",
-    width: 200,
-    tableColumnProps: {
-      align: "center",
-      fixed: "right"
-    },
-    render: (_value: any, row: TableRow) => {
-      return h("div", { style: { display: "flex", gap: "8px", justifyContent: "center" } }, [
-        h(
-          ElButton,
-          {
-            type: "success",
-            size: "small",
-            link: true,
-            onClick: () => handleCreditAdjust(row)
-          },
-          () => "额度调整"
-        ),
-        h(
-          ElButton,
-          {
-            type: "success",
-            size: "small",
-            link: true,
-            onClick: () => handleAdjustRecord(row)
-          },
-          () => "调额记录"
-        ),
-        h(
-          ElButton,
-          {
-            type: "success",
-            size: "small",
-            link: true,
-            onClick: () => handleEdit(row)
-          },
-          () => "编辑"
-        )
-      ]);
-    }
   }
 ]);
+
+buttons.value = [
+  {
+    text: "额度调整",
+    code: "edit",
+    props: {
+      type: "primary"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleEdit(row);
+    }
+  },
+  {
+    text: "调额记录",
+    code: "edit",
+    props: {
+      type: "primary"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleEdit(row);
+    }
+  },
+  {
+    text: "编辑",
+    code: "edit",
+    props: {
+      type: "primary"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleEdit(row);
+    }
+  },
+  {
+    text: "查看API密钥",
+    code: "edit",
+    props: {
+      type: "primary"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleEdit(row);
+    }
+  }
+];
 
 // 表格选中数据
 const handleSelectionChange = (val: TableRow[]) => {
@@ -622,7 +548,7 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, username, currency, type, wallet_type, wlg_account_id, pid, parent_name, status, loginTime } = searchData.value;
+    const { id, username, currency, type, wallet_type, wlg_account_id, pid, parent_name, status } = searchData.value;
     const params: MerchantListParams = {
       pageNumber: page,
       pageSize,
@@ -639,11 +565,6 @@ const getList = async () => {
     // if (parent_name) {
     //   params.parent_name = parent_name;
     // }
-
-    if (loginTime && loginTime.length === 2) {
-      params.login_start_time = loginTime[0];
-      params.login_end_time = loginTime[1];
-    }
 
     const { data } = await getMerchantList(params);
 
@@ -742,6 +663,12 @@ const exportJson = () => {
         :columns="tableConfig"
         :table-data="tableData"
         :stripe="true"
+         :action-bar="{
+          showNumber: 4,
+          buttons,
+          width: '320px',
+          label: '操作'
+        }"
         :is-selection="true"
         width="100%"
         height="90%"

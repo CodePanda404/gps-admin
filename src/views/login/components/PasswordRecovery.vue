@@ -45,14 +45,14 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
             }
             
             // 保存账号信息、邮箱和谷歌验证状态，用于下一步
-            useUserStoreHook().SET_USERNAME(ruleForm.account);
+      useUserStoreHook().SET_USERNAME(ruleForm.account);
             useUserStoreHook().SET_RECOVERY_EMAIL(res.data.email);
             useUserStoreHook().SET_GOOGLE_STATUS(res.data.google_status);
             // 设置标记：从校验用户页面进入，应该自动发送验证码
             useUserStoreHook().SET_SHOULD_AUTO_SEND_EMAIL_CODE(true);
             // 可以保存 token 用于后续步骤（如果需要）
             // 跳转到验证码页面
-            useUserStoreHook().SET_CURRENTPAGE(2);
+      useUserStoreHook().SET_CURRENTPAGE(2);
           } else {
             // 显示错误信息
             errorMessage.value = res.msg || transformI18n($t("login.passwordRecovery.accountNotExist"));

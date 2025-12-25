@@ -7,7 +7,7 @@ export default {
   path: "/merchant",
   name: "Merchant",
   component: Layout,
-  redirect: "/merchant/currency",
+  redirect: "/merchant/merchant-list",
   meta: {
     icon: Store,
     title: "商户管理",
@@ -22,17 +22,20 @@ export default {
         title: "商户列表",
         showLink: true,
         showParent: true
-      }
-    },
-    {
-      path: "/merchant/adjustment-record",
-      name: "AdjustmentRecord",
-      component: () => import("@/views/merchant/adjustmentRecord.vue"),
-      meta: {
-        title: "调额记录",
-        showLink: true,
-        showParent: true
-      }
+      },
+      children: [
+        {
+          path: "/merchant/adjustment-record",
+          name: "AdjustmentRecord",
+          component: () => import("@/views/merchant/adjustmentRecord.vue"),
+          meta: {
+            title: "调额记录",
+            keepAlive: true,
+            showLink: true,
+            showParent: true
+          }
+        }
+      ]
     },
     {
       path: "/merchant/merchant-account",
