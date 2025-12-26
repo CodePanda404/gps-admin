@@ -208,7 +208,7 @@ getList();
 <template>
   <div class="merchant-bill-detail-container">
     <!-- 搜索表单 -->
-    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card">
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
@@ -223,7 +223,7 @@ getList();
     </el-card>
 
     <!-- 表格 -->
-    <el-card class="table-card" shadow="never" style="margin: 20px">
+    <el-card class="table-card">
       <PlusTable
         v-loading="loadingStatus"
         :columns="tableConfig"
@@ -314,6 +314,19 @@ getList();
 <style scoped>
 .merchant-bill-detail-container {
   width: 100%;
+  padding: 0 20px;
+}
+
+.search-card {
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 0;
+}
+
+.table-card {
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }
 </style>
 

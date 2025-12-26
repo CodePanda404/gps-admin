@@ -12,6 +12,14 @@ import {
   getCurrencyList,
   type CurrencyItem
 } from "@/api/game";
+import {
+  getPlayerStatisticsDailyList,
+  getPlayerStatisticsMonthlyList,
+  type PlayerStatisticsDailyItem,
+  type PlayerStatisticsMonthlyItem,
+  type PlayerStatisticsDailyParams,
+  type PlayerStatisticsMonthlyParams
+} from "@/api/statistics";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -49,12 +57,11 @@ const walletTypeOptions = [
 // 日报表搜索表单数据
 const dailySearchData = ref({
   date: [] as string[],
-  account_id: "",
-  account: "",
-  merchant_id: "",
-  merchant_number: "",
+  admin_id: "",
+  user_id: "",
+  currency: "",
   wallet_type: "",
-  currency_id: ""
+  game_name: ""
 });
 
 // 日报表搜索表单配置
@@ -72,35 +79,27 @@ const dailySearchColumns: PlusColumn[] = [
     }))
   },
   {
-    label: "账号ID",
-    prop: "account_id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入账号ID"
-    }))
-  },
-  {
-    label: "账号",
-    prop: "account",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入账号"
-    }))
-  },
-  {
     label: "商户ID",
-    prop: "merchant_id",
+    prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
       placeholder: "请输入商户ID"
     }))
   },
   {
-    label: "商户号",
-    prop: "merchant_number",
+    label: "玩家ID",
+    prop: "user_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户号"
+      placeholder: "请输入玩家ID"
+    }))
+  },
+  {
+    label: "币种",
+    prop: "currency",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入币种"
     }))
   },
   {
@@ -113,23 +112,12 @@ const dailySearchColumns: PlusColumn[] = [
     options: walletTypeOptions
   },
   {
-    label: "币种",
-    prop: "currency_id",
-    valueType: "select",
+    label: "游戏名称",
+    prop: "game_name",
+    valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请选择币种",
-      filterable: true
-    })),
-    options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
-      ...currencyOptions.value.map(item => ({
-        label: item.label,
-        value: item.value.toString()
-      }))
-    ])
+      placeholder: "请输入游戏名称"
+    }))
   }
 ];
 
@@ -137,11 +125,10 @@ const dailySearchColumns: PlusColumn[] = [
 // 月报表搜索表单数据
 const monthlySearchData = ref({
   month: [] as string[],
-  account_id: "",
-  account: "",
-  merchant_id: "",
-  merchant_number: "",
-  currency_id: ""
+  admin_id: "",
+  user_id: "",
+  currency: "",
+  wallet_type: ""
 });
 
 // 月报表搜索表单配置
@@ -159,55 +146,37 @@ const monthlySearchColumns: PlusColumn[] = [
     }))
   },
   {
-    label: "账号ID",
-    prop: "account_id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入账号ID"
-    }))
-  },
-  {
-    label: "账号",
-    prop: "account",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入账号"
-    }))
-  },
-  {
     label: "商户ID",
-    prop: "merchant_id",
+    prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
       placeholder: "请输入商户ID"
     }))
   },
   {
-    label: "商户号",
-    prop: "merchant_number",
+    label: "玩家ID",
+    prop: "user_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户号"
+      placeholder: "请输入玩家ID"
     }))
   },
   {
     label: "币种",
-    prop: "currency_id",
+    prop: "currency",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入币种"
+    }))
+  },
+  {
+    label: "钱包类型",
+    prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择币种",
-      filterable: true
+      placeholder: "请选择钱包类型"
     })),
-    options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
-      ...currencyOptions.value.map(item => ({
-        label: item.label,
-        value: item.value.toString()
-      }))
-    ])
+    options: walletTypeOptions
   }
 ];
 
@@ -225,58 +194,39 @@ const handleRest = () => {
   if (activeTab.value === "daily") {
     dailySearchData.value = {
       date: [],
-      account_id: "",
-      account: "",
-      merchant_id: "",
-      merchant_number: "",
+      admin_id: "",
+      user_id: "",
+      currency: "",
       wallet_type: "",
-      currency_id: ""
+      game_name: ""
     };
   } else {
     monthlySearchData.value = {
       month: [],
-      account_id: "",
-      account: "",
-      merchant_id: "",
-      merchant_number: "",
-      currency_id: ""
+      admin_id: "",
+      user_id: "",
+      currency: "",
+      wallet_type: ""
     };
   }
   pageInfo.value.page = 1;
   getList();
 };
 
-// 表格数据类型
-type DailyTableRow = {
-  date: string;
-  account_id: number;
-  account: string;
-  merchant_id: number;
-  merchant_number: string;
-  wallet_type: string;
-  currency_id: string;
-  order_total_amount: string;
-  payout_total_amount: string;
-  win_loss: string;
-};
-
-type MonthlyTableRow = {
-  month: string;
-  account_id: number;
-  account: string;
-  merchant_id: number;
-  merchant_number: string;
-  currency_id: string;
-  order_total_amount: string;
-  payout_total_amount: string;
-  win_loss: string;
-};
+// 表格数据类型（直接使用API响应类型）
+type DailyTableRow = PlayerStatisticsDailyItem;
+type MonthlyTableRow = PlayerStatisticsMonthlyItem;
 
 // 多选选中数据
 const multipleSelection = ref<(DailyTableRow | MonthlyTableRow)[]>([]);
 // 表格相关数据和操作
 const { tableData, buttons, pageInfo, total, loadingStatus } =
   useTable<(DailyTableRow | MonthlyTableRow)[]>();
+
+// 统计信息（使用字符串类型以便格式化显示）
+const totalOrderAmount = ref<string | number>(0);
+const totalPayoutAmount = ref<string | number>(0);
+const totalWinLoss = ref<string | number>(0);
 
 // 日报表表格配置
 const dailyTableConfig: any = ref([
@@ -285,70 +235,55 @@ const dailyTableConfig: any = ref([
     prop: "date",
     tableColumnProps: {
       align: "center"
-    }
-  },
-  {
-    label: "账号ID",
-    prop: "account_id",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "账号",
-    prop: "account",
-    tableColumnProps: {
-      align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "商户ID",
-    prop: "merchant_id",
+    prop: "admin_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
-    label: "商户号",
-    prop: "merchant_number",
+    label: "玩家ID",
+    prop: "user_id",
     tableColumnProps: {
       align: "center"
-    }
-  },
-  {
-    label: "钱包类型",
-    prop: "wallet_type",
-    tableColumnProps: {
-      align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "币种",
-    prop: "currency_id",
+    prop: "currency",
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "下单总金额",
-    prop: "order_total_amount",
+    label: "下单总额",
+    prop: "bet",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 140
   },
   {
-    label: "派奖总金额",
-    prop: "payout_total_amount",
+    label: "派彩总额",
+    prop: "win",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 140
   },
   {
     label: "输赢",
-    prop: "win_loss",
+    prop: "company_win",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   }
 ]);
 
@@ -359,63 +294,55 @@ const monthlyTableConfig: any = ref([
     prop: "month",
     tableColumnProps: {
       align: "center"
-    }
-  },
-  {
-    label: "账户ID",
-    prop: "account_id",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "账号",
-    prop: "account",
-    tableColumnProps: {
-      align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "商户ID",
-    prop: "merchant_id",
+    prop: "admin_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
-    label: "商户号",
-    prop: "merchant_number",
+    label: "玩家ID",
+    prop: "user_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "币种",
-    prop: "currency_id",
+    prop: "currency",
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "下单总金额",
-    prop: "order_total_amount",
+    label: "下单总额",
+    prop: "bet",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 140
   },
   {
     label: "派彩总额",
-    prop: "payout_total_amount",
+    prop: "win",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 140
   },
   {
     label: "输赢",
-    prop: "win_loss",
+    prop: "company_win",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   }
 ]);
 
@@ -428,15 +355,110 @@ const currentTableConfig = computed(() => {
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    tableData.value = [];
-    total.value = 0;
+    const { page, pageSize } = pageInfo.value;
+    
+    if (activeTab.value === "daily") {
+      const { date, admin_id, user_id, currency, wallet_type, game_name } = dailySearchData.value;
+      
+      const params: PlayerStatisticsDailyParams = {
+        pageNumber: page,
+        pageSize,
+        admin_id: admin_id || undefined,
+        user_id: user_id || undefined,
+        currency: currency || undefined,
+        wallet_type: wallet_type || undefined,
+        game_name: game_name || undefined
+      };
+      
+      // 处理日期范围
+      if (date && Array.isArray(date) && date.length === 2) {
+        params.start_time = date[0];
+        params.end_time = date[1];
+      }
+      
+      const res = await getPlayerStatisticsDailyList(params);
+      
+      if (res.code === 0 && res.data && res.data.rows) {
+        tableData.value = res.data.rows as any[];
+        total.value = res.data.total;
+        
+        // 计算统计信息（保留2位小数）
+        const betSum = res.data.rows.reduce((sum, item) => {
+          return sum + parseFloat(item.bet || "0");
+        }, 0);
+        const winSum = res.data.rows.reduce((sum, item) => {
+          return sum + parseFloat(item.win || "0");
+        }, 0);
+        const companyWinSum = res.data.rows.reduce((sum, item) => {
+          return sum + parseFloat(String(item.company_win || "0"));
+        }, 0);
+        
+        totalOrderAmount.value = betSum.toFixed(2);
+        totalPayoutAmount.value = winSum.toFixed(2);
+        totalWinLoss.value = companyWinSum.toFixed(2);
+      } else {
+        tableData.value = [];
+        total.value = 0;
+        totalOrderAmount.value = 0;
+        totalPayoutAmount.value = 0;
+        totalWinLoss.value = 0;
+        message(res.msg || "获取列表数据失败", { type: "error" });
+      }
+    } else {
+      const { month, admin_id, user_id, currency, wallet_type } = monthlySearchData.value;
+      
+      const params: PlayerStatisticsMonthlyParams = {
+        pageNumber: page,
+        pageSize,
+        admin_id: admin_id || undefined,
+        user_id: user_id || undefined,
+        currency: currency || undefined,
+        wallet_type: wallet_type || undefined
+      };
+      
+      // 处理月份范围
+      if (month && Array.isArray(month) && month.length === 2) {
+        // 月报表API可能需要单个month参数，这里先传递第一个月份
+        params.month = month[0];
+      }
+      
+      const res = await getPlayerStatisticsMonthlyList(params);
+      
+      if (res.code === 0 && res.data && res.data.rows) {
+        tableData.value = res.data.rows as any[];
+        total.value = res.data.total;
+        
+        // 计算统计信息（保留2位小数）
+        const betSum = res.data.rows.reduce((sum, item) => {
+          return sum + parseFloat(item.bet || "0");
+        }, 0);
+        const winSum = res.data.rows.reduce((sum, item) => {
+          return sum + parseFloat(item.win || "0");
+        }, 0);
+        const companyWinSum = res.data.rows.reduce((sum, item) => {
+          return sum + parseFloat(String(item.company_win || "0"));
+        }, 0);
+        
+        totalOrderAmount.value = betSum.toFixed(2);
+        totalPayoutAmount.value = winSum.toFixed(2);
+        totalWinLoss.value = companyWinSum.toFixed(2);
+      } else {
+        tableData.value = [];
+        total.value = 0;
+        totalOrderAmount.value = 0;
+        totalPayoutAmount.value = 0;
+        totalWinLoss.value = 0;
+        message(res.msg || "获取列表数据失败", { type: "error" });
+      }
+    }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
     tableData.value = [];
     total.value = 0;
+    totalOrderAmount.value = 0;
+    totalPayoutAmount.value = 0;
+    totalWinLoss.value = 0;
   } finally {
     loadingStatus.value = false;
   }
@@ -477,7 +499,7 @@ onMounted(() => {
 <template>
   <div class="player-statistics-container">
     <!-- 标签页容器 -->
-    <el-card class="tabs-card" shadow="never" style="margin: 20px">
+    <el-card class="tabs-card">
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="日报表" name="daily" />
         <el-tab-pane label="月报表" name="monthly" />
@@ -485,7 +507,7 @@ onMounted(() => {
     </el-card>
 
     <!-- 搜索表单 -->
-    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card">
       <PlusSearch
         v-if="activeTab === 'daily'"
         v-model="dailySearchData"
@@ -513,7 +535,7 @@ onMounted(() => {
     </el-card>
 
     <!-- 表格 -->
-    <el-card class="table-card" shadow="never" style="margin: 20px">
+    <el-card class="table-card">
       <PlusTable
         v-loading="loadingStatus"
         :columns="currentTableConfig"
@@ -525,6 +547,38 @@ onMounted(() => {
         height="90%"
         @selection-change="(val: any[]) => multipleSelection = val"
       >
+        <!-- 表格标题：统计信息 -->
+        <template #title>
+          <div class="stats-content" style="margin-left: 5px">
+            <div class="stat-item">
+              <span class="stat-label">累计下单总额:</span>
+              <el-input
+                v-model="totalOrderAmount"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">累计派彩总额:</span>
+              <el-input
+                v-model="totalPayoutAmount"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">累计输赢总额:</span>
+              <el-input
+                v-model="totalWinLoss"
+                readonly
+                disabled
+                style="width: 200px; margin-left: 5px"
+              />
+            </div>
+          </div>
+        </template>
         <!-- 工具栏 -->
         <template #density-icon>
           <el-tooltip content="密度" placement="top">
@@ -604,6 +658,41 @@ onMounted(() => {
 <style scoped>
 .player-statistics-container {
   width: 100%;
+  padding: 0 20px;
+}
+
+.tabs-card {
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 0;
+}
+
+.search-card {
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 0;
+}
+
+.table-card {
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
+}
+
+.stats-content {
+  display: flex;
+  gap: 30px;
+  align-items: center;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: #606266;
 }
 </style>
 

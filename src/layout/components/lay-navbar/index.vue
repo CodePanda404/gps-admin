@@ -7,8 +7,8 @@ import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import LaySidebarFullScreen from "../lay-sidebar/components/SidebarFullScreen.vue";
 import LaySidebarBreadCrumb from "../lay-sidebar/components/SidebarBreadCrumb.vue";
 import LaySidebarTopCollapse from "../lay-sidebar/components/SidebarTopCollapse.vue";
-
-import GlobalizationIcon from "@/assets/svg/globalization.svg?component";
+import { message } from "@/utils/message";
+import GlobalizationIcon from "~icons/tabler/world";
 import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
 import Setting from "~icons/ri/settings-3-line";
 import Check from "~icons/ep/check";
@@ -96,8 +96,14 @@ const handleChangePassword = () => {
       </el-dropdown>
       <!-- 全屏 -->
       <LaySidebarFullScreen id="full-screen" />
-      <!-- 消息通知 -->
-      <LayNotice id="header-notice" />
+      <!-- 设置 -->
+      <span
+        class="set-icon navbar-bg-hover"
+        :title="t('buttons.pureOpenSystemSet')"
+        @click="onPanel"
+      >
+        <IconifyIconOffline :icon="Setting" />
+      </span>
       <!-- 退出登录 -->
       <el-dropdown trigger="click">
         <span class="el-dropdown-link navbar-bg-hover select-none">
@@ -130,13 +136,6 @@ const handleChangePassword = () => {
           </el-dropdown-menu>
         </template>
       </el-dropdown>
-      <span
-        class="set-icon navbar-bg-hover"
-        :title="t('buttons.pureOpenSystemSet')"
-        @click="onPanel"
-      >
-        <IconifyIconOffline :icon="Setting" />
-      </span>
     </div>
   </div>
 </template>

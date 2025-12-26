@@ -637,7 +637,7 @@ const handleBatchDelete = async () => {
 <template>
   <div class="role-management-container">
     <!-- 表格 -->
-    <el-card class="table-card" shadow="never" style="margin: 20px">
+    <el-card class="table-card">
       <PlusTable
         v-loading="loadingStatus"
         :columns="tableConfig"
@@ -831,6 +831,13 @@ const handleBatchDelete = async () => {
 <style scoped>
 .role-management-container {
   width: 100%;
+  padding: 0 20px;
+}
+
+.table-card {
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }
 
 .dialog-form {

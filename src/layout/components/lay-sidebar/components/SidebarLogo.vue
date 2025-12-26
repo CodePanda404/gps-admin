@@ -1,12 +1,61 @@
 <script setup lang="ts">
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { getTopMenu } from "@/router/utils";
 import { useNav } from "@/layout/hooks/useNav";
+import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
 
 defineProps({
   collapse: Boolean
 });
 
-const { title, getLogo } = useNav();
+const { title } = useNav();
+const { dataTheme } = useDataThemeChange();
+
+// 使用响应式的isDark来跟踪主题变化
+const isDark = ref(document.documentElement.classList.contains("dark"));
+
+// 监听DOM的dark class变化，确保实时响应主题切换
+let observer: MutationObserver | null = null;
+let unwatchTheme: (() => void) | null = null;
+
+onMounted(() => {
+  // 初始化
+  isDark.value = document.documentElement.classList.contains("dark");
+  
+  // 监听DOM class变化
+  observer = new MutationObserver(() => {
+    isDark.value = document.documentElement.classList.contains("dark");
+  });
+  
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"]
+  });
+  
+  // 同时监听dataTheme变化（双重保障）
+  unwatchTheme = watch(dataTheme, (newVal) => {
+    isDark.value = newVal;
+  });
+});
+
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+  if (unwatchTheme) {
+    unwatchTheme();
+    unwatchTheme = null;
+  }
+});
+
+// 根据主题色动态获取logo
+const logoUrl = computed(() => {
+  // 深色模式使用 logo-dark.png，浅色模式使用 logo.png
+  return isDark.value
+    ? "/src/assets/login/logo-dark.png"
+    : "/src/assets/login/logo.png";
+});
 </script>
 
 <template>
@@ -19,8 +68,7 @@ const { title, getLogo } = useNav();
         class="sidebar-logo-link"
         :to="getTopMenu()?.path ?? '/'"
       >
-        <img :src="getLogo()" alt="logo" />
-        <span class="sidebar-title">{{ title }}</span>
+        <img :src="logoUrl" alt="logo" />
       </router-link>
       <router-link
         v-else
@@ -29,8 +77,7 @@ const { title, getLogo } = useNav();
         class="sidebar-logo-link"
         :to="getTopMenu()?.path ?? '/'"
       >
-        <img :src="getLogo()" alt="logo" />
-        <span class="sidebar-title">{{ title }}</span>
+        <img :src="logoUrl" alt="logo" />
       </router-link>
     </transition>
   </div>
@@ -48,11 +95,12 @@ const { title, getLogo } = useNav();
     flex-wrap: nowrap;
     align-items: center;
     height: 100%;
-    padding-left: 10px;
+    padding-left: 20px;
 
     img {
       display: inline-block;
-      height: 32px;
+      height: 17px;
+      width: auto;
     }
 
     .sidebar-title {

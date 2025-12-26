@@ -1197,7 +1197,7 @@ const exportJson = () => {
 <template>
   <div class="wlg-account-container">
     <!-- 搜索表单 -->
-    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card">
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
@@ -1212,7 +1212,7 @@ const exportJson = () => {
     </el-card>
 
     <!-- 表格 -->
-    <el-card class="table-card" shadow="never" style="margin: 20px">
+    <el-card class="table-card">
       <PlusTable
         v-loading="loadingStatus"
         :columns="tableConfig"
@@ -1709,6 +1709,19 @@ const exportJson = () => {
 </template>
 
 <style scoped>
+.wlg-account-container {
+  padding: 0 20px;
+}
+
+.search-card {
+  margin-top: 20px;
+  margin-bottom: 0;
+}
+
+.table-card {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 .custom-export-dropdown {
   min-width: 80px !important;
   padding: 0 !important;

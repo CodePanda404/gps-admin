@@ -585,7 +585,7 @@ onBeforeUnmount(() => {
 <template>
   <div class="help-container">
     <!-- 搜索表单 -->
-    <el-card v-show="showSearch" class="search-card" shadow="never" style="margin: 20px">
+    <el-card v-show="showSearch" class="search-card" shadow="never">
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
@@ -600,7 +600,7 @@ onBeforeUnmount(() => {
     </el-card>
 
     <!-- 表格 -->
-    <el-card class="table-card" shadow="never" style="margin: 20px">
+    <el-card class="table-card" shadow="never">
       <PlusTable
         v-loading="loadingStatus"
         :columns="tableConfig"
@@ -778,6 +778,19 @@ onBeforeUnmount(() => {
 <style scoped>
 .help-container {
   width: 100%;
+  padding: 0 20px;
+}
+
+.search-card {
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 0;
+}
+
+.table-card {
+  margin-top: 20px;
+  margin-right: 20px;
+  margin-bottom: 20px;
 }
 
 .dialog-form {
