@@ -7,7 +7,6 @@ import { useTranslationLang } from "@/layout/hooks/useTranslationLang";
 import LaySidebarFullScreen from "../lay-sidebar/components/SidebarFullScreen.vue";
 import LaySidebarBreadCrumb from "../lay-sidebar/components/SidebarBreadCrumb.vue";
 import LaySidebarTopCollapse from "../lay-sidebar/components/SidebarTopCollapse.vue";
-import { message } from "@/utils/message";
 import GlobalizationIcon from "~icons/tabler/world";
 import LogoutCircleRLine from "~icons/ri/logout-circle-r-line";
 import Setting from "~icons/ri/settings-3-line";
@@ -34,8 +33,8 @@ const { t, locale, translationCh, translationEn } = useTranslationLang();
 const router = useRouter();
 
 const handleProfile = () => {
-  // 个人中心功能（暂时可以跳转到主页或显示提示）
-  message("个人中心功能开发中", { type: "info" });
+  // 跳转到个人中心（平台）
+  router.push("/system/personal-center-platform");
 };
 
 const handleChangePassword = () => {

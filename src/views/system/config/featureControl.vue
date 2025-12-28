@@ -164,7 +164,7 @@ onMounted(() => {
         </div>
       </template>
       <el-form :model="formData" label-width="200px">
-        <el-form-item label="注册IPimage.png限制数">
+        <el-form-item label="注册IP限制数">
           <el-input-number
             v-model="formData.registerIpLimit"
             :min="0"

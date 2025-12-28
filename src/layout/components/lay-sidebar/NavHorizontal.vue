@@ -18,7 +18,6 @@ import Check from "~icons/ep/check";
 import User from "~icons/tdesign/user";
 import Lock from "~icons/ri/lock-fill";
 import { useRouter } from "vue-router";
-import { message } from "@/utils/message";
 
 const menuRef = ref();
 const showLogo = ref(
@@ -44,8 +43,8 @@ const {
 const router = useRouter();
 
 const handleProfile = () => {
-  // 个人中心功能（暂时可以跳转到主页或显示提示）
-  message("个人中心功能开发中", { type: "info" });
+  // 跳转到个人中心（平台）
+  router.push("/system/personal-center-platform");
 };
 
 const handleChangePassword = () => {

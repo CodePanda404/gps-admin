@@ -7,6 +7,11 @@ defineOptions({
 import { type PlusColumn, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
 import { message } from "@/utils/message";
+import {
+  getRoleManagementList,
+  type RoleManagementItem,
+  type RoleManagementListResult
+} from "@/api/auth";
 import { ElMessageBox, ElTag, ElDialog, ElForm, ElFormItem, ElInput, ElButton, ElSelect, ElOption, ElTree, ElCheckbox, type FormInstance } from "element-plus";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
@@ -16,12 +21,10 @@ import Edit from "~icons/ep/edit";
 import Delete from "~icons/ep/delete";
 import { constantMenus } from "@/router/index";
 
-// 表格数据类型
-type TableRow = {
-  id: number;
-  parent: string;
-  name: string;
-  status: string;
+// 表格数据类型（直接使用API响应类型，但需要扩展显示字段）
+type TableRow = RoleManagementItem & {
+  parent?: string;
+  displayName?: string;
 };
 
 // 权限树节点类型
@@ -52,6 +55,19 @@ const tableConfig: any = ref([
     label: "父级",
     prop: "parent",
     minWidth: 120,
+    render: (value: string, row: TableRow) => {
+      // 根据pid查找父级名称
+      if (row.pid === 0) {
+        return "无";
+      }
+      const parentItem = tableData.value.find(item => item.id === row.pid);
+      if (parentItem) {
+        // 去除HTML实体和spacer，只显示纯名称
+        const parentName = parentItem.name.replace(/&nbsp;|├|│|└/g, "").trim();
+        return parentName || "无";
+      }
+      return value || "无";
+    },
     tableColumnProps: {
       align: "center"
     }
@@ -59,7 +75,15 @@ const tableConfig: any = ref([
   {
     label: "名称",
     prop: "name",
-    minWidth: 120,
+    minWidth: 200,
+    render: (value: string) => {
+      // 处理HTML实体，将&nbsp;转换为空格，保留层级符号
+      return value
+        .replace(/&nbsp;/g, " ")
+        .replace(/├/g, "├")
+        .replace(/│/g, "│")
+        .replace(/└/g, "└");
+    },
     tableColumnProps: {
       align: "center"
     }
@@ -69,9 +93,10 @@ const tableConfig: any = ref([
     prop: "status",
     width: 100,
     render: (value: string) => {
+      const isNormal = value === "normal" || value === "1";
       return h(ElTag, {
-        type: value === "1" ? "success" : "danger"
-      }, () => value === "1" ? "正常" : "停用");
+        type: isNormal ? "success" : "danger"
+      }, () => isNormal ? "正常" : "停用");
     },
     tableColumnProps: {
       align: "center"
@@ -109,19 +134,32 @@ buttons.value = [
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const res = await getRoleManagementList();
     
-    // 模拟数据
-    tableData.value = [
-      {
-        id: 1,
-        parent: "代理",
-        name: "商户",
-        status: "1"
-      }
-    ];
-    total.value = tableData.value.length;
+    if (res.code === 0 && res.data && res.data.rows) {
+      // 转换数据以匹配表格显示
+      tableData.value = res.data.rows.map((item: RoleManagementItem) => {
+        // 查找父级名称
+        let parentName = "无";
+        if (item.pid !== 0) {
+          const parentItem = res.data.rows.find((p: RoleManagementItem) => p.id === item.pid);
+          if (parentItem) {
+            // 去除HTML实体和spacer，只显示纯名称
+            parentName = parentItem.name.replace(/&nbsp;|├|│|└/g, "").trim();
+          }
+        }
+        
+        return {
+          ...item,
+          parent: parentName
+        };
+      }) as any[];
+      total.value = res.data.total;
+    } else {
+      tableData.value = [];
+      total.value = 0;
+      message(res.msg || "获取列表数据失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
@@ -159,12 +197,19 @@ const formData = ref({
   permissions: [] as string[]
 });
 
-// 父级选项（模拟数据，后续对接API）
-const parentOptions = ref([
-  { label: "无", value: "" },
-  { label: "代理", value: "代理" },
-  { label: "商户", value: "商户" }
-]);
+// 父级选项（从API数据动态生成）
+const parentOptions = computed(() => {
+  const options = [{ label: "无", value: "" }];
+  // 从tableData中获取所有角色作为父级选项
+  tableData.value.forEach(item => {
+    const displayName = item.name.replace(/&nbsp;|├|│|└/g, "").trim();
+    options.push({
+      label: displayName,
+      value: item.id.toString()
+    });
+  });
+  return options;
+});
 
 // 表单验证规则
 const formRules = {
@@ -492,14 +537,19 @@ const handleEdit = () => {
 const handleEditRow = (row: TableRow) => {
   isEdit.value = true;
   dialogTitle.value = "编辑";
+  
+  // 处理名称，去除HTML实体和spacer
+  const displayName = row.name.replace(/&nbsp;|├|│|└/g, "").trim();
+  
   formData.value = {
     id: row.id,
-    parent: row.parent,
-    name: row.name,
-    permissions: [] // TODO: 从API获取权限数据
+    parent: row.pid === 0 ? "" : row.pid.toString(),
+    name: displayName,
+    permissions: [] // TODO: 从API获取权限数据，rules字段包含权限ID
   };
   
-  // TODO: 根据权限数据设置选中的节点
+  // TODO: 根据rules字段解析权限数据
+  // rules字段是逗号分隔的权限ID字符串，或"*"表示全部权限
   // 这里先模拟一些选中的权限
   const mockPermissions = [
     "/game/supplier-view",
@@ -549,11 +599,18 @@ const handleSubmit = async () => {
           const newId = tableData.value.length > 0 
             ? Math.max(...tableData.value.map(item => item.id)) + 1 
             : 1;
+          const pid = formData.value.parent ? parseInt(formData.value.parent) : 0;
           const newItem: TableRow = {
             id: newId,
-            parent: formData.value.parent || "无",
+            pid,
             name: formData.value.name,
-            status: "1"
+            rules: permissionCheckedKeys.value.join(",") || "",
+            createtime: Math.floor(Date.now() / 1000),
+            updatetime: Math.floor(Date.now() / 1000),
+            status: "normal",
+            spacer: "",
+            haschild: 0,
+            parent: formData.value.parent ? (tableData.value.find(item => item.id === pid)?.name.replace(/&nbsp;|├|│|└/g, "").trim() || "无") : "无"
           };
           tableData.value.unshift(newItem);
           total.value += 1;
@@ -752,6 +809,7 @@ const handleBatchDelete = async () => {
             placeholder="请选择"
             style="width: 100%"
             filterable
+            :disabled="isEdit"
           >
             <el-option
               v-for="item in parentOptions"

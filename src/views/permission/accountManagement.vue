@@ -8,6 +8,27 @@ import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro
 import { useTable } from "plus-pro-components";
 import { message } from "@/utils/message";
 import { ElMessageBox, ElTag, ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElButton, ElRadioGroup, ElRadio, ElSelect, ElOption, type FormInstance } from "element-plus";
+import {
+  getAccountManagementList,
+  getParentAdminList,
+  getRoleManagementList,
+  addAccount,
+  editAccount,
+  deleteBatchAccount,
+  type AccountManagementItem,
+  type AccountManagementListParams,
+  type ParentAdminItem,
+  type AddAccountParams,
+  type EditAccountParams,
+  type DeleteBatchAccountParams,
+  type RoleManagementItem
+} from "@/api/auth";
+import {
+  getCurrencyList,
+  searchGameProductType,
+  type CurrencyItem,
+  type GameProductTypeSearchItem
+} from "@/api/game";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -15,6 +36,7 @@ import Filter from "~icons/ep/filter";
 import Plus from "~icons/ep/plus";
 import Edit from "~icons/ep/edit";
 import Refresh from "~icons/ep/refresh";
+import Delete from "~icons/ep/delete";
 
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
@@ -22,6 +44,7 @@ const searchData = ref({
   username: "",
   nickname: "",
   role_group: "",
+  superior: "",
   loginTime: [] as string[],
   createTime: [] as string[],
   status: ""
@@ -59,6 +82,22 @@ const searchColumns: PlusColumn[] = [
     options: computed(() => [
       { label: "全部", value: "" },
       ...roleGroupOptions.value.map(item => ({
+        label: item.label,
+        value: item.value.toString()
+      }))
+    ])
+  },
+  {
+    label: "上级",
+    prop: "superior",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择上级",
+      filterable: true
+    })),
+    options: computed(() => [
+      { label: "全部", value: "" },
+      ...superiorOptions.value.map(item => ({
         label: item.label,
         value: item.value.toString()
       }))
@@ -169,18 +208,100 @@ const searchColumns: PlusColumn[] = [
   }
 ];
 
-// 角色组选项（模拟数据，后续对接API）
-const roleGroupOptions = ref([
-  { label: "管理员", value: 1 },
-  { label: "普通用户", value: 2 },
-  { label: "代理商", value: 3 }
+// 角色组选项（从API获取）
+const roleGroupOptions = ref<Array<{ label: string; value: number }>>([]);
+
+// 获取角色组列表
+const getRoleGroupList = async () => {
+  try {
+    const res = await getRoleManagementList();
+    
+    if (res.code === 0 && res.data && res.data.rows) {
+      roleGroupOptions.value = res.data.rows.map((item: RoleManagementItem) => {
+        // 去除HTML实体和spacer，只显示纯名称
+        const displayName = item.name.replace(/&nbsp;|├|│|└/g, "").trim();
+        return {
+          label: displayName,
+          value: item.id
+        };
+      });
+    }
+  } catch (error: any) {
+    console.error("获取角色组列表失败:", error);
+  }
+};
+
+// 上级选项（从API获取）
+const superiorOptions = ref<Array<{ label: string; value: number }>>([
+  { label: "无", value: 0 }
 ]);
 
-// 上级选项（模拟数据，后续对接API）
-const superiorOptions = ref([
-  { label: "无", value: 0 },
-  { label: "管理员", value: 1 }
-]);
+// 币种选项（从API获取）
+const currencyOptions = ref<Array<{ label: string; value: string }>>([]);
+
+// 游戏品牌选项（从API获取）
+const gameBrandOptions = ref<Array<{ label: string; value: number }>>([]);
+
+// 获取上级列表
+const getSuperiorList = async () => {
+  try {
+    const res = await getParentAdminList({
+      pageNumber: 1,
+      pageSize: 1000 // 获取所有上级，设置一个较大的值
+    });
+    
+    if (res.code === 0 && res.data && res.data.rows) {
+      superiorOptions.value = [
+        { label: "无", value: 0 },
+        ...res.data.rows.map((item: ParentAdminItem) => ({
+          label: item.username,
+          value: item.id
+        }))
+      ];
+    }
+  } catch (error: any) {
+    console.error("获取上级列表失败:", error);
+  }
+};
+
+// 获取币种列表
+const getCurrencyOptions = async () => {
+  try {
+    const res = await getCurrencyList({
+      pageNumber: 1,
+      pageSize: 1000,
+      status: "1" // 只获取正常状态的币种
+    });
+    
+    if (res.code === 0 && res.data && res.data.rows) {
+      currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
+        label: item.name,
+        value: item.name
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取币种列表失败:", error);
+  }
+};
+
+// 获取游戏产品类型列表（用于开通游戏下拉框）
+const getGameBrandOptions = async () => {
+  try {
+    const res = await searchGameProductType({
+      pageNumber: 1,
+      pageSize: 1000 // 获取所有游戏产品类型
+    });
+    
+    if (res.code === 0 && res.data && res.data.rows) {
+      gameBrandOptions.value = res.data.rows.map((item: GameProductTypeSearchItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取游戏产品类型列表失败:", error);
+  }
+};
 
 // 点击搜索按钮
 const handleSearch = (values: any) => {
@@ -194,6 +315,7 @@ const handleRest = () => {
     username: "",
     nickname: "",
     role_group: "",
+    superior: "",
     loginTime: [],
     createTime: [],
     status: ""
@@ -202,26 +324,21 @@ const handleRest = () => {
   getList();
 };
 
-// 表格数据类型
-type TableRow = {
-  id: number;
-  username: string;
-  nickname: string;
-  role_group: string;
-  superior: string;
-  email: string;
-  google_verify: string;
-  whitelist_ip: string;
-  remark: string;
-  login_time: string;
-  createtime: string;
-  status: string;
+// 表格数据类型（直接使用API响应类型，但需要扩展显示字段）
+type TableRow = AccountManagementItem & {
+  nickname?: string;
+  role_group?: string;
+  superior?: string;
+  google_verify?: string;
+  whitelist_ip?: string;
+  remark?: string;
+  login_time?: string;
 };
 
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
 // 表格相关数据和操作
-const { tableData, pageInfo, total, buttons, loadingStatus } =
+const { tableData, pageInfo, total, buttons: buttonsRef, loadingStatus } =
   useTable<TableRow[]>();
 
 // 表格配置
@@ -229,7 +346,7 @@ const tableConfig: any = ref([
   {
     label: "用户名",
     prop: "username",
-    minWidth: 120,
+    minWidth: 160,
     tableColumnProps: {
       align: "center"
     }
@@ -237,14 +354,21 @@ const tableConfig: any = ref([
   {
     label: "昵称",
     prop: "nickname",
-    minWidth: 120,
+    render: (value: string, row: TableRow) => {
+      // 如果没有nickname，使用username
+      return value || row.username || "-";
+    },
+    minWidth: 160,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "角色组",
-    prop: "role_group",
+    prop: "groups_text",
+    render: (value: string) => {
+      return value || "-";
+    },
     minWidth: 120,
     tableColumnProps: {
       align: "center"
@@ -252,7 +376,10 @@ const tableConfig: any = ref([
   },
   {
     label: "上级",
-    prop: "superior",
+    prop: "agentname",
+    render: (value: string) => {
+      return value && value !== "-" ? value : "无";
+    },
     minWidth: 120,
     tableColumnProps: {
       align: "center"
@@ -268,10 +395,10 @@ const tableConfig: any = ref([
   },
   {
     label: "谷歌验证",
-    prop: "google_verify",
+    prop: "google_status",
     minWidth: 100,
-    render: (value: string) => {
-      return value === "1" ? "启用" : "未启用";
+    render: (value: number) => {
+      return value === 1 ? "启用" : "未启用";
     },
     tableColumnProps: {
       align: "center"
@@ -280,6 +407,10 @@ const tableConfig: any = ref([
   {
     label: "白名单IP",
     prop: "whitelist_ip",
+    render: () => {
+      // API响应中没有此字段，显示"-"
+      return "-";
+    },
     minWidth: 140,
     tableColumnProps: {
       align: "center"
@@ -288,6 +419,10 @@ const tableConfig: any = ref([
   {
     label: "备注",
     prop: "remark",
+    render: () => {
+      // API响应中没有此字段，显示"-"
+      return "-";
+    },
     minWidth: 120,
     tableColumnProps: {
       align: "center"
@@ -295,8 +430,13 @@ const tableConfig: any = ref([
   },
   {
     label: "登录时间",
-    prop: "login_time",
+    prop: "logintime",
     width: 160,
+    render: (value: number) => {
+      if (!value || value === 0) return "-";
+      // 将时间戳转换为日期时间字符串
+      return dayjs.unix(value).format("YYYY-MM-DD HH:mm:ss");
+    },
     tableColumnProps: {
       align: "center"
     }
@@ -314,9 +454,10 @@ const tableConfig: any = ref([
     prop: "status",
     width: 100,
     render: (value: string) => {
+      const isNormal = value === "normal" || value === "1";
       return h(ElTag, {
-        type: value === "1" ? "success" : "danger"
-      }, () => value === "1" ? "正常" : "停用");
+        type: isNormal ? "success" : "danger"
+      }, () => isNormal ? "正常" : "停用");
     },
     tableColumnProps: {
        sortable: true,
@@ -328,7 +469,7 @@ const tableConfig: any = ref([
 
 
 // 表格操作栏按钮定义
-buttons.value = [
+buttonsRef.value = [
   {
     text: "编辑",
     code: "edit",
@@ -339,6 +480,17 @@ buttons.value = [
       const row = params.row as TableRow;
       handleEditRow(row);
     }
+  },
+  {
+    text: "删除",
+    code: "delete",
+    props: {
+      type: "danger"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleDelete(row);
+    },
   }
 ];
 
@@ -351,55 +503,55 @@ const handleSelectionChange = (val: TableRow[]) => {
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
+    const { page, pageSize } = pageInfo.value;
+    const { username, nickname, role_group, superior, loginTime, createTime, status } = searchData.value;
     
-    // 模拟数据
-    tableData.value = [
-      {
-        id: 1,
-        username: "admin",
-        nickname: "管理员",
-        role_group: "管理员",
-        superior: "无",
-        email: "admin@example.com",
-        google_verify: "1",
-        whitelist_ip: "192.168.1.1",
-        remark: "系统管理员",
-        login_time: "2024-01-01 10:00:00",
-        createtime: "2024-01-01 00:00:00",
-        status: "1"
-      },
-      {
-        id: 2,
-        username: "user1",
-        nickname: "用户1",
-        role_group: "普通用户",
-        superior: "管理员",
-        email: "user1@example.com",
-        google_verify: "0",
-        whitelist_ip: "",
-        remark: "",
-        login_time: "2024-01-02 10:00:00",
-        createtime: "2024-01-02 00:00:00",
-        status: "1"
-      },
-      {
-        id: 3,
-        username: "user2",
-        nickname: "用户2",
-        role_group: "普通用户",
-        superior: "管理员",
-        email: "user2@example.com",
-        google_verify: "0",
-        whitelist_ip: "",
-        remark: "",
-        login_time: "",
-        createtime: "2024-01-03 00:00:00",
-        status: "0"
-      }
-    ];
-    total.value = tableData.value.length;
+    const params: AccountManagementListParams = {
+      pageNumber: page,
+      pageSize,
+      username: username || undefined,
+      status: status || undefined
+    };
+    
+    // 处理上级参数（如果API支持）
+    if (superior) {
+      // TODO: 根据实际API参数名调整
+      // params.pid = superior;
+    }
+    
+    // 处理创建时间范围
+    if (createTime && Array.isArray(createTime) && createTime.length === 2) {
+      params.create_start_time = createTime[0];
+      params.create_end_time = createTime[1];
+    }
+    
+    // 处理登录时间范围（API可能不支持，但先保留）
+    // if (loginTime && Array.isArray(loginTime) && loginTime.length === 2) {
+    //   // API可能没有登录时间范围参数
+    // }
+    
+    const res = await getAccountManagementList(params);
+    
+    if (res.code === 0 && res.data && res.data.rows) {
+      // 转换数据以匹配表格显示
+      tableData.value = res.data.rows.map((item: AccountManagementItem) => ({
+        ...item,
+        nickname: item.username, // 如果没有nickname，使用username
+        role_group: item.groups_text || "",
+        superior: item.agentname || "无",
+        google_verify: item.google_status === 1 ? "1" : "0",
+        whitelist_ip: "", // API响应中没有此字段
+        remark: "", // API响应中没有此字段
+        login_time: item.logintime && item.logintime > 0 
+          ? dayjs.unix(item.logintime).format("YYYY-MM-DD HH:mm:ss")
+          : ""
+      })) as any[];
+      total.value = res.data.total;
+    } else {
+      tableData.value = [];
+      total.value = 0;
+      message(res.msg || "获取列表数据失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
@@ -423,6 +575,10 @@ const handlePageChange = () => {
 };
 
 // 初始化加载数据
+getSuperiorList(); // 先加载上级列表
+getRoleGroupList(); // 加载角色组列表
+getCurrencyOptions(); // 加载币种列表
+getGameBrandOptions(); // 加载游戏品牌列表
 getList();
 
 // 对话框相关
@@ -433,16 +589,21 @@ const formRef = ref<FormInstance>();
 const formData = ref({
   id: 0,
   role_group: "",
-  superior: "",
+  superior: "0",
   username: "",
   nickname: "",
   email: "",
   password: "",
+  type: "1", // 账号类型,1正式账号2测试账号
+  wallet_type: "1", // 钱包类型,1单一2转账
+  version: "1.0", // API版本,1.0/2.0
+  currency: "", // 币种
+  type_ids: [] as number[], // 开通游戏,传品牌ID数组
   google_verify: "1",
   google_secret: "",
   whitelist_ip: "",
   remark: "",
-  status: "1"
+  status: "normal" // 状态,normal正常,hidden禁用
 });
 
 // 表单验证规则
@@ -457,12 +618,11 @@ const formRules = {
     { required: true, message: "请输入昵称", trigger: "blur" }
   ],
   email: [
-    { required: true, message: "请输入关联邮箱", trigger: "blur" },
     { type: "email" as const, message: "请输入正确的邮箱格式", trigger: "blur" }
   ],
   password: [
     { required: true, message: "请输入密码", trigger: "blur" },
-    { min: 6, message: "密码长度不能少于6位", trigger: "blur" }
+    { min: 6, max: 30, message: "密码长度必须在6-30位之间", trigger: "blur" }
   ]
 };
 
@@ -473,11 +633,16 @@ const handleAdd = () => {
   formData.value = {
     id: 0,
     role_group: "",
-    superior: "",
+    superior: "0",
     username: "",
     nickname: "",
     email: "",
     password: "",
+    type: "1",
+    wallet_type: "1",
+    version: "1.0",
+    currency: "",
+    type_ids: [],
     google_verify: "0",
     google_secret: "",
     whitelist_ip: "",
@@ -500,19 +665,43 @@ const handleEdit = () => {
 const handleEditRow = (row: TableRow) => {
   isEdit.value = true;
   dialogTitle.value = "编辑";
+  // 查找上级ID（根据pid查找）
+  let superiorId = "0";
+  if (row.pid && row.pid !== 0) {
+    const superiorItem = superiorOptions.value.find(item => item.value === row.pid);
+    if (superiorItem) {
+      superiorId = superiorItem.value.toString();
+    }
+  }
+  
+  // 查找角色组ID（根据groups_text查找对应的角色ID）
+  let roleGroupId = "";
+  if (row.groups_text || row.role_group) {
+    const roleGroupName = row.groups_text || row.role_group || "";
+    const roleGroupItem = roleGroupOptions.value.find(item => item.label === roleGroupName);
+    if (roleGroupItem) {
+      roleGroupId = roleGroupItem.value.toString();
+    }
+  }
+  
   formData.value = {
     id: row.id,
-    role_group: row.role_group,
-    superior: row.superior,
+    role_group: roleGroupId,
+    superior: superiorId,
     username: row.username,
-    nickname: row.nickname,
+    nickname: row.nickname || row.username,
     email: row.email,
-    password: "", // 编辑时不显示密码
-    google_verify: row.google_verify || "0",
+    password: "", // 编辑时也需要输入密码
+    type: "1", // TODO: 从API获取账号类型
+    wallet_type: row.wallet_type?.toString() || "1", // TODO: 从API获取钱包类型
+    version: "1.0", // TODO: 从API获取API版本
+    currency: "", // TODO: 从API获取币种
+    type_ids: [], // TODO: 从API获取开通游戏
+    google_verify: row.google_status === 1 ? "1" : "0",
     google_secret: "SDFDHGKJHKJHJRH455RHH5H534H", // 模拟密钥
     whitelist_ip: row.whitelist_ip || "",
     remark: row.remark || "",
-    status: row.status || "1"
+    status: row.status,
   };
   showDialog.value = true;
 };
@@ -542,52 +731,77 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        // TODO: 对接实际API
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
         if (isEdit.value) {
-          // 编辑：更新列表中的数据
-          const index = tableData.value.findIndex(item => item.id === formData.value.id);
-          if (index !== -1) {
-            tableData.value[index] = {
-              ...tableData.value[index],
-              username: formData.value.username,
-              nickname: formData.value.nickname,
-              role_group: formData.value.role_group,
-              superior: formData.value.superior,
-              email: formData.value.email,
-              google_verify: formData.value.google_verify,
-              whitelist_ip: formData.value.whitelist_ip,
-              remark: formData.value.remark,
-              status: formData.value.status
-            };
-          }
-          message("编辑成功", { type: "success" });
-        } else {
-          // 新增：添加到列表
-          const newId = tableData.value.length > 0 
-            ? Math.max(...tableData.value.map(item => item.id)) + 1 
-            : 1;
-          const newItem: TableRow = {
-            id: newId,
-            username: formData.value.username,
-            nickname: formData.value.nickname,
-            role_group: formData.value.role_group,
-            superior: formData.value.superior || "无",
-            email: formData.value.email,
-            google_verify: formData.value.google_verify,
-            whitelist_ip: formData.value.whitelist_ip,
-            remark: formData.value.remark,
-            login_time: "",
-            createtime: dayjs().format("YYYY-MM-DD HH:mm:ss"),
-            status: formData.value.status
+          // 编辑：调用API
+          const pid = formData.value.superior && formData.value.superior !== "0" 
+            ? parseInt(formData.value.superior) 
+            : 0;
+          
+          // 将type_ids数组转换为逗号分隔的字符串
+          const typeIdsStr = formData.value.type_ids.length > 0
+            ? formData.value.type_ids.join(",")
+            : "";
+          
+          const params: EditAccountParams = {
+            id: formData.value.id,
+            group_id: formData.value.role_group,
+            pid: pid,
+            google_status: formData.value.google_verify === "1" ? 1 : 0,
+            password: formData.value.password,
+            type_ids: typeIdsStr
           };
-          tableData.value.unshift(newItem);
-          total.value += 1;
-          message("新增成功", { type: "success" });
+          
+          const res = await editAccount(params);
+          
+          if (res.code === 0) {
+            message("编辑成功", { type: "success" });
+            handleCloseDialog();
+            // 刷新列表
+            getList();
+          } else {
+            message(res.msg || "编辑失败", { type: "error" });
+          }
+        } else {
+          // 新增：调用API
+          const pid = formData.value.superior && formData.value.superior !== "0" 
+            ? parseInt(formData.value.superior) 
+            : 0;
+          
+          // 将type_ids数组转换为逗号分隔的字符串
+          const typeIdsStr = formData.value.type_ids.length > 0
+            ? formData.value.type_ids.join(",")
+            : undefined;
+          
+          const params: AddAccountParams = {
+            group_id: formData.value.role_group,
+            pid: pid,
+            username: formData.value.username,
+            password: formData.value.password,
+            type: formData.value.type,
+            wallet_type: formData.value.wallet_type,
+            version: formData.value.version,
+            currency: formData.value.currency,
+            type_ids: typeIdsStr,
+            status: formData.value.status,
+            nickname: formData.value.nickname || undefined
+          };
+          
+          const res = await addAccount(params);
+          
+          if (res.code === 0) {
+            message("新增成功", { type: "success" });
+            handleCloseDialog();
+            // 刷新列表
+            getList();
+          } else {
+            message(res.msg || "新增失败", { type: "error" });
+          }
         }
         
-        handleCloseDialog();
+        // 编辑成功后关闭对话框
+        if (isEdit.value) {
+          handleCloseDialog();
+        }
       } catch (error: any) {
         console.error("提交失败:", error);
         message(error?.message || "提交失败", { type: "error" });
@@ -596,9 +810,54 @@ const handleSubmit = async () => {
   });
 };
 
-// 删除单条数据（只有停用状态显示）
+// 批量删除
+const handleBatchDelete = async () => {
+  if (!multipleSelection.value.length) {
+    message("请先选择要删除的数据！", { type: "warning" });
+    return;
+  }
+
+  // 检查是否有正常状态的账号（只能删除停用状态的账号）
+  const normalAccounts = multipleSelection.value.filter(
+    row => row.status === "normal" || row.status === "1"
+  );
+  if (normalAccounts.length > 0) {
+    message("只能删除停用状态的账号", { type: "warning" });
+    return;
+  }
+
+  const usernames = multipleSelection.value.map(item => item.username).join("、");
+  const confirmMessage = `确定删除选中的 ${multipleSelection.value.length} 条账号数据？\n账号：${usernames}`;
+
+  try {
+    await ElMessageBox.confirm(confirmMessage, "批量删除", {
+      confirmButtonText: "确定",
+      cancelButtonText: "取消",
+      type: "warning"
+    });
+
+    const ids = multipleSelection.value.map(item => item.id).join(",");
+    const params: DeleteBatchAccountParams = { ids };
+    const res = await deleteBatchAccount(params);
+
+    if (res.code === 0) {
+      message("删除成功", { type: "success" });
+      getList();
+    } else {
+      message(res.msg || "删除失败", { type: "error" });
+    }
+  } catch (error: any) {
+    if (error !== "cancel") {
+      console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
+    }
+  }
+};
+
+// 删除单条数据（只有停用状态显示，使用批量删除API）
 const handleDelete = async (row: TableRow) => {
-  if (row.status === "1") {
+  const isNormal = row.status === "normal" || row.status === "1";
+  if (isNormal) {
     message("只能删除停用状态的账号", { type: "warning" });
     return;
   }
@@ -614,14 +873,14 @@ const handleDelete = async (row: TableRow) => {
       }
     );
     
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 300));
+    const params: DeleteBatchAccountParams = { ids: row.id.toString() };
+    const res = await deleteBatchAccount(params);
     
-    const index = tableData.value.findIndex(item => item.id === row.id);
-    if (index !== -1) {
-      tableData.value.splice(index, 1);
-      total.value -= 1;
+    if (res.code === 0) {
       message("删除成功", { type: "success" });
+      getList();
+    } else {
+      message(res.msg || "删除失败", { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
@@ -658,7 +917,7 @@ const handleDelete = async (row: TableRow) => {
         :stripe="true"
         :is-selection="true"
         :action-bar="{
-          buttons,
+          buttons: buttonsRef,
           width: '150px',
           label: '操作'
         }"
@@ -680,6 +939,15 @@ const handleDelete = async (row: TableRow) => {
           >
             <el-icon><component :is="Edit" /></el-icon>
             <span style="margin-left: 3px;">编辑</span>
+          </el-button>
+          <el-button 
+            type="danger" 
+            @click="handleBatchDelete" 
+            size="default"
+            :disabled="multipleSelection.length === 0"
+          >
+            <el-icon><component :is="Delete" /></el-icon>
+            <span style="margin-left: 3px;">删除</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
@@ -782,7 +1050,7 @@ const handleDelete = async (row: TableRow) => {
               v-for="item in roleGroupOptions"
               :key="item.value"
               :label="item.label"
-              :value="item.label"
+              :value="item.value.toString()"
             />
           </el-select>
         </el-form-item>
@@ -797,7 +1065,7 @@ const handleDelete = async (row: TableRow) => {
               v-for="item in superiorOptions"
               :key="item.value"
               :label="item.label"
-              :value="item.label"
+              :value="item.value.toString()"
             />
           </el-select>
         </el-form-item>
@@ -822,14 +1090,69 @@ const handleDelete = async (row: TableRow) => {
             maxlength="100"
           />
         </el-form-item>
-        <el-form-item label="密码" prop="password" v-if="!isEdit">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="formData.password"
             type="password"
             placeholder="请输入"
             show-password
-            maxlength="50"
+            maxlength="30"
           />
+        </el-form-item>
+        <el-form-item label="账号类型" prop="type">
+          <el-radio-group v-model="formData.type">
+            <el-radio label="1">正式账号</el-radio>
+            <el-radio label="2">测试账号</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="钱包类型" prop="wallet_type">
+          <el-radio-group v-model="formData.wallet_type">
+            <el-radio label="1">单一</el-radio>
+            <el-radio label="2">转账</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="API版本" prop="version">
+          <el-select
+            v-model="formData.version"
+            placeholder="请选择"
+            style="width: 100%"
+          >
+            <el-option label="1.0" value="1.0" />
+            <el-option label="2.0" value="2.0" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="币种" prop="currency">
+          <el-select
+            v-model="formData.currency"
+            placeholder="请选择"
+            style="width: 100%"
+            filterable
+          >
+            <el-option
+              v-for="item in currencyOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="开通游戏">
+          <el-select
+            v-model="formData.type_ids"
+            placeholder="请选择游戏品牌"
+            style="width: 100%"
+            multiple
+            filterable
+            collapse-tags
+            collapse-tags-tooltip
+          >
+            <el-option
+              v-for="item in gameBrandOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="谷歌验证">
          <el-radio-group v-model="formData.google_verify">
@@ -871,10 +1194,10 @@ const handleDelete = async (row: TableRow) => {
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item label="状态" prop="status">
           <el-radio-group v-model="formData.status">
             <el-radio label="1">正常</el-radio>
-            <el-radio label="0">停用</el-radio>
+            <el-radio label="-1">停用</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>

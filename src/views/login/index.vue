@@ -4,7 +4,7 @@ import Motion from "./utils/motion";
 import { useRouter } from "vue-router";
 import { message } from "@/utils/message";
 import { loginRules } from "./utils/rule";
-import { ref, reactive, toRaw, computed } from "vue";
+import { ref, reactive, toRaw, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { debounce } from "@pureadmin/utils";
 import PasswordRecovery from "./components/PasswordRecovery.vue";
 import EmailVerification from "./components/EmailVerification.vue";
@@ -55,6 +55,52 @@ const { dataTheme, overallStyle, dataThemeChange } = useDataThemeChange();
 dataThemeChange(overallStyle.value);
 const {  getDropdownItemStyle, getDropdownItemClass } = useNav();
 const { locale, translationCh, translationEn } = useTranslationLang();
+
+// Logo切换逻辑：使用响应式的isDark来跟踪主题变化
+const isDark = ref(document.documentElement.classList.contains("dark"));
+
+// 监听DOM的dark class变化，确保实时响应主题切换
+let observer: MutationObserver | null = null;
+let unwatchTheme: (() => void) | null = null;
+
+onMounted(() => {
+  // 初始化
+  isDark.value = document.documentElement.classList.contains("dark");
+  
+  // 监听DOM class变化
+  observer = new MutationObserver(() => {
+    isDark.value = document.documentElement.classList.contains("dark");
+  });
+  
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"]
+  });
+  
+  // 同时监听dataTheme变化（双重保障）
+  unwatchTheme = watch(dataTheme, (newVal) => {
+    isDark.value = newVal;
+  });
+});
+
+onBeforeUnmount(() => {
+  if (observer) {
+    observer.disconnect();
+    observer = null;
+  }
+  if (unwatchTheme) {
+    unwatchTheme();
+    unwatchTheme = null;
+  }
+});
+
+// 根据主题色动态获取logo
+const logoUrl = computed(() => {
+  // 深色模式使用 logo-dark.png，浅色模式使用 logo.png
+  return isDark.value
+    ? "/src/assets/login/logo-dark.png"
+    : "/src/assets/login/logo.png";
+});
 
 const ruleForm = reactive({
   username: "",
@@ -116,7 +162,7 @@ useEventListener(document, "keydown", ({ code }) => {
     <div class="navbar">
       <div class="navbar-left">
         <img
-          :src="overallStyle.valueOf() ? '/src/assets/login/logo-dark.png' : '/src/assets/login/logo.png'"
+          :src="logoUrl"
           class="logo-img" 
           alt="GamePlus Logo"
         />

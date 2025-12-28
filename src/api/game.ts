@@ -1152,6 +1152,43 @@ export const getGameBrandList = (params?: GameBrandListParams) => {
   );
 };
 
+/** 搜索游戏产品类型参数 */
+export type SearchGameProductTypeParams = {
+  pageNumber?: number;
+  pageSize?: number;
+};
+
+/** 游戏产品类型搜索项 */
+export type GameProductTypeSearchItem = {
+  id: number;
+  name: string;
+  shortname: string;
+  provider: string;
+  wallet_type: number;
+};
+
+/** 游戏产品类型搜索响应 */
+export type GameProductTypeSearchResult = {
+  code: number;
+  msg: string;
+  data: {
+    total: number;
+    pages: number;
+    pageNumber: number;
+    pageSize: number;
+    rows: GameProductTypeSearchItem[];
+  };
+};
+
+/** 搜索游戏产品类型 */
+export const searchGameProductType = (params?: SearchGameProductTypeParams) => {
+  return http.request<GameProductTypeSearchResult>(
+    "get",
+    baseUrlApi("/game/producttype/search"),
+    { params }
+  );
+};
+
 /** 新增游戏品牌参数 */
 export type AddGameBrandParams = {
   name: string; // 产品名称（必填）
