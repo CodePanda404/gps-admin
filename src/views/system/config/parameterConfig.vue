@@ -2,9 +2,21 @@
 defineOptions({
   name: "ParameterConfig"
 });
-import { ref, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { message } from "@/utils/message";
 import { ElForm, ElFormItem, ElButton, ElInput, ElDialog, ElMessageBox } from "element-plus";
+import { saveSystemConfig } from "@/api/system";
+import type { ConfigGroup } from "@/api/system";
+
+// Props
+const props = defineProps<{
+  configGroup: ConfigGroup;
+}>();
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
 // 编辑模式状态
 const isEditMode = ref(false);
@@ -65,34 +77,31 @@ const currencyList = [
   { code: "NGN", label: "NGN" }
 ];
 
-// 获取配置数据
-const getConfig = async () => {
-  try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // 模拟数据
-    const data = {
-      apiDocumentAddress: "https://jacskie179.gitbook.io/hai-wai-you-xi-api-ji-cheng-wen-dang-v1/api-document-v1/overview",
-      transferWalletApiDocument: "https://jackie179.gitbook.io/game-plus-zhuan-zhang-qian-bao-api-wen-dang/",
-      creditLimitReminderINR: 100000,
-      creditLimitReminderKES: 100000,
-      creditLimitReminderPHP: 100000,
-      creditLimitReminderIDR: 100000,
-      creditLimitReminderTHB: 100000,
-      creditLimitReminderCNY: 100000,
-      creditLimitReminderAUD: 100000,
-      creditLimitReminderBRL: 100000,
-      creditLimitReminderCOP: 100000,
-      creditLimitReminderMXN: 100000,
-      creditLimitReminderNGN: 100000
-    };
-    formData.value = { ...data };
-    originalFormData.value = { ...data };
-  } catch (error: any) {
-    console.error("获取配置失败:", error);
-    message(error?.message || "获取配置失败", { type: "error" });
-  }
+// 从后端数据初始化表单
+const initFormData = () => {
+  if (!props.configGroup || !props.configGroup.list) return;
+  
+  // 遍历后端返回的配置项，映射到前端字段
+  props.configGroup.list.forEach((item) => {
+    // 根据后端字段名映射到前端字段
+    // 如果后端字段名与前端字段名不同，在这里进行映射
+    // 例如：如果后端有api_document_address字段，映射到apiDocumentAddress
+    // 如果后端没有返回，保持默认值
+    
+    // 信用额度提醒值可能以后端字段名为key，例如：credit_limit_reminder_INR
+    // 这里暂时保留，等后端有具体字段名时再添加映射逻辑
+  });
+  
+  // 保存原始数据
+  originalFormData.value = { ...formData.value };
 };
+
+// 监听配置组变化
+watch(() => props.configGroup, () => {
+  if (props.configGroup && props.configGroup.list) {
+    initFormData();
+  }
+}, { immediate: true, deep: true });
 
 // 点击修改按钮
 const handleEdit = () => {
@@ -148,14 +157,38 @@ const handleConfirmGoogleVerify = async () => {
 // 执行保存操作
 const doSave = async () => {
   try {
-    // TODO: 对接实际API，传递 googleVerifyCode.value
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message("保存成功", { type: "success" });
-    isEditMode.value = false;
-    isSaveDisabled.value = true;
-    // 更新原始数据
-    originalFormData.value = { ...formData.value };
-    googleVerifyCode.value = "";
+    // 准备保存数据，将前端字段映射回后端字段名
+    const saveData: Record<string, any> = {};
+    
+    // 遍历后端配置项，找到对应的字段并保存
+    props.configGroup.list.forEach((item) => {
+      // 根据item.name映射前端字段到后端字段
+      // 例如：如果后端字段是api_document_address，前端是apiDocumentAddress
+      // saveData[item.name] = formData.value.apiDocumentAddress;
+      
+      // 信用额度提醒值可能需要特殊处理
+      // 例如：如果后端字段是credit_limit_reminder_INR，前端是creditLimitReminderINR
+      // 这里暂时保留，等后端有具体字段名时再添加映射逻辑
+    });
+
+    const res = await saveSystemConfig({
+      group: props.configGroup.name,
+      data: saveData,
+      google_code: googleVerifyCode.value
+    });
+
+    if (res.code === 0) {
+      message("保存成功", { type: "success" });
+      isEditMode.value = false;
+      isSaveDisabled.value = true;
+      // 更新原始数据
+      originalFormData.value = { ...formData.value };
+      googleVerifyCode.value = "";
+      // 触发刷新
+      emit("refresh");
+    } else {
+      message(res.msg || "保存失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("保存失败:", error);
     message(error?.message || "保存失败", { type: "error" });
@@ -171,10 +204,6 @@ const handleCancel = () => {
   isSaveDisabled.value = true;
 };
 
-// 初始化加载数据
-onMounted(() => {
-  getConfig();
-});
 </script>
 
 <template>

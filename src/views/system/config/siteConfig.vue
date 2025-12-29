@@ -2,12 +2,24 @@
 defineOptions({
   name: "SiteConfig"
 });
-import { ref, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { message } from "@/utils/message";
 import { ElForm, ElFormItem, ElInput, ElButton, ElDialog, ElMessageBox, ElTable, ElTableColumn, ElIcon } from "element-plus";
+import { saveSystemConfig } from "@/api/system";
+import type { ConfigGroup } from "@/api/system";
 import Delete from "~icons/ep/delete";
 import Rank from "~icons/ep/rank";
 import Plus from "~icons/ep/plus";
+
+// Props
+const props = defineProps<{
+  configGroup: ConfigGroup;
+}>();
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
 // 编辑模式状态
 const isEditMode = ref(false);
@@ -64,43 +76,71 @@ const isSaveDisabled = ref(true);
 const showGoogleVerifyDialog = ref(false);
 const googleVerifyCode = ref("");
 
-// 获取配置数据
-const getConfig = async () => {
-  try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // 模拟数据
-    const data = {
-      site_name: "GamePlus",
-      filing: "备案号123456",
-      version: "1.0.0",
-      timezone: "UTC+8",
-      ip_blacklist: "192.168.1.100,192.168.1.101",
-      start_page: "/home",
-      currency_symbol: "$",
-      monetary_symbol: "USD",
-      admin_backend_domain: "https://admin.example.com",
-      proxy_backend_domain: "https://proxy.example.com",
-      open_api_address: "https://api.example.com",
-      operations_backend_address: "https://ops.example.com",
-      html_link_domain: "https://www.example.com"
-    };
-    formData.value = { ...data };
-    originalFormData.value = { ...data };
-    // 语言配置数据
-    languageConfig.value = [
-      { position: "back-end", language: "zh-cn" },
-      { position: "back-end", language: "zh-cn" }
-    ];
-    originalLanguageConfig.value = [
-      { position: "back-end", language: "zh-cn" },
-      { position: "back-end", language: "zh-cn" }
-    ];
-  } catch (error: any) {
-    console.error("获取配置失败:", error);
-    message(error?.message || "获取配置失败", { type: "error" });
-  }
+// 从后端数据初始化表单
+const initFormData = () => {
+  if (!props.configGroup || !props.configGroup.list) return;
+  
+  // 遍历后端返回的配置项，映射到前端字段
+  props.configGroup.list.forEach((item) => {
+    switch (item.name) {
+      case "name":
+        formData.value.site_name = item.value ? String(item.value) : "";
+        break;
+      case "beian":
+        formData.value.filing = item.value ? String(item.value) : "";
+        break;
+      case "version":
+        formData.value.version = item.value ? String(item.value) : "";
+        break;
+      case "timezone":
+        formData.value.timezone = item.value ? String(item.value) : "";
+        break;
+      case "forbiddenip":
+        formData.value.ip_blacklist = item.value ? String(item.value) : "";
+        break;
+      case "fixedpage":
+        formData.value.start_page = item.value ? String(item.value) : "";
+        break;
+      case "currency":
+        formData.value.currency_symbol = item.value ? String(item.value) : "";
+        break;
+      case "currency_code":
+        formData.value.monetary_symbol = item.value ? String(item.value) : "";
+        break;
+      case "admin_domain":
+        formData.value.admin_backend_domain = item.value ? String(item.value) : "";
+        break;
+      case "agent_domain":
+        formData.value.proxy_backend_domain = item.value ? String(item.value) : "";
+        break;
+      case "languages":
+        // languages是array类型，需要解析JSON
+        try {
+          const langValue = typeof item.value === "string" ? JSON.parse(item.value) : item.value;
+          if (langValue && typeof langValue === "object") {
+            languageConfig.value = Object.keys(langValue).map(key => ({
+              position: key,
+              language: langValue[key]
+            }));
+          }
+        } catch {
+          // 解析失败，保持默认值
+        }
+        break;
+    }
+  });
+  
+  // 保存原始数据
+  originalFormData.value = { ...formData.value };
+  originalLanguageConfig.value = JSON.parse(JSON.stringify(languageConfig.value));
 };
+
+// 监听配置组变化
+watch(() => props.configGroup, () => {
+  if (props.configGroup && props.configGroup.list) {
+    initFormData();
+  }
+}, { immediate: true, deep: true });
 
 // 点击修改按钮
 const handleEdit = () => {
@@ -157,15 +197,74 @@ const handleConfirmGoogleVerify = async () => {
 // 执行保存操作
 const doSave = async () => {
   try {
-    // TODO: 对接实际API，传递 googleVerifyCode.value 和 languageConfig.value
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message("保存成功", { type: "success" });
-    isEditMode.value = false;
-    isSaveDisabled.value = true;
-    // 更新原始数据
-    originalFormData.value = { ...formData.value };
-    originalLanguageConfig.value = JSON.parse(JSON.stringify(languageConfig.value));
-    googleVerifyCode.value = "";
+    // 准备保存数据，将前端字段映射回后端字段名
+    const saveData: Record<string, any> = {};
+    
+    // 遍历后端配置项，找到对应的字段并保存
+    props.configGroup.list.forEach((item) => {
+      switch (item.name) {
+        case "name":
+          saveData[item.name] = formData.value.site_name;
+          break;
+        case "beian":
+          saveData[item.name] = formData.value.filing;
+          break;
+        case "version":
+          saveData[item.name] = formData.value.version;
+          break;
+        case "timezone":
+          saveData[item.name] = formData.value.timezone;
+          break;
+        case "forbiddenip":
+          saveData[item.name] = formData.value.ip_blacklist;
+          break;
+        case "fixedpage":
+          saveData[item.name] = formData.value.start_page;
+          break;
+        case "currency":
+          saveData[item.name] = formData.value.currency_symbol;
+          break;
+        case "currency_code":
+          saveData[item.name] = formData.value.monetary_symbol;
+          break;
+        case "admin_domain":
+          saveData[item.name] = formData.value.admin_backend_domain;
+          break;
+        case "agent_domain":
+          saveData[item.name] = formData.value.proxy_backend_domain;
+          break;
+        case "languages":
+          // 将语言配置转换为JSON字符串
+          const langObj: Record<string, string> = {};
+          languageConfig.value.forEach(lang => {
+            if (lang.position && lang.language) {
+              langObj[lang.position] = lang.language;
+            }
+          });
+          saveData[item.name] = JSON.stringify(langObj);
+          break;
+      }
+    });
+
+    const res = await saveSystemConfig({
+      group: props.configGroup.name,
+      data: saveData,
+      google_code: googleVerifyCode.value
+    });
+
+    if (res.code === 0) {
+      message("保存成功", { type: "success" });
+      isEditMode.value = false;
+      isSaveDisabled.value = true;
+      // 更新原始数据
+      originalFormData.value = { ...formData.value };
+      originalLanguageConfig.value = JSON.parse(JSON.stringify(languageConfig.value));
+      googleVerifyCode.value = "";
+      // 触发刷新
+      emit("refresh");
+    } else {
+      message(res.msg || "保存失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("保存失败:", error);
     message(error?.message || "保存失败", { type: "error" });
@@ -195,10 +294,6 @@ const handleDeleteLanguageRow = (index: number) => {
   languageConfig.value.splice(index, 1);
 };
 
-// 初始化加载数据
-onMounted(() => {
-  getConfig();
-});
 </script>
 
 <template>

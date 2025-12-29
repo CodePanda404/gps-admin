@@ -2,51 +2,37 @@
 defineOptions({
   name: "DictionaryConfig"
 });
-import { ref, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { message } from "@/utils/message";
 import { ElForm, ElFormItem, ElButton, ElDialog, ElMessageBox, ElTable, ElTableColumn, ElInput } from "element-plus";
+import { saveSystemConfig } from "@/api/system";
+import type { ConfigGroup } from "@/api/system";
 import Delete from "~icons/ep/delete";
 import Plus from "~icons/ep/plus";
+
+// Props
+const props = defineProps<{
+  configGroup: ConfigGroup;
+}>();
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
 // 编辑模式状态
 const isEditMode = ref(false);
 
-// Category type 数据
-const categoryTypeData = ref([
-  { key: "11", value: "会员配置" },
-  { key: "default", value: "默认" },
-  { key: "page", value: "单页" },
-  { key: "article", value: "文章" },
-  { key: "test", value: "test" }
-]);
+// 配置项数据，每个array类型的配置项对应一个表格
+type ConfigItemData = {
+  id: number;
+  name: string;
+  title: string;
+  data: Array<{ key: string; value: string }>;
+};
 
-// Config group 数据
-const configGroupData = ref([
-  { key: "ability", value: "功能控制" },
-  { key: "pay", value: "参数配置" },
-  { key: "game", value: "游戏配置" },
-  { key: "basic", value: "站点配置" },
-  { key: "email", value: "邮件配置" },
-  { key: "dictionary", value: "字典配置" }
-]);
-
-// 原始数据（用于取消时恢复）
-const originalCategoryTypeData = ref([
-  { key: "11", value: "会员配置" },
-  { key: "default", value: "默认" },
-  { key: "page", value: "单页" },
-  { key: "article", value: "文章" },
-  { key: "test", value: "test" }
-]);
-
-const originalConfigGroupData = ref([
-  { key: "ability", value: "功能控制" },
-  { key: "pay", value: "参数配置" },
-  { key: "game", value: "游戏配置" },
-  { key: "basic", value: "站点配置" },
-  { key: "email", value: "邮件配置" },
-  { key: "dictionary", value: "字典配置" }
-]);
+const configItemsData = ref<ConfigItemData[]>([]);
+const originalConfigItemsData = ref<ConfigItemData[]>([]);
 
 // 保存按钮禁用状态
 const isSaveDisabled = ref(true);
@@ -55,27 +41,54 @@ const isSaveDisabled = ref(true);
 const showGoogleVerifyDialog = ref(false);
 const googleVerifyCode = ref("");
 
-// 获取配置数据
-const getConfig = async () => {
-  try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // 模拟数据已在初始化时设置
-    originalCategoryTypeData.value = JSON.parse(JSON.stringify(categoryTypeData.value));
-    originalConfigGroupData.value = JSON.parse(JSON.stringify(configGroupData.value));
-  } catch (error: any) {
-    console.error("获取配置失败:", error);
-    message(error?.message || "获取配置失败", { type: "error" });
-  }
+// 从后端数据初始化表单
+const initFormData = () => {
+  if (!props.configGroup || !props.configGroup.list) return;
+  
+  // 遍历后端返回的配置项，为每个array类型的配置项创建数据
+  configItemsData.value = props.configGroup.list
+    .filter(item => item.type === "array")
+    .map(item => {
+      let data: Array<{ key: string; value: string }> = [];
+      
+      try {
+        const value = typeof item.value === "string" ? JSON.parse(item.value) : item.value;
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          // 将对象转换为数组格式
+          data = Object.keys(value).map(key => ({
+            key: key,
+            value: String(value[key])
+          }));
+        }
+      } catch {
+        // 解析失败，保持空数组
+      }
+      
+      return {
+        id: item.id,
+        name: item.name,
+        title: item.title || item.name,
+        data: data
+      };
+    });
+  
+  // 保存原始数据
+  originalConfigItemsData.value = JSON.parse(JSON.stringify(configItemsData.value));
 };
+
+// 监听配置组变化
+watch(() => props.configGroup, () => {
+  if (props.configGroup && props.configGroup.list) {
+    initFormData();
+  }
+}, { immediate: true, deep: true });
 
 // 点击修改按钮
 const handleEdit = () => {
   isEditMode.value = true;
   isSaveDisabled.value = false;
   // 保存当前数据作为原始数据
-  originalCategoryTypeData.value = JSON.parse(JSON.stringify(categoryTypeData.value));
-  originalConfigGroupData.value = JSON.parse(JSON.stringify(configGroupData.value));
+  originalConfigItemsData.value = JSON.parse(JSON.stringify(configItemsData.value));
 };
 
 // 保存配置
@@ -124,15 +137,39 @@ const handleConfirmGoogleVerify = async () => {
 // 执行保存操作
 const doSave = async () => {
   try {
-    // TODO: 对接实际API，传递 googleVerifyCode.value, categoryTypeData.value, configGroupData.value
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message("保存成功", { type: "success" });
-    isEditMode.value = false;
-    isSaveDisabled.value = true;
-    // 更新原始数据
-    originalCategoryTypeData.value = JSON.parse(JSON.stringify(categoryTypeData.value));
-    originalConfigGroupData.value = JSON.parse(JSON.stringify(configGroupData.value));
-    googleVerifyCode.value = "";
+    // 准备保存数据，将前端字段映射回后端字段名
+    const saveData: Record<string, any> = {};
+    
+    // 遍历配置项数据，转换为后端格式
+    configItemsData.value.forEach(configItem => {
+      // 将数组转换为JSON对象
+      const obj: Record<string, string> = {};
+      configItem.data.forEach(item => {
+        if (item.key && item.value) {
+          obj[item.key] = item.value;
+        }
+      });
+      saveData[configItem.name] = JSON.stringify(obj);
+    });
+
+    const res = await saveSystemConfig({
+      group: props.configGroup.name,
+      data: saveData,
+      google_code: googleVerifyCode.value
+    });
+
+    if (res.code === 0) {
+      message("保存成功", { type: "success" });
+      isEditMode.value = false;
+      isSaveDisabled.value = true;
+      // 更新原始数据
+      originalConfigItemsData.value = JSON.parse(JSON.stringify(configItemsData.value));
+      googleVerifyCode.value = "";
+      // 触发刷新
+      emit("refresh");
+    } else {
+      message(res.msg || "保存失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("保存失败:", error);
     message(error?.message || "保存失败", { type: "error" });
@@ -142,43 +179,25 @@ const doSave = async () => {
 // 取消修改
 const handleCancel = () => {
   // 恢复原始数据
-  categoryTypeData.value = JSON.parse(JSON.stringify(originalCategoryTypeData.value));
-  configGroupData.value = JSON.parse(JSON.stringify(originalConfigGroupData.value));
+  configItemsData.value = JSON.parse(JSON.stringify(originalConfigItemsData.value));
   // 禁用表单
   isEditMode.value = false;
   isSaveDisabled.value = true;
 };
 
-// 添加 Category type 行
-const handleAddCategoryTypeRow = () => {
-  categoryTypeData.value.push({
+// 添加行
+const handleAddRow = (configItem: ConfigItemData) => {
+  configItem.data.push({
     key: "",
     value: ""
   });
 };
 
-// 删除 Category type 行
-const handleDeleteCategoryTypeRow = (index: number) => {
-  categoryTypeData.value.splice(index, 1);
+// 删除行
+const handleDeleteRow = (configItem: ConfigItemData, index: number) => {
+  configItem.data.splice(index, 1);
 };
 
-// 添加 Config group 行
-const handleAddConfigGroupRow = () => {
-  configGroupData.value.push({
-    key: "",
-    value: ""
-  });
-};
-
-// 删除 Config group 行
-const handleDeleteConfigGroupRow = (index: number) => {
-  configGroupData.value.splice(index, 1);
-};
-
-// 初始化加载数据
-onMounted(() => {
-  getConfig();
-});
 </script>
 
 <template>
@@ -192,57 +211,15 @@ onMounted(() => {
         </div>
       </template>
       <el-form label-width="200px">
-        <!-- Category type -->
-        <el-form-item label="Category type">
+        <!-- 动态生成每个配置项的表格 -->
+        <el-form-item
+          v-for="configItem in configItemsData"
+          :key="configItem.id"
+          :label="configItem.title"
+        >
           <div class="key-value-table">
-            <el-table :data="categoryTypeData" border style="width: 100%">
-              <el-table-column label="Array key" width="200">
-                <template #default="{ row }">
-                  <el-input
-                    v-model="row.key"
-                    :disabled="!isEditMode"
-                    placeholder="请输入"
-                  />
-                </template>
-              </el-table-column>
-              <el-table-column label="Array value" width="200">
-                <template #default="{ row }">
-                  <el-input
-                    v-model="row.value"
-                    :disabled="!isEditMode"
-                    placeholder="请输入"
-                  />
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" width="80" v-if="isEditMode">
-                <template #default="{ $index }">
-                  <el-button
-                    type="danger"
-                    link
-                    :icon="Delete"
-                    @click="handleDeleteCategoryTypeRow($index)"
-                  >
-                  </el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-button
-              v-if="isEditMode"
-              type="primary"
-              link
-              @click="handleAddCategoryTypeRow"
-              style="margin-top: 10px;"
-            >
-              <el-icon style="margin-right: 5px;"><Plus /></el-icon>
-              追加
-            </el-button>
-          </div>
-        </el-form-item>
+            <el-table :data="configItem.data" border style="width: 100%">
 
-        <!-- Config group -->
-        <el-form-item label="Config group">
-          <div class="key-value-table">
-            <el-table :data="configGroupData" border style="width: 100%">
               <el-table-column label="Array key" width="200">
                 <template #default="{ row }">
                   <el-input
@@ -267,7 +244,7 @@ onMounted(() => {
                     type="danger"
                     link
                     :icon="Delete"
-                    @click="handleDeleteConfigGroupRow($index)"
+                    @click="handleDeleteRow(configItem, $index)"
                   >
                   </el-button>
                 </template>
@@ -277,7 +254,7 @@ onMounted(() => {
               v-if="isEditMode"
               type="primary"
               link
-              @click="handleAddConfigGroupRow"
+              @click="handleAddRow(configItem)"
               style="margin-top: 10px;"
             >
               <el-icon style="margin-right: 5px;"><Plus /></el-icon>

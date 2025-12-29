@@ -428,6 +428,46 @@ export const getRoleManagementList = () => {
   );
 };
 
+/** 角色权限树节点 */
+export type RoleTreeItem = {
+  id: number;
+  parent: string | number; // "#" 表示根节点，或父节点ID
+  text: string;
+  type: string;
+  state: {
+    selected: boolean;
+  };
+};
+
+/** 获取角色权限树参数 */
+export type GetRoleTreeParams = {
+  pid: string | number; // 角色ID
+};
+
+/** 获取角色权限树响应 */
+export type GetRoleTreeResult = {
+  code: number;
+  msg: string;
+  data: RoleTreeItem[];
+};
+
+/** 获取角色权限树 */
+export const getRoleTree = (params: GetRoleTreeParams) => {
+  const formData = new FormData();
+  formData.append("pid", params.pid.toString());
+
+  return http.request<GetRoleTreeResult>(
+    "post",
+    baseUrlApi("/auth/group/roletree"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
 // ==================== 上级管理员相关接口 ====================
 
 /** 上级管理员列表项 */

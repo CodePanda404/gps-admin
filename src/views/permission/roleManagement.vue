@@ -9,8 +9,12 @@ import { useTable } from "plus-pro-components";
 import { message } from "@/utils/message";
 import {
   getRoleManagementList,
+  getRoleTree,
+  getMenuList,
   type RoleManagementItem,
-  type RoleManagementListResult
+  type RoleManagementListResult,
+  type RoleTreeItem,
+  type MenuItem
 } from "@/api/auth";
 import { ElMessageBox, ElTag, ElDialog, ElForm, ElFormItem, ElInput, ElButton, ElSelect, ElOption, ElTree, ElCheckbox, type FormInstance } from "element-plus";
 import Upload from "~icons/ep/upload";
@@ -29,9 +33,9 @@ type TableRow = RoleManagementItem & {
 
 // 权限树节点类型
 type PermissionNode = {
-  id: string;
+  id: string | number;
   label: string;
-  path: string;
+  path?: string;
   children?: PermissionNode[];
 };
 
@@ -223,214 +227,85 @@ const permissionTreeData = ref<PermissionNode[]>([]);
 const permissionTreeRef = ref();
 const checkAll = ref(false);
 const expandAll = ref(false);
+const expandedKeys = ref<(string | number)[]>([]);
 
-// 从路由结构构建权限树（使用模拟数据）
-const buildPermissionTree = () => {
-  // 模拟权限树数据 - 根据实际路由结构生成
-  // 每个路由节点会显示4个权限复选框：查看、添加、编辑、删除
-  const mockPermissionTree: PermissionNode[] = [
-    {
-      id: "/console",
-      label: "控制台",
-      path: "/console"
-    },
-    {
-      id: "/welcome",
-      label: "欢迎页面",
-      path: "/welcome"
-    },
-    {
-      id: "/system",
-      label: "系统设置",
-      path: "/system"
-    },
-    {
-      id: "/merchant",
-      label: "商户资料",
-      path: "/merchant"
-    },
-    {
-      id: "/player",
-      label: "玩家管理",
-      path: "/player"
-    },
-    {
-      id: "/game",
-      label: "游戏管理",
-      path: "/game",
-      children: [
-        {
-          id: "/game/supplier",
-          label: "供应商",
-          path: "/game/supplier"
-        },
-        {
-          id: "/game/game-play-type",
-          label: "玩法类型",
-          path: "/game/game-play-type"
-        },
-        {
-          id: "/game/game-list",
-          label: "游戏列表",
-          path: "/game/game-list"
-        },
-        {
-          id: "/game/game-brand",
-          label: "游戏品牌",
-          path: "/game/game-brand"
+// 将菜单列表转换为前端树结构
+const buildPermissionTreeFromMenuList = (menuList: MenuItem[]): PermissionNode[] => {
+  // 创建节点映射
+  const nodeMap = new Map<number, PermissionNode>();
+  const rootNodes: PermissionNode[] = [];
+
+  // 第一遍：创建所有节点
+  menuList.forEach(item => {
+    const node: PermissionNode = {
+      id: item.id,
+      label: item.title.trim(), // 去除标题中的空格
+      children: []
+    };
+    nodeMap.set(item.id, node);
+  });
+
+  // 第二遍：建立父子关系
+  menuList.forEach(item => {
+    const node = nodeMap.get(item.id);
+    if (!node) return;
+
+    if (item.pid === 0) {
+      // 根节点
+      rootNodes.push(node);
+    } else {
+      // 子节点
+      const parentNode = nodeMap.get(item.pid);
+      if (parentNode) {
+        if (!parentNode.children) {
+          parentNode.children = [];
         }
-      ]
-    },
-    {
-      id: "/agent",
-      label: "代理管理",
-      path: "/agent",
-      children: [
-        {
-          id: "/agent/agent-list",
-          label: "代理列表",
-          path: "/agent/agent-list"
-        }
-      ]
-    },
-    {
-      id: "/merchant-management",
-      label: "商户管理",
-      path: "/merchant-management",
-      children: [
-        {
-          id: "/merchant-management/merchant-list",
-          label: "商户列表",
-          path: "/merchant-management/merchant-list"
-        },
-        {
-          id: "/merchant-management/currency",
-          label: "币种",
-          path: "/merchant-management/currency"
-        },
-        {
-          id: "/merchant-management/pgf-account",
-          label: "PGF账号",
-          path: "/merchant-management/pgf-account"
-        },
-        {
-          id: "/merchant-management/wlg-account",
-          label: "WLG账号",
-          path: "/merchant-management/wlg-account"
-        }
-      ]
-    },
-    {
-      id: "/permission",
-      label: "权限管理",
-      path: "/permission",
-      children: [
-        {
-          id: "/permission/account",
-          label: "账号管理",
-          path: "/permission/account"
-        },
-        {
-          id: "/permission/role",
-          label: "角色管理",
-          path: "/permission/role"
-        },
-        {
-          id: "/permission/menu",
-          label: "菜单管理",
-          path: "/permission/menu"
-        },
-        {
-          id: "/permission/game-test-log",
-          label: "游戏测试日志",
-          path: "/permission/game-test-log"
-        },
-        {
-          id: "/permission/operation-log",
-          label: "操作日志",
-          path: "/permission/operation-log"
-        }
-      ]
-    },
-    {
-      id: "/finance",
-      label: "财务管理",
-      path: "/finance",
-      children: [
-        {
-          id: "/finance/merchant-bill",
-          label: "商户账单",
-          path: "/finance/merchant-bill",
-          children: [
-            {
-              id: "/finance/merchant-bill/detail",
-              label: "明细",
-              path: "/finance/merchant-bill/detail"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      id: "/article",
-      label: "文章管理",
-      path: "/article",
-      children: [
-        {
-          id: "/article/help",
-          label: "帮助管理",
-          path: "/article/help"
-        }
-      ]
-    },
-    {
-      id: "/statistics",
-      label: "数据统计",
-      path: "/statistics",
-      children: [
-        {
-          id: "/statistics/player",
-          label: "玩家统计",
-          path: "/statistics/player"
-        },
-        {
-          id: "/statistics/game",
-          label: "游戏统计",
-          path: "/statistics/game"
-        },
-        {
-          id: "/statistics/product",
-          label: "产品统计",
-          path: "/statistics/product"
-        },
-        {
-          id: "/statistics/merchant-daily",
-          label: "商户日报表",
-          path: "/statistics/merchant-daily"
-        }
-      ]
+        parentNode.children.push(node);
+      } else {
+        // 如果找不到父节点，也作为根节点处理
+        rootNodes.push(node);
+      }
     }
-  ];
+  });
 
-  permissionTreeData.value = mockPermissionTree;
+  return rootNodes;
 };
 
-// 初始化权限树
-onMounted(() => {
-  buildPermissionTree();
-});
+// 将后端返回的权限树数据转换为选中状态映射
+const buildSelectedMapFromRoleTree = (roleTreeData: RoleTreeItem[]): Map<number, boolean> => {
+  const selectedMap = new Map<number, boolean>();
+  roleTreeData.forEach(item => {
+    selectedMap.set(item.id, item.state.selected);
+  });
+  return selectedMap;
+};
 
 // 获取所有权限节点的key（包括权限项）
 const getAllPermissionKeys = (nodes: PermissionNode[]): string[] => {
   const keys: string[] = [];
   const traverse = (nodeList: PermissionNode[]) => {
     nodeList.forEach(node => {
-      // 添加权限项
+      // 添加权限项（查看、添加、编辑、删除）
       keys.push(`${node.id}-view`);
       keys.push(`${node.id}-add`);
       keys.push(`${node.id}-edit`);
       keys.push(`${node.id}-delete`);
       
+      if (node.children && node.children.length > 0) {
+        traverse(node.children);
+      }
+    });
+  };
+  traverse(nodes);
+  return keys;
+};
+
+// 获取所有菜单节点的key（用于全选）
+const getAllMenuKeys = (nodes: PermissionNode[]): (string | number)[] => {
+  const keys: (string | number)[] = [];
+  const traverse = (nodeList: PermissionNode[]) => {
+    nodeList.forEach(node => {
+      keys.push(node.id);
       if (node.children && node.children.length > 0) {
         traverse(node.children);
       }
@@ -468,10 +343,9 @@ const handleCheckAll = () => {
 // 展开全部
 const handleExpandAll = () => {
   if (expandAll.value) {
-    const expandKeys = getAllNodeKeys(permissionTreeData.value);
-    permissionTreeRef.value?.setExpandedKeys(expandKeys);
+    expandedKeys.value = getAllNodeKeys(permissionTreeData.value);
   } else {
-    permissionTreeRef.value?.setExpandedKeys([]);
+    expandedKeys.value = [];
   }
 };
 
@@ -479,13 +353,14 @@ const handleExpandAll = () => {
 const permissionCheckedKeys = ref<string[]>([]);
 
 // 检查权限是否被选中
-const isPermissionChecked = (nodeId: string, permission: string): boolean => {
+const isPermissionChecked = (nodeId: string | number, permission: string): boolean => {
   const key = `${nodeId}-${permission}`;
-  return permissionCheckedKeys.value.includes(key);
+  // 如果菜单节点本身被选中，或者权限key被选中，都返回true
+  return permissionCheckedKeys.value.includes(key) || permissionCheckedKeys.value.includes(String(nodeId));
 };
 
 // 更新权限选中状态
-const updatePermission = (nodeId: string, permission: string, checked: boolean) => {
+const updatePermission = (nodeId: string | number, permission: string, checked: boolean) => {
   const key = `${nodeId}-${permission}`;
   const keys = [...permissionCheckedKeys.value];
   
@@ -493,10 +368,26 @@ const updatePermission = (nodeId: string, permission: string, checked: boolean) 
     if (!keys.includes(key)) {
       keys.push(key);
     }
+    // 如果选中了权限，也选中菜单节点本身
+    const menuKey = String(nodeId);
+    if (!keys.includes(menuKey)) {
+      keys.push(menuKey);
+    }
   } else {
     const index = keys.indexOf(key);
     if (index > -1) {
       keys.splice(index, 1);
+    }
+    // 检查是否还有其他权限被选中，如果没有，则取消菜单节点的选中
+    const hasOtherPermissions = ['view', 'add', 'edit', 'delete'].some(p => {
+      if (p === permission) return false;
+      return keys.includes(`${nodeId}-${p}`);
+    });
+    if (!hasOtherPermissions) {
+      const menuIndex = keys.indexOf(String(nodeId));
+      if (menuIndex > -1) {
+        keys.splice(menuIndex, 1);
+      }
     }
   }
   
@@ -520,7 +411,7 @@ const handleAdd = () => {
   checkAll.value = false;
   expandAll.value = false;
   permissionCheckedKeys.value = [];
-  permissionTreeRef.value?.setExpandedKeys([]);
+  expandedKeys.value = [];
   showDialog.value = true;
 };
 
@@ -534,7 +425,7 @@ const handleEdit = () => {
 };
 
 // 编辑单行数据
-const handleEditRow = (row: TableRow) => {
+const handleEditRow = async (row: TableRow) => {
   isEdit.value = true;
   dialogTitle.value = "编辑";
   
@@ -545,23 +436,63 @@ const handleEditRow = (row: TableRow) => {
     id: row.id,
     parent: row.pid === 0 ? "" : row.pid.toString(),
     name: displayName,
-    permissions: [] // TODO: 从API获取权限数据，rules字段包含权限ID
+    permissions: []
   };
   
-  // TODO: 根据rules字段解析权限数据
-  // rules字段是逗号分隔的权限ID字符串，或"*"表示全部权限
-  // 这里先模拟一些选中的权限
-  const mockPermissions = [
-    "/game/supplier-view",
-    "/game/supplier-add",
-    "/game/supplier-edit",
-    "/game/supplier-delete"
-  ];
-  permissionCheckedKeys.value = mockPermissions;
-  
+  // 重置权限树和选中状态
+  permissionTreeData.value = [];
+  permissionCheckedKeys.value = [];
   checkAll.value = false;
-  expandAll.value = true;
-  handleExpandAll();
+  expandAll.value = false;
+  expandedKeys.value = [];
+  
+  // 先获取所有菜单列表，然后获取角色权限树数据
+  try {
+    // 1. 获取所有菜单列表
+    const menuRes = await getMenuList();
+    if (menuRes.code !== 0 || !menuRes.data || !menuRes.data.rows) {
+      message(menuRes.msg || "获取菜单列表失败", { type: "error" });
+      showDialog.value = true;
+      return;
+    }
+    
+    // 2. 将菜单列表转换为树结构
+    permissionTreeData.value = buildPermissionTreeFromMenuList(menuRes.data.rows);
+    
+    // 3. 获取角色权限树数据（用于标记哪些菜单已选中）
+    const roleTreeRes = await getRoleTree({ pid: row.id });
+    if (roleTreeRes.code === 0 && roleTreeRes.data) {
+      // 构建选中状态映射
+      const selectedMap = buildSelectedMapFromRoleTree(roleTreeRes.data);
+      
+      // 根据选中状态设置权限选中
+      const selectedKeys: string[] = [];
+      selectedMap.forEach((isSelected, menuId) => {
+        if (isSelected) {
+          // 选中该菜单节点的所有权限项
+          selectedKeys.push(`${menuId}-view`);
+          selectedKeys.push(`${menuId}-add`);
+          selectedKeys.push(`${menuId}-edit`);
+          selectedKeys.push(`${menuId}-delete`);
+          // 也保存菜单节点ID本身，用于判断菜单是否被选中
+          selectedKeys.push(String(menuId));
+        }
+      });
+      
+      permissionCheckedKeys.value = selectedKeys;
+    } else {
+      // 如果获取角色权限树失败，只显示菜单树，不设置选中状态
+      console.warn("获取角色权限树失败:", roleTreeRes.msg);
+    }
+    
+    // 展开所有节点
+    expandAll.value = true;
+    expandedKeys.value = getAllNodeKeys(permissionTreeData.value);
+  } catch (error: any) {
+    console.error("获取权限树数据失败:", error);
+    message(error?.message || "获取权限树数据失败", { type: "error" });
+  }
+  
   showDialog.value = true;
 };
 
@@ -837,7 +768,7 @@ const handleBatchDelete = async () => {
               :data="permissionTreeData"
               :props="{ children: 'children', label: 'label' }"
               node-key="id"
-              :default-expand-all="expandAll"
+              :expanded-keys="expandedKeys"
               :expand-on-click-node="false"
               style="max-height: 400px; overflow-y: auto; margin-top: 10px"
             >

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, watch } from "vue";
 import dayjs from "dayjs";
 defineOptions({
   name: "GameConfig"
@@ -12,11 +12,22 @@ import {
   getCurrencyList,
   type CurrencyItem
 } from "@/api/game";
+import type { ConfigGroup } from "@/api/system";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
 import Filter from "~icons/ep/filter";
 import Edit from "~icons/ep/edit";
+
+// Props
+const props = defineProps<{
+  configGroup: ConfigGroup;
+}>();
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
 // 币种选项
 const currencyOptions = ref<Array<{ label: string; value: string }>>([]);
@@ -304,24 +315,25 @@ const handleEditRow = (row: TableRow) => {
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 模拟数据
-    tableData.value = [
-      {
-        id: 1,
-        manufacturer_name: "厂商A",
-        merchant_number: "M001",
-        currency: "USD",
-        api_address: "https://api.example.com",
-        token_value: "token123456",
-        secret_key: "secret789",
-        agent_number: "A001",
-        createtime: "2024-01-01 10:00:00"
-      }
-    ];
-    total.value = 1;
+    // 从configGroup中获取配置项列表
+    if (props.configGroup && props.configGroup.list) {
+      // 将配置项转换为表格数据格式
+      tableData.value = props.configGroup.list.map((item, index) => ({
+        id: item.id,
+        manufacturer_name: item.title || item.name, // 使用title或name作为厂商名称
+        merchant_number: item.name, // 使用name作为标识
+        currency: "", // 游戏配置可能没有币种字段
+        api_address: item.name.includes("api") || item.name.includes("host") ? String(item.value || "") : "",
+        token_value: item.name.includes("key") || item.name.includes("secret") ? String(item.value || "") : "",
+        secret_key: item.name.includes("secret") ? String(item.value || "") : "",
+        agent_number: item.name.includes("operator") || item.name.includes("agent") ? String(item.value || "") : "",
+        createtime: "" // 配置项可能没有创建时间
+      })) as any[];
+      total.value = props.configGroup.list.length;
+    } else {
+      tableData.value = [];
+      total.value = 0;
+    }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
@@ -331,6 +343,13 @@ const getList = async () => {
     loadingStatus.value = false;
   }
 };
+
+// 监听配置组变化
+watch(() => props.configGroup, () => {
+  if (props.configGroup && props.configGroup.list) {
+    getList();
+  }
+}, { immediate: true, deep: true });
 
 // 记录上一次的 pageSize
 const previousPageSize = ref(pageInfo.value.pageSize);
@@ -345,10 +364,7 @@ const handlePageChange = () => {
 };
 
 // 初始化加载数据
-onMounted(() => {
-  fetchCurrencyList();
-  getList();
-});
+fetchCurrencyList();
 </script>
 
 <template>

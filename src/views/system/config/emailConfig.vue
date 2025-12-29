@@ -2,9 +2,21 @@
 defineOptions({
   name: "EmailConfig"
 });
-import { ref, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { message } from "@/utils/message";
 import { ElForm, ElFormItem, ElInput, ElButton, ElDialog, ElMessageBox, ElSelect, ElOption } from "element-plus";
+import { saveSystemConfig } from "@/api/system";
+import type { ConfigGroup } from "@/api/system";
+
+// Props
+const props = defineProps<{
+  configGroup: ConfigGroup;
+}>();
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
 // 编辑模式状态
 const isEditMode = ref(false);
@@ -40,33 +52,68 @@ const googleVerifyCode = ref("");
 
 // 邮件类型选项
 const mailTypeOptions = [
-  { label: "SMTP", value: "smtp" },
-  { label: "POP3", value: "pop3" },
-  { label: "IMAP", value: "imap" }
+  { label: "请选择", value: "" },
+  { label: "SMTP", value: "1" }
 ];
 
-// 获取配置数据
-const getConfig = async () => {
-  try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // 模拟数据
-    const data = {
-      mail_type: "smtp",
-      mail_smtp_host: "smtp.example.com",
-      mail_smtp_port: "587",
-      mail_smtp_user: "user@example.com",
-      mail_smtp_password: "",
-      mail_vertify_type: "tls",
-      mail_from: "noreply@example.com"
-    };
-    formData.value = { ...data };
-    originalFormData.value = { ...data };
-  } catch (error: any) {
-    console.error("获取配置失败:", error);
-    message(error?.message || "获取配置失败", { type: "error" });
-  }
+// 邮件验证类型选项
+const mailVerifyTypeOptions = [
+  { label: "无", value: "0" },
+  { label: "TLS", value: "1" },
+  { label: "SSL", value: "2" }
+];
+
+// 从后端数据初始化表单
+const initFormData = () => {
+  if (!props.configGroup || !props.configGroup.list) return;
+  
+  // 遍历后端返回的配置项，映射到前端字段
+  props.configGroup.list.forEach((item) => {
+    switch (item.name) {
+      case "mail_type":
+        // select类型，值是数组，取第一个元素
+        if (Array.isArray(item.value) && item.value.length > 0) {
+          formData.value.mail_type = String(item.value[0]);
+        } else {
+          formData.value.mail_type = "";
+        }
+        break;
+      case "mail_smtp_host":
+        formData.value.mail_smtp_host = item.value ? String(item.value) : "";
+        break;
+      case "mail_smtp_port":
+        formData.value.mail_smtp_port = item.value ? String(item.value) : "";
+        break;
+      case "mail_smtp_user":
+        formData.value.mail_smtp_user = item.value ? String(item.value) : "";
+        break;
+      case "mail_smtp_pass":
+        formData.value.mail_smtp_password = item.value ? String(item.value) : "";
+        break;
+      case "mail_verify_type":
+        // select类型，值是数组，取第一个元素
+        if (Array.isArray(item.value) && item.value.length > 0) {
+          formData.value.mail_vertify_type = String(item.value[0]);
+        } else {
+          formData.value.mail_vertify_type = "";
+        }
+        break;
+      case "mail_from":
+        formData.value.mail_from = item.value ? String(item.value) : "";
+        break;
+    }
+  });
+  
+  // 保存原始数据
+  originalFormData.value = { ...formData.value };
 };
+
+// 监听配置组变化
+watch(() => props.configGroup, () => {
+  if (props.configGroup && props.configGroup.list) {
+    initFormData();
+  }
+}, { immediate: true, deep: true });
 
 // 点击修改按钮
 const handleEdit = () => {
@@ -122,14 +169,54 @@ const handleConfirmGoogleVerify = async () => {
 // 执行保存操作
 const doSave = async () => {
   try {
-    // TODO: 对接实际API，传递 googleVerifyCode.value
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message("保存成功", { type: "success" });
-    isEditMode.value = false;
-    isSaveDisabled.value = true;
-    // 更新原始数据
-    originalFormData.value = { ...formData.value };
-    googleVerifyCode.value = "";
+    // 准备保存数据，将前端字段映射回后端字段名
+    const saveData: Record<string, any> = {};
+    
+    // 遍历后端配置项，找到对应的字段并保存
+    props.configGroup.list.forEach((item) => {
+      switch (item.name) {
+        case "mail_type":
+          saveData[item.name] = [formData.value.mail_type];
+          break;
+        case "mail_smtp_host":
+          saveData[item.name] = formData.value.mail_smtp_host;
+          break;
+        case "mail_smtp_port":
+          saveData[item.name] = formData.value.mail_smtp_port;
+          break;
+        case "mail_smtp_user":
+          saveData[item.name] = formData.value.mail_smtp_user;
+          break;
+        case "mail_smtp_pass":
+          saveData[item.name] = formData.value.mail_smtp_password;
+          break;
+        case "mail_verify_type":
+          saveData[item.name] = [formData.value.mail_vertify_type];
+          break;
+        case "mail_from":
+          saveData[item.name] = formData.value.mail_from;
+          break;
+      }
+    });
+
+    const res = await saveSystemConfig({
+      group: props.configGroup.name,
+      data: saveData,
+      google_code: googleVerifyCode.value
+    });
+
+    if (res.code === 0) {
+      message("保存成功", { type: "success" });
+      isEditMode.value = false;
+      isSaveDisabled.value = true;
+      // 更新原始数据
+      originalFormData.value = { ...formData.value };
+      googleVerifyCode.value = "";
+      // 触发刷新
+      emit("refresh");
+    } else {
+      message(res.msg || "保存失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("保存失败:", error);
     message(error?.message || "保存失败", { type: "error" });
@@ -145,10 +232,6 @@ const handleCancel = () => {
   isSaveDisabled.value = true;
 };
 
-// 初始化加载数据
-onMounted(() => {
-  getConfig();
-});
 </script>
 
 <template>
@@ -166,7 +249,7 @@ onMounted(() => {
           <el-select
             v-model="formData.mail_type"
             :disabled="!isEditMode"
-            placeholder="请输入"
+            placeholder="请选择"
             style="width: 100%"
           >
             <el-option
@@ -208,11 +291,19 @@ onMounted(() => {
           />
         </el-form-item>
         <el-form-item label="Mail vertify type">
-          <el-input
+          <el-select
             v-model="formData.mail_vertify_type"
             :disabled="!isEditMode"
-            placeholder="请输入"
-          />
+            placeholder="请选择"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in mailVerifyTypeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="Mail from">
           <el-input

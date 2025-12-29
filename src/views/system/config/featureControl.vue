@@ -2,17 +2,29 @@
 defineOptions({
   name: "FeatureControl"
 });
-import { ref, onMounted } from "vue";
+import { ref, watch } from "vue";
 import { message } from "@/utils/message";
 import { ElForm, ElFormItem, ElSwitch, ElButton, ElInput, ElInputNumber, ElDialog, ElMessageBox } from "element-plus";
+import { saveSystemConfig } from "@/api/system";
+import type { ConfigGroup } from "@/api/system";
+
+// Props
+const props = defineProps<{
+  configGroup: ConfigGroup;
+}>();
+
+// Emits
+const emit = defineEmits<{
+  refresh: [];
+}>();
 
 // 编辑模式状态
 const isEditMode = ref(false);
 
-// 表单数据
+// 表单数据（保留原有字段结构）
 const formData = ref({
-  registerIpLimit: 0,
-  ipWhitelist: "",
+  registerIpLimit: 0,  // 对应后端 ip_join_limit
+  ipWhitelist: "",     // 对应后端 white_ip
   maintenanceStatus: false,
   tgServiceLink: "",
   whatsappServiceLink: "",
@@ -44,31 +56,34 @@ const isSaveDisabled = ref(true);
 const showGoogleVerifyDialog = ref(false);
 const googleVerifyCode = ref("");
 
-// 获取配置数据
-const getConfig = async () => {
-  try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // 模拟数据
-    const data = {
-      registerIpLimit: 10,
-      ipWhitelist: "192.168.1.1,192.168.1.2",
-      maintenanceStatus: true,
-      tgServiceLink: "",
-      whatsappServiceLink: "",
-      contactPhone: "",
-      email: "",
-      contactAddress: "",
-      copyrightText: "",
-      twaMiniProgramRobot: ""
-    };
-    formData.value = { ...data };
-    originalFormData.value = { ...data };
-  } catch (error: any) {
-    console.error("获取配置失败:", error);
-    message(error?.message || "获取配置失败", { type: "error" });
-  }
+// 从后端数据初始化表单
+const initFormData = () => {
+  if (!props.configGroup || !props.configGroup.list) return;
+  
+  // 遍历后端返回的配置项，映射到前端字段
+  props.configGroup.list.forEach((item) => {
+    switch (item.name) {
+      case "ip_join_limit":
+        formData.value.registerIpLimit = item.value ? Number(item.value) : 0;
+        break;
+      case "white_ip":
+        formData.value.ipWhitelist = item.value ? String(item.value) : "";
+        break;
+      // 其他字段如果后端有返回，可以在这里添加映射
+      // 如果没有返回，保持默认值
+    }
+  });
+  
+  // 保存原始数据
+  originalFormData.value = { ...formData.value };
 };
+
+// 监听配置组变化
+watch(() => props.configGroup, () => {
+  if (props.configGroup && props.configGroup.list) {
+    initFormData();
+  }
+}, { immediate: true, deep: true });
 
 // 点击修改按钮
 const handleEdit = () => {
@@ -124,14 +139,40 @@ const handleConfirmGoogleVerify = async () => {
 // 执行保存操作
 const doSave = async () => {
   try {
-    // TODO: 对接实际API，传递 googleVerifyCode.value
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message("保存成功", { type: "success" });
-    isEditMode.value = false;
-    isSaveDisabled.value = true;
-    // 更新原始数据
-    originalFormData.value = { ...formData.value };
-    googleVerifyCode.value = "";
+    // 准备保存数据，将前端字段映射回后端字段名
+    const saveData: Record<string, any> = {};
+    
+    // 遍历后端配置项，找到对应的字段并保存
+    props.configGroup.list.forEach((item) => {
+      switch (item.name) {
+        case "ip_join_limit":
+          saveData[item.name] = formData.value.registerIpLimit.toString();
+          break;
+        case "white_ip":
+          saveData[item.name] = formData.value.ipWhitelist;
+          break;
+        // 其他字段如果后端有，可以在这里添加
+      }
+    });
+
+    const res = await saveSystemConfig({
+      group: props.configGroup.name,
+      data: saveData,
+      google_code: googleVerifyCode.value
+    });
+
+    if (res.code === 0) {
+      message("保存成功", { type: "success" });
+      isEditMode.value = false;
+      isSaveDisabled.value = true;
+      // 更新原始数据
+      originalFormData.value = { ...formData.value };
+      googleVerifyCode.value = "";
+      // 触发刷新
+      emit("refresh");
+    } else {
+      message(res.msg || "保存失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("保存失败:", error);
     message(error?.message || "保存失败", { type: "error" });
@@ -146,11 +187,6 @@ const handleCancel = () => {
   isEditMode.value = false;
   isSaveDisabled.value = true;
 };
-
-// 初始化加载数据
-onMounted(() => {
-  getConfig();
-});
 </script>
 
 <template>
