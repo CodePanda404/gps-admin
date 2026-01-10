@@ -14,6 +14,19 @@ import {
 } from "plus-pro-components";
 import { message } from "@/utils/message";
 import { ElTag, ElTooltip, ElImage, ElDialog, ElForm, ElFormItem, ElSelect, ElOption, ElUpload, ElButton, ElInput, ElInputNumber, ElMessageBox } from "element-plus";
+import {
+  getAttachmentList,
+  addAttachment,
+  editAttachment,
+  deleteBatchAttachment,
+  getAttachmentCategory,
+  classifyAttachment,
+  type AttachmentItem,
+  type AttachmentListParams,
+  type AddAttachmentParams,
+  type EditAttachmentParams,
+  type ClassifyAttachmentParams
+} from "@/api/system";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
 import Upload from "~icons/ep/upload";
@@ -51,10 +64,11 @@ const searchColumns: PlusColumn[] = [
   {
     label: "分类管理",
     prop: "category",
-    valueType: "copy",
+    valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请输入分类管理"
-    }))
+      placeholder: "请选择"
+    })),
+    options: computed(() => categoryOptions.value)
   },
   {
     label: "文件名",
@@ -71,12 +85,10 @@ const searchColumns: PlusColumn[] = [
     fieldProps: computed(() => ({
       placeholder: "请选择文件类型"
     })),
-    options: [
+    options: computed(() => [
       { label: "全部", value: "" },
-      { label: "产品主图", value: "product_main" },
-      { label: "产品介绍图", value: "product_intro" },
-      { label: "文件", value: "file" }
-    ]
+      ...categoryOptions.value.filter(item => item.value !== "")
+    ])
   },
   {
     label: "存储地",
@@ -207,24 +219,8 @@ const handleReset = () => {
 };
 
 // 表格数据类型
-type TableRow = {
-  id: number;
-  category: string;
-  preview: string;
-  filename: string;
+type TableRow = AttachmentItem & {
   fileSize: string;
-  imageWidth?: number;
-  imageHeight?: number;
-  storage: string;
-  imageType: string;
-  createtime: string;
-  jumpType?: string;
-  jumpLink?: string;
-  sort?: number;
-  imageFrames?: string;
-  mimetype?: string;
-  exparam?: string;
-  uploadTime?: string;
 };
 
 // 多选选中数据
@@ -232,6 +228,39 @@ const multipleSelection = ref<TableRow[]>([]);
 // 表格相关数据和操作
 const { tableData, buttons, pageInfo, total, loadingStatus } =
   useTable<TableRow[]>();
+
+// 附件分类选项
+const categoryOptions = ref<Array<{ label: string; value: string }>>([
+  { label: "全部", value: "" }
+]);
+
+// 获取附件分类
+const getCategoryList = async () => {
+  try {
+    const res = await getAttachmentCategory();
+    if (res.code === 0) {
+      // 处理返回的数据格式
+      let categories: Array<{ label: string; value: string }> = [];
+      if (Array.isArray(res.data)) {
+        categories = res.data.map(item => ({
+          label: item.label || item.value,
+          value: item.value
+        }));
+      } else if (typeof res.data === "object") {
+        categories = Object.entries(res.data).map(([key, value]) => ({
+          label: value as string,
+          value: key
+        }));
+      }
+      categoryOptions.value = [
+        { label: "全部", value: "" },
+        ...categories
+      ];
+    }
+  } catch (error: any) {
+    console.error("获取附件分类失败:", error);
+  }
+};
 
 // 表格配置
 const tableConfig: any = ref([
@@ -249,63 +278,43 @@ const tableConfig: any = ref([
     width: "120",
     tableColumnProps: {
       align: "center"
+    },
+    render: (value: string) => {
+      const category = categoryOptions.value.find(item => item.value === value);
+      return h("span", category?.label || value);
     }
   },
   {
     label: "预览",
-    prop: "preview",
+    prop: "url",
     width: "120",
+    valueType: 'img',
+    fieldProps: {
+      fit:"cover"
+    },
     tableColumnProps: {
       align: "center"
-    },
-    render: ({ row }: { row: TableRow }) => {
-      if (!row.preview) {
-        return h("span", "-");
-      }
-      return h(ElImage, {
-        src: row.preview,
-        style: { width: "60px", height: "60px", objectFit: "cover" },
-        previewSrcList: [row.preview],
-        fit: "cover"
-      });
     }
   },
   {
     label: "文件名",
     prop: "filename",
-    minWidth: "150",
+    minWidth: "220",
     tableColumnProps: {
       align: "center"
-    },
-    render: ({ row }: { row: TableRow }) => {
-      return h(
-        ElTooltip,
-        {
-          content: row.filename,
-          placement: "top"
-        },
-        {
-          default: () =>
-            h(
-              "span",
-              {
-                style: {
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                  display: "inline-block",
-                  maxWidth: "150px"
-                }
-              },
-              row.filename
-            )
-        }
-      );
+    }
+  },
+  {
+    label: "文件类型",
+    prop: "category",
+    width: "120",
+    tableColumnProps: {
+      align: "center"
     }
   },
   {
     label: "文件大小",
-    prop: "fileSize",
+    prop: "filesize",
     width: "120",
     tableColumnProps: {
       align: "center"
@@ -317,19 +326,11 @@ const tableConfig: any = ref([
     width: "120",
     tableColumnProps: {
       align: "center"
-    },
-    render: ({ row }: { row: TableRow }) => {
-      const storageMap: Record<string, string> = {
-        local: "本地",
-        oss: "OSS",
-        cos: "COS"
-      };
-      return h("span", storageMap[row.storage] || row.storage);
     }
   },
   {
     label: "图片类型",
-    prop: "imageType",
+    prop: "imagetype",
     width: "120",
     tableColumnProps: {
       align: "center"
@@ -373,40 +374,72 @@ buttons.value = [
   }
 ];
 
+// 格式化文件大小
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+};
+
+// 获取完整图片URL
+const getImageUrl = (url: string): string => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  // 如果URL以 / 开头，可能需要拼接域名
+  return url;
+};
+
 // 获取列表数据
 const getList = async () => {
   loadingStatus.value = true;
   try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    // 模拟数据
-    tableData.value = [
-      {
-        id: 1,
-        category: "产品图片",
-        preview: "https://via.placeholder.com/60",
-        filename: "product_image_001.jpg",
-        fileSize: "2.5MB",
-        imageWidth: 1920,
-        imageHeight: 1080,
-        storage: "local",
-        imageType: "JPG",
-        createtime: "2025-01-15 10:30:00"
-      },
-      {
-        id: 2,
-        category: "文章图片",
-        preview: "https://via.placeholder.com/60",
-        filename: "article_image_002.png",
-        fileSize: "1.8MB",
-        imageWidth: 1200,
-        imageHeight: 800,
-        storage: "oss",
-        imageType: "PNG",
-        createtime: "2025-01-14 15:20:00"
-      }
-    ] as TableRow[];
-    total.value = 2;
+    const params: AttachmentListParams = {
+      pageNumber: pageInfo.value.page,
+      pageSize: pageInfo.value.pageSize
+    };
+
+    if (searchData.value.id) {
+      params.id = searchData.value.id;
+    }
+    if (searchData.value.category) {
+      params.category = searchData.value.category;
+    }
+    if (searchData.value.filename) {
+      params.filename = searchData.value.filename;
+    }
+    if (searchData.value.fileType) {
+      params.category = searchData.value.fileType;
+    }
+    if (searchData.value.storage) {
+      params.storage = searchData.value.storage;
+    }
+    if (searchData.value.imageType) {
+      params.imagetype = searchData.value.imageType;
+    }
+    if (searchData.value.createTime && searchData.value.createTime.length === 2) {
+      params.create_start_time = searchData.value.createTime[0];
+      params.create_end_time = searchData.value.createTime[1];
+    }
+
+    const res = await getAttachmentList(params);
+
+    if (res.code === 0) {
+      tableData.value = res.data.rows.map(item => ({
+        ...item,
+        fileSize: formatFileSize(item.filesize)
+      })) as TableRow[];
+      total.value = res.data.total;
+      pageInfo.value.page = Number(res.data.pageNumber);
+      pageInfo.value.pageSize = Number(res.data.pageSize);
+    } else {
+      message(res.msg || "获取列表数据失败", { type: "error" });
+      tableData.value = [];
+      total.value = 0;
+    }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
     message(error?.message || "获取列表数据失败", { type: "error" });
@@ -440,9 +473,11 @@ const editFormData = ref({
 
 // 跳转类型选项
 const jumpTypeOptions = [
-  { label: "无", value: "" },
-  { label: "内部链接", value: "internal" },
-  { label: "外部链接", value: "external" }
+  { label: "请选择", value: "" },
+  { label: "主页跳转", value: "1" },
+  { label: "子页跳转", value: "2" },
+  { label: "外部跳转", value: "3" },
+  { label: "空连接", value: "4" }
 ];
 
 // 存储地选项
@@ -502,24 +537,25 @@ const handleRemoveEditImage = () => {
 const handleEditRow = (row: TableRow) => {
   showEditDialog.value = true;
   // 填充表单数据
+  const imageUrl = getImageUrl(row.url);
   editFormData.value = {
     id: row.id,
     category: row.category || "",
-    image: row.preview || "",
-    jumpType: row.jumpType || "",
-    jumpLink: row.jumpLink || "",
-    sort: 0,
-    imageWidth: row.imageWidth?.toString() || "",
-    imageHeight: row.imageHeight?.toString() || "",
-    imageType: row.imageType || "",
-    imageFrames: row.imageFrames || "",
-    fileSize: row.fileSize || "",
+    image: imageUrl || "",
+    jumpType: row.type?.toString() || "",
+    jumpLink: row.path || "",
+    sort: row.sort_no || 0,
+    imageWidth: row.imagewidth || "",
+    imageHeight: row.imageheight || "",
+    imageType: row.imagetype || "",
+    imageFrames: row.imageframes?.toString() || "",
+    fileSize: formatFileSize(row.filesize),
     mimetype: row.mimetype || "",
-    exparam: row.exparam || "",
-    uploadTime: row.uploadTime || row.createtime || "",
+    exparam: row.extparam || "",
+    uploadTime: row.createtime || "",
     storage: row.storage || ""
   };
-  editImageUrl.value = row.preview || "";
+  editImageUrl.value = imageUrl || "";
 };
 
 // 关闭编辑对话框
@@ -552,12 +588,25 @@ const handleCloseEditDialog = () => {
 // 提交编辑表单
 const handleSubmitEdit = async () => {
   try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message("编辑附件成功", { type: "success" });
-    handleCloseEditDialog();
-    // 刷新列表
-    getList();
+    const params: EditAttachmentParams = {
+      id: editFormData.value.id.toString(),
+      category: editFormData.value.category || undefined,
+      url: editFormData.value.image || undefined,
+      type: editFormData.value.jumpType || undefined,
+      path: editFormData.value.jumpLink || "",
+      sort_no: editFormData.value.sort.toString()
+    };
+
+    const res = await editAttachment(params);
+
+    if (res.code === 0) {
+      message("编辑附件成功", { type: "success" });
+      handleCloseEditDialog();
+      // 刷新列表
+      getList();
+    } else {
+      message(res.msg || "编辑附件失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("编辑附件失败:", error);
     message(error?.message || "编辑附件失败", { type: "error" });
@@ -577,11 +626,15 @@ const handleDeleteRow = async (row: TableRow) => {
       }
     );
 
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message("删除附件成功", { type: "success" });
-    // 刷新列表
-    getList();
+    const res = await deleteBatchAttachment({ ids: row.id.toString() });
+
+    if (res.code === 0) {
+      message("删除附件成功", { type: "success" });
+      // 刷新列表
+      getList();
+    } else {
+      message(res.msg || "删除附件失败", { type: "error" });
+    }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除附件失败:", error);
@@ -598,12 +651,10 @@ const addFormData = ref({
   files: [] as Array<{ url: string; name: string; uid: number }>
 });
 
-// 文件类型选项
-const fileTypeOptions = [
-  { label: "产品主图", value: "product_main" },
-  { label: "产品介绍图", value: "product_intro" },
-  { label: "文件", value: "file" }
-];
+// 文件类型选项（从接口获取，这里使用 categoryOptions）
+const fileTypeOptions = computed(() => 
+  categoryOptions.value.filter(item => item.value !== "")
+);
 
 // 文件上传相关
 const uploadRef = ref();
@@ -618,22 +669,47 @@ const beforeUpload = (file: File) => {
 // 处理文件上传
 const handleFileUpload = async (options: any) => {
   const { file } = options;
+  
+  if (!addFormData.value.fileType) {
+    message("请先选择附件类型", { type: "warning" });
+    return;
+  }
+  
   uploading.value = true;
   
   try {
-    // TODO: 对接实际上传API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 模拟上传成功，生成预览URL
-    const fileUrl = URL.createObjectURL(file);
-    const fileItem = {
-      url: fileUrl,
-      name: file.name,
-      uid: Date.now()
+    const params: AddAttachmentParams = {
+      file: file
     };
-    
-    addFormData.value.files.push(fileItem);
-    message("文件上传成功", { type: "success" });
+
+    const res = await addAttachment(params);
+
+    if (res.code === 0) {
+      // 上传成功后，需要调用编辑接口设置 category
+      if (res.data?.id) {
+        try {
+          await editAttachment({
+            id: res.data.id.toString(),
+            category: addFormData.value.fileType
+          });
+        } catch (error) {
+          console.error("设置附件分类失败:", error);
+        }
+      }
+      
+      // 上传成功，添加到文件列表
+      const fileUrl = res.data?.url || URL.createObjectURL(file);
+      const fileItem = {
+        url: fileUrl,
+        name: file.name,
+        uid: Date.now()
+      };
+      
+      addFormData.value.files.push(fileItem);
+      message("文件上传成功", { type: "success" });
+    } else {
+      message(res.msg || "文件上传失败", { type: "error" });
+    }
   } catch (error: any) {
     console.error("文件上传失败:", error);
     message(error?.message || "文件上传失败", { type: "error" });
@@ -691,9 +767,9 @@ const handleSubmitAdd = async () => {
     return;
   }
   
+  // 新增时文件已经通过 handleFileUpload 上传了
+  // 这里只需要关闭对话框并刷新列表
   try {
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
     message("新增附件成功", { type: "success" });
     handleCloseAddDialog();
     // 刷新列表
@@ -735,11 +811,17 @@ const handleDelete = async () => {
       }
     );
 
-    // TODO: 对接实际API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    message("批量删除附件成功", { type: "success" });
-    // 刷新列表
-    getList();
+    const ids = multipleSelection.value.map(item => item.id).join(",");
+    const res = await deleteBatchAttachment({ ids });
+
+    if (res.code === 0) {
+      message("批量删除附件成功", { type: "success" });
+      multipleSelection.value = [];
+      // 刷新列表
+      getList();
+    } else {
+      message(res.msg || "批量删除附件失败", { type: "error" });
+    }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("批量删除附件失败:", error);
@@ -748,10 +830,61 @@ const handleDelete = async () => {
   }
 };
 
-// 分类管理
+// 分类对话框相关
+const showClassifyDialog = ref(false);
+const classifyFormData = ref({
+  category: ""
+});
+
+// 打开分类对话框
 const handleCategory = () => {
-  message("分类管理功能待实现", { type: "info" });
-  // TODO: 实现分类管理功能
+  if (multipleSelection.value.length === 0) {
+    message("请选择要分类的数据", { type: "warning" });
+    return;
+  }
+  showClassifyDialog.value = true;
+  classifyFormData.value.category = "";
+};
+
+// 关闭分类对话框
+const handleCloseClassifyDialog = () => {
+  showClassifyDialog.value = false;
+  classifyFormData.value.category = "";
+};
+
+// 提交分类
+const handleSubmitClassify = async () => {
+  if (!classifyFormData.value.category) {
+    message("请选择附件分类", { type: "warning" });
+    return;
+  }
+
+  if (multipleSelection.value.length === 0) {
+    message("请选择要分类的数据", { type: "warning" });
+    return;
+  }
+
+  try {
+    const params: ClassifyAttachmentParams = {
+      category: classifyFormData.value.category,
+      ids: multipleSelection.value.map(item => item.id).join(",")
+    };
+
+    const res = await classifyAttachment(params);
+
+    if (res.code === 0) {
+      message("分类成功", { type: "success" });
+      handleCloseClassifyDialog();
+      multipleSelection.value = [];
+      // 刷新列表
+      getList();
+    } else {
+      message(res.msg || "分类失败", { type: "error" });
+    }
+  } catch (error: any) {
+    console.error("分类失败:", error);
+    message(error?.message || "分类失败", { type: "error" });
+  }
 };
 
 // 记录上一次的 pageSize
@@ -767,6 +900,7 @@ const handlePageChange = () => {
 };
 
 // 初始化加载数据
+getCategoryList();
 getList();
 </script>
 
@@ -809,7 +943,7 @@ getList();
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">添加</span>
+            <span style="margin-left: 3px;">新增</span>
           </el-button>
           <el-button
             type="success"
@@ -828,6 +962,15 @@ getList();
           >
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>
+          </el-button>
+          <el-button
+            type="info"
+            @click="handleCategory"
+            size="default"
+            :disabled="multipleSelection.length === 0"
+          >
+            <el-icon><component :is="Delete" /></el-icon>
+            <span style="margin-left: 3px;">分类</span>
           </el-button>
           </template>
         <!-- 工具栏 -->
@@ -907,7 +1050,7 @@ getList();
     <!-- 新增附件对话框 -->
     <el-dialog
       v-model="showAddDialog"
-      title="新增附件"
+      title="添加"
       width="600px"
       :close-on-click-modal="false"
       @close="handleCloseAddDialog"
@@ -917,7 +1060,7 @@ getList();
         :model="addFormData"
         label-width="100px"
       >
-        <el-form-item label="附件类型">
+        <el-form-item label="附件类型" required>
           <el-select
             v-model="addFormData.fileType"
             placeholder="请选择"
@@ -932,7 +1075,7 @@ getList();
           </el-select>
         </el-form-item>
 
-        <el-form-item label="上传">
+        <el-form-item label="选择附件" required>
           <el-upload
             ref="uploadRef"
             :auto-upload="true"
@@ -1013,7 +1156,7 @@ getList();
             style="width: 100%"
           >
             <el-option
-              v-for="item in fileTypeOptions"
+              v-for="item in categoryOptions"
               :key="item.value"
               :label="item.label"
               :value="item.value"
@@ -1113,6 +1256,7 @@ getList();
           <el-input
             v-model="editFormData.imageWidth"
             placeholder="请输入"
+            disabled
           />
         </el-form-item>
 
@@ -1120,6 +1264,7 @@ getList();
           <el-input
             v-model="editFormData.imageHeight"
             placeholder="请输入"
+            disabled
           />
         </el-form-item>
 
@@ -1127,13 +1272,7 @@ getList();
           <el-input
             v-model="editFormData.imageType"
             placeholder="请输入"
-          />
-        </el-form-item>
-
-        <el-form-item label="Image frames">
-          <el-input
-            v-model="editFormData.imageFrames"
-            placeholder="请输入"
+            disabled
           />
         </el-form-item>
 
@@ -1141,20 +1280,7 @@ getList();
           <el-input
             v-model="editFormData.fileSize"
             placeholder="请输入"
-          />
-        </el-form-item>
-
-        <el-form-item label="Minetype">
-          <el-input
-            v-model="editFormData.mimetype"
-            placeholder="请输入"
-          />
-        </el-form-item>
-
-        <el-form-item label="Exparam">
-          <el-input
-            v-model="editFormData.exparam"
-            placeholder="请输入"
+            disabled
           />
         </el-form-item>
 
@@ -1162,6 +1288,7 @@ getList();
           <el-input
             v-model="editFormData.uploadTime"
             placeholder="请输入"
+            disabled
           />
         </el-form-item>
 
@@ -1185,6 +1312,43 @@ getList();
         <div class="dialog-footer">
           <el-button @click="handleCloseEditDialog">取消</el-button>
           <el-button type="primary" @click="handleSubmitEdit">确认</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 分类对话框 -->
+    <el-dialog
+      v-model="showClassifyDialog"
+      title="分类"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="handleCloseClassifyDialog"
+    >
+      <el-form
+        :model="classifyFormData"
+        label-width="100px"
+      >
+        <el-form-item label="附件分类" required>
+          <el-select
+            v-model="classifyFormData.category"
+            placeholder="请选择"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in categoryOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+              :disabled="item.value === ''"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCloseClassifyDialog">取消</el-button>
+          <el-button type="primary" @click="handleSubmitClassify">确认</el-button>
         </div>
       </template>
     </el-dialog>

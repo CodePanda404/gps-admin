@@ -9,7 +9,7 @@ export default {
   redirect: "/article/help",
   meta: {
     icon: Document,
-    title: "文章管理",
+    title: $t("menus.article"),
     rank: 5
   },
   children: [
@@ -18,7 +18,7 @@ export default {
       name: "Help",
       component: () => import("@/views/article/help.vue"),
       meta: {
-        title: "帮助管理",
+        title: $t("menus.help"),
         showLink: true,
         showParent: true
       }

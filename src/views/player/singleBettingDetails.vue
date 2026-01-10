@@ -15,17 +15,17 @@ import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import {
-  getTransferBettingList,
-  type TransferBettingListParams,
-  type TransferBettingItem
+  getSingleBettingList,
+  type SingleBettingListParams,
+  type SingleBettingItem
 } from "@/api/player";
 import {
-  getGamePlayTypeList,
   getSupplierList,
   getCurrencyList,
-  type GamePlayTypeItem,
+  getGameBrandList,
+  type GameBrandItem,
   type SupplierItem,
-  type CurrencyItem
+  type CurrencyItem,
 } from "@/api/game";
 import { ElTag } from "element-plus";
 import dayjs from "dayjs";
@@ -45,51 +45,23 @@ const userId = computed(() => (route.query.userId as string) || "");
 const { t } = useI18n();
 
 /*  -----搜索表单相关-----  */
-// 游戏类型列表（用于下拉选择）
-const gamePlayTypeOptions = ref<Array<{ label: string; value: number }>>([]);
-// 供应商列表（用于下拉选择）
-const supplierOptions = ref<Array<{ label: string; value: number }>>([]);
 // 币种列表（用于下拉选择）
-const currencyOptions = ref<Array<{ label: string; value: number }>>([]);
+const currencyOptions = ref<Array<{ label: string; value: string }>>([]);
+// 供应商列表（用于下拉选择）
+const supplierOptions = ref<Array<{ label: string; value: string }>>([]);
+//
+// 游戏品牌列表（用于所属分类显示）
+const brandOptions = ref<Array<{ label: string; value: number }>>([]);
 
-// 获取游戏类型列表
-const fetchGamePlayTypeList = async () => {
-  try {
-    const res = await getGamePlayTypeList({ pageSize: 1000, status: "1" });
-    if (res.code === 0 && res.data && res.data.rows) {
-      gamePlayTypeOptions.value = res.data.rows.map((item: GamePlayTypeItem) => ({
-        label: item.name,
-        value: item.id
-      }));
-    }
-  } catch (error: any) {
-    console.error("获取游戏类型列表失败:", error);
-  }
-};
-
-// 获取供应商列表
-const fetchSupplierList = async () => {
-  try {
-    const res = await getSupplierList({ pageSize: 1000, status: "1" });
-    if (res.code === 0 && res.data && res.data.rows) {
-      supplierOptions.value = res.data.rows.map((item: SupplierItem) => ({
-        label: item.name,
-        value: item.id
-      }));
-    }
-  } catch (error: any) {
-    console.error("获取供应商列表失败:", error);
-  }
-};
 
 // 获取币种列表
 const fetchCurrencyList = async () => {
   try {
-    const res = await getCurrencyList({ pageSize: 1000, status: "1" });
+    const res = await getCurrencyList({ pageSize: 1000 });
     if (res.code === 0 && res.data && res.data.rows) {
       currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
         label: item.name,
-        value: item.id
+        value: item.name // currency_code 使用币种名称
       }));
     }
   } catch (error: any) {
@@ -97,25 +69,52 @@ const fetchCurrencyList = async () => {
   }
 };
 
+// 获取游戏品牌列表（用于所属分类显示）
+const fetchBrandList = async () => {
+  try {
+    const res = await getGameBrandList({ pageSize: 1000 });
+    if (res.code === 0 && res.data && res.data.rows) {
+      brandOptions.value = res.data.rows.map((item: GameBrandItem) => ({
+        label: item.name,
+        value: item.id
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取游戏品牌列表失败:", error);
+  }
+};
+
+// 获取供应商列表
+const fetchSupplierList = async () => {
+  try {
+    const res = await getSupplierList({ pageSize: 1000 });
+    if (res.code === 0 && res.data && res.data.rows) {
+      supplierOptions.value = res.data.rows.map((item: SupplierItem) => ({
+        label: item.name,
+        value: item.name // provider 使用供应商名称
+      }));
+    }
+  } catch (error: any) {
+    console.error("获取供应商列表失败:", error);
+  }
+};
+
 // 初始化时获取列表
-fetchGamePlayTypeList();
-fetchSupplierList();
 fetchCurrencyList();
+fetchSupplierList();
+fetchBrandList()
 
 // 搜索表单数据
 const searchData = ref({
-  id: "",
   user_id: "",
+  user_admin_id: "",
   username: "",
   game_id: "",
+  provider: "",
+  currency_code: "",
   bet_id: "",
   transaction_id: "",
   status: "",
-  game_type_id: "",
-  type_id: "",
-  provider_id: "",
-  currency_id: "",
-  round_id: "",
   createTime: null as string[] | null
 });
 
@@ -125,19 +124,27 @@ const showSearch = ref(true);
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
   {
-    label: "ID",
-    prop: "id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "ID"
-    }))
-  },
-  {
-    label: "会员ID",
+    label: "用户ID",
     prop: "user_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入会员ID"
+      placeholder: "用户ID"
+    }))
+  },
+  {
+    label: "商户ID",
+    prop: "user_admin_id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "商户ID"
+    }))
+  },
+  {
+    label: "玩家ID",
+    prop: "username",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "玩家ID"
     }))
   },
   {
@@ -145,69 +152,31 @@ const searchColumns: PlusColumn[] = [
     prop: "game_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入游戏ID"
-    }))
-  },
-   {
-    label: "游戏名称",
-    prop: "game_name",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入游戏名称"
-    }))
-  },
-  {
-    label: "游戏类型",
-    prop: "game_type_id",
-    valueType: "select",
-    fieldProps: computed(() => ({
-      placeholder: "请选择游戏类型",
-      filterable: true
-    })),
-    options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
-      ...gamePlayTypeOptions.value.map(item => ({
-        label: item.label,
-        value: item.value.toString()
-      }))
-    ])
-  },
-  {
-    label: "分类ID",
-    prop: "type_id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入分类ID"
+      placeholder: "游戏ID"
     }))
   },
   {
     label: "供应商",
-    prop: "provider_id",
+    prop: "provider",
     valueType: "select",
     fieldProps: computed(() => ({
       placeholder: "请选择供应商",
       filterable: true
     })),
     options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
+      { label: "全部", value: "" },
       ...supplierOptions.value.map(item => ({
         label: item.label,
-        value: item.value.toString()
+        value: item.value
       }))
     ])
   },
   {
     label: "币种",
-    prop: "currency_id",
+    prop: "currency_code",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择币种",
+      placeholder: "请选择",
       filterable: true
     })),
     options: computed(() => [
@@ -217,24 +186,16 @@ const searchColumns: PlusColumn[] = [
       },
       ...currencyOptions.value.map(item => ({
         label: item.label,
-        value: item.value.toString()
+        value: item.value
       }))
     ])
-  },
-  {
-    label: "回合ID",
-    prop: "round_id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入回合ID"
-    }))
   },
   {
     label: "投注ID",
     prop: "bet_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入投注ID"
+      placeholder: "投注ID"
     }))
   },
   {
@@ -242,7 +203,7 @@ const searchColumns: PlusColumn[] = [
     prop: "transaction_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入交易ID"
+      placeholder: "交易ID"
     }))
   },
   {
@@ -259,11 +220,11 @@ const searchColumns: PlusColumn[] = [
       },
       {
         label: "中奖",
-        value: "中奖"
+        value: "1"
       },
       {
         label: "未中奖",
-        value: "未中奖"
+        value: "2"
       }
     ]
   },
@@ -354,18 +315,15 @@ const handleSearch = (values: any) => {
 // 重置搜索表单
 const handleRest = () => {
   searchData.value = {
-    id: "",
     user_id: "",
+    user_admin_id: "",
     username: "",
     game_id: "",
+    provider: "",
+    currency_code: "",
     bet_id: "",
     transaction_id: "",
     status: "",
-    game_type_id: "",
-    type_id: "",
-    provider_id: "",
-    currency_id: "",
-    round_id: "",
     createTime: null
   };
   pageInfo.value.page = 1;
@@ -373,7 +331,7 @@ const handleRest = () => {
 };
 
 // 表格数据类型
-type TableRow = TransferBettingItem;
+type TableRow = SingleBettingItem;
 
 // 多选选中数据
 const multipleSelection = ref<TableRow[]>([]);
@@ -397,8 +355,23 @@ const tableConfig: any = ref([
     }
   },
   {
-    label: "会员ID",
+    label: "用户ID",
     prop: "user_id",
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "玩家ID",
+    prop: "username",
+    width: 140,
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "商户ID",
+    prop: "user_admin_id",
     tableColumnProps: {
       align: "center"
     }
@@ -421,15 +394,36 @@ const tableConfig: any = ref([
   },
   {
     label: "游戏类型",
-    prop: "game_type_id",
+    prop: "game_type",
+    minWidth: 120,
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+   {
+    label: "所属分类",
+    prop: "type_id",
+    width: 260,
+    render: (value: string | number) => {
+      if (!value) return "-";
+      const brand = brandOptions.value.find(item => item.value === Number(value) || item.value === value);
+      return brand ? brand.label : value;
+    },
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
+    label: "供应商",
+    prop: "provider",
     minWidth: 120,
     tableColumnProps: {
       align: "center"
     }
   },
   {
-    label: "分类ID",
-    prop: "type_id",
+    label: "币种",
+    prop: "currency_code",
     minWidth: 100,
     tableColumnProps: {
       align: "center"
@@ -447,22 +441,6 @@ const tableConfig: any = ref([
     label: "交易ID",
     prop: "transaction_id",
     width: 240,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "供应商",
-    prop: "provider_id",
-    minWidth: 120,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "币种",
-    prop: "currency_id",
-    minWidth: 100,
     tableColumnProps: {
       align: "center"
     }
@@ -491,24 +469,8 @@ const tableConfig: any = ref([
     }
   },
   {
-    label: "回合ID",
-    prop: "round_id",
-    minWidth: 120,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
     label: "创建时间",
     prop: "createtime",
-    width: 160,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "结算时间",
-    prop: "settle_time",
     width: 160,
     tableColumnProps: {
       align: "center"
@@ -525,6 +487,7 @@ const tableConfig: any = ref([
       }, () => value === '中奖' ? value : '未中奖');
     },
     tableColumnProps: {
+      fixed: "right",
       align: "center"
     }
   },
@@ -552,22 +515,19 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { id, user_id, username, game_id, bet_id, transaction_id, status, game_type_id, type_id, provider_id, currency_id, round_id, createTime } = searchData.value;
-    const params: TransferBettingListParams = {
+    const { user_id, user_admin_id, username, game_id, provider, currency_code, bet_id, transaction_id, status, createTime } = searchData.value;
+    const params: SingleBettingListParams = {
       pageNumber: page,
       pageSize,
-      id: id || undefined,
       user_id: user_id || undefined,
+      user_admin_id: user_admin_id || undefined,
       username: username || undefined,
       game_id: game_id || undefined,
+      provider: provider || undefined,
+      currency_code: currency_code || undefined,
       bet_id: bet_id || undefined,
       transaction_id: transaction_id || undefined,
-      status: status || undefined,
-      game_type_id: game_type_id || undefined,
-      type_id: type_id || undefined,
-      provider_id: provider_id || undefined,
-      currency_id: currency_id || undefined,
-      round_id: round_id || undefined
+      status: status || undefined
     };
 
     // 处理创建时间范围
@@ -576,7 +536,7 @@ const getList = async () => {
       params.create_end_time = createTime[1];
     }
 
-    const { data } = await getTransferBettingList(params);
+    const { data } = await getSingleBettingList(params);
 
     if (data && data.rows) {
       tableData.value = data.rows;

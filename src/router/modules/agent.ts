@@ -9,7 +9,7 @@ export default {
   redirect: "/agent/agent-list",
   meta: {
     icon: User,
-    title: "代理管理",
+    title: $t("menus.agent"),
     rank: 4
   },
   children: [
@@ -18,7 +18,7 @@ export default {
       name: "AgentList",
       component: () => import("@/views/agent/agentList.vue"),
       meta: {
-        title: "代理列表",
+        title: $t("menus.agentList"),
         showLink: true,
         showParent: true
       }

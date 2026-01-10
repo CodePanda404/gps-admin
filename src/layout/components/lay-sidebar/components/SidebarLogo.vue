@@ -3,6 +3,8 @@ import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import { getTopMenu } from "@/router/utils";
 import { useNav } from "@/layout/hooks/useNav";
 import { useDataThemeChange } from "@/layout/hooks/useDataThemeChange";
+import logoLight from "@/assets/login/logo.png";
+import logoDark from "@/assets/login/logo-dark.png";
 
 defineProps({
   collapse: Boolean
@@ -52,9 +54,7 @@ onBeforeUnmount(() => {
 // 根据主题色动态获取logo
 const logoUrl = computed(() => {
   // 深色模式使用 logo-dark.png，浅色模式使用 logo.png
-  return isDark.value
-    ? "/src/assets/login/logo-dark.png"
-    : "/src/assets/login/logo.png";
+  return isDark.value ? logoDark : logoLight;
 });
 </script>
 

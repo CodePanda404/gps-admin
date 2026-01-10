@@ -11,6 +11,8 @@ import {
   getRoleManagementList,
   getRoleTree,
   getMenuList,
+  addRole,
+  editRole,
   type RoleManagementItem,
   type RoleManagementListResult,
   type RoleTreeItem,
@@ -316,8 +318,8 @@ const getAllMenuKeys = (nodes: PermissionNode[]): (string | number)[] => {
 };
 
 // 获取所有节点key（用于展开）
-const getAllNodeKeys = (nodes: PermissionNode[]): string[] => {
-  const keys: string[] = [];
+const getAllNodeKeys = (nodes: PermissionNode[]): (string | number)[] => {
+  const keys: (string | number)[] = [];
   const traverse = (nodeList: PermissionNode[]) => {
     nodeList.forEach(node => {
       keys.push(node.id);
@@ -399,7 +401,7 @@ const updatePermission = (nodeId: string | number, permission: string, checked: 
 };
 
 // 打开新增对话框
-const handleAdd = () => {
+const handleAdd = async () => {
   isEdit.value = false;
   dialogTitle.value = "添加";
   formData.value = {
@@ -412,6 +414,27 @@ const handleAdd = () => {
   expandAll.value = false;
   permissionCheckedKeys.value = [];
   expandedKeys.value = [];
+  
+  // 获取菜单列表来构建权限树
+  try {
+    const menuRes = await getMenuList();
+    if (menuRes.code !== 0 || !menuRes.data || !menuRes.data.rows) {
+      message(menuRes.msg || "获取菜单列表失败", { type: "error" });
+      showDialog.value = true;
+      return;
+    }
+    
+    // 将菜单列表转换为树结构
+    permissionTreeData.value = buildPermissionTreeFromMenuList(menuRes.data.rows);
+    
+    // 展开所有节点
+    expandAll.value = true;
+    expandedKeys.value = getAllNodeKeys(permissionTreeData.value);
+  } catch (error: any) {
+    console.error("获取权限树数据失败:", error);
+    message(error?.message || "获取权限树数据失败", { type: "error" });
+  }
+  
   showDialog.value = true;
 };
 
@@ -460,7 +483,7 @@ const handleEditRow = async (row: TableRow) => {
     permissionTreeData.value = buildPermissionTreeFromMenuList(menuRes.data.rows);
     
     // 3. 获取角色权限树数据（用于标记哪些菜单已选中）
-    const roleTreeRes = await getRoleTree({ pid: row.id });
+    const roleTreeRes = await getRoleTree({ pid: row.pid });
     if (roleTreeRes.code === 0 && roleTreeRes.data) {
       // 构建选中状态映射
       const selectedMap = buildSelectedMapFromRoleTree(roleTreeRes.data);
@@ -502,53 +525,75 @@ const handleCloseDialog = () => {
   formRef.value?.resetFields();
 };
 
+// 从权限选中keys中提取权限ID（菜单ID），多个用逗号隔开
+// checkedKeys 可能包含：纯数字（菜单ID）或 "数字-权限" 格式（如 "1-view", "1-add"）
+// 返回格式：逗号分隔的菜单ID字符串，如 "1,2,3"
+const extractMenuIds = (checkedKeys: string[]): string => {
+  const menuIdSet = new Set<number>();
+  
+  checkedKeys.forEach(key => {
+    // 如果key是纯数字（菜单ID），直接添加
+    if (/^\d+$/.test(key)) {
+      menuIdSet.add(parseInt(key));
+    } else {
+      // 如果key是 "数字-权限" 格式（如 "1-view"），提取数字部分（菜单ID）
+      const match = key.match(/^(\d+)-/);
+      if (match) {
+        menuIdSet.add(parseInt(match[1]));
+      }
+    }
+  });
+  
+  // 去重、排序，转换为逗号分隔的字符串
+  return Array.from(menuIdSet).sort((a, b) => a - b).join(",");
+};
+
 // 提交表单
 const handleSubmit = async () => {
   if (!formRef.value) return;
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        // 获取选中的权限
-        formData.value.permissions = permissionCheckedKeys.value;
-        
-        // TODO: 对接实际API
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // 获取选中的权限菜单ID
+        const rules = extractMenuIds(permissionCheckedKeys.value);
+        const pid = formData.value.parent ? parseInt(formData.value.parent) : 0;
         
         if (isEdit.value) {
-          // 编辑：更新列表中的数据
-          const index = tableData.value.findIndex(item => item.id === formData.value.id);
-          if (index !== -1) {
-            tableData.value[index] = {
-              ...tableData.value[index],
-              parent: formData.value.parent,
-              name: formData.value.name
-            };
-          }
-          message("编辑成功", { type: "success" });
-        } else {
-          // 新增：添加到列表
-          const newId = tableData.value.length > 0 
-            ? Math.max(...tableData.value.map(item => item.id)) + 1 
-            : 1;
-          const pid = formData.value.parent ? parseInt(formData.value.parent) : 0;
-          const newItem: TableRow = {
-            id: newId,
-            pid,
+          // 编辑角色
+          const res = await editRole({
+            id: formData.value.id,
+            pid: pid,
             name: formData.value.name,
-            rules: permissionCheckedKeys.value.join(",") || "",
-            createtime: Math.floor(Date.now() / 1000),
-            updatetime: Math.floor(Date.now() / 1000),
-            status: "normal",
-            spacer: "",
-            haschild: 0,
-            parent: formData.value.parent ? (tableData.value.find(item => item.id === pid)?.name.replace(/&nbsp;|├|│|└/g, "").trim() || "无") : "无"
-          };
-          tableData.value.unshift(newItem);
-          total.value += 1;
-          message("新增成功", { type: "success" });
+            status: "normal", // 默认状态为normal
+            rules: rules || "*"
+          });
+          
+          if (res.code === 0) {
+            message("编辑成功", { type: "success" });
+            handleCloseDialog();
+            // 重新获取列表数据
+            await getList();
+          } else {
+            message(res.msg || "编辑失败", { type: "error" });
+          }
+        } else {
+          // 新增角色
+          const res = await addRole({
+            pid: pid,
+            name: formData.value.name,
+            status: "normal", // 默认状态为normal
+            rules: rules || "*"
+          });
+          
+          if (res.code === 0) {
+            message("新增成功", { type: "success" });
+            handleCloseDialog();
+            // 重新获取列表数据
+            await getList();
+          } else {
+            message(res.msg || "新增失败", { type: "error" });
+          }
         }
-        
-        handleCloseDialog();
       } catch (error: any) {
         console.error("提交失败:", error);
         message(error?.message || "提交失败", { type: "error" });

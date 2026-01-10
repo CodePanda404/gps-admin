@@ -77,18 +77,20 @@ const getSectionStyle = computed(() => {
 const transitionMain = defineComponent({
   props: {
     route: {
-      type: undefined,
+      type: Object,
       required: true
     }
   },
   render() {
+    const route = this.route as any;
+    const routePath = route?.path || "";
     const transitionName =
-      transitions.value(this.route)?.name || "fade-transform";
-    const enterTransition = transitions.value(this.route)?.enterTransition;
-    const leaveTransition = transitions.value(this.route)?.leaveTransition;
+      transitions.value(route)?.name || "fade-transform";
+    const enterTransition = transitions.value(route)?.enterTransition;
+    const leaveTransition = transitions.value(route)?.leaveTransition;
 
     // LOGGING
-    // console.log("TransitionMain Render:", this.route.path, "KeepAlive:", isKeepAlive.value);
+    // console.log("TransitionMain Render:", route.path, "KeepAlive:", isKeepAlive.value);
 
     return h(
       Transition,
@@ -103,12 +105,15 @@ const transitionMain = defineComponent({
         mode: "out-in",
         appear: true,
         // events
-        onBeforeEnter: () =>
-          console.log("Transition: Before Enter", this.route.path),
-        onAfterEnter: () =>
-          console.log("Transition: After Enter", this.route.path),
-        onBeforeLeave: () =>
-          console.log("Transition: Before Leave", this.route.path)
+        onBeforeEnter: function() {
+          console.log("Transition: Before Enter", routePath);
+        },
+        onAfterEnter: function() {
+          console.log("Transition: After Enter", routePath);
+        },
+        onBeforeLeave: function() {
+          console.log("Transition: Before Leave", routePath);
+        }
       },
       {
         default: () => [this.$slots.default()]

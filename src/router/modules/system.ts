@@ -10,7 +10,7 @@ export default {
   redirect: "/system/config",
   meta: {
     icon: SettingIcon,
-    title: $t("menus.system") || "系统设置",
+    title: $t("menus.systemSettings") || "系统设置",
     rank: 10
   },
   children: [
@@ -19,9 +19,18 @@ export default {
       name: "SystemConfig",
       component: () => import("@/views/system/config/index.vue"),
       meta: {
-        title: "系统配置",
+        title: $t("menus.systemConfig"),
         showLink: true,
         showParent: true
+      }
+    },
+    {
+      path: "/system/config/add",
+      name: "AddConfig",
+      component: () => import("@/views/system/config/add.vue"),
+      meta: {
+        title: "新增配置",
+        showLink: false
       }
     },
     {
@@ -39,7 +48,7 @@ export default {
       name: "PersonalCenterPlatform",
       component: () => import("@/views/system/personalCenterPlatform.vue"),
       meta: {
-        title: "个人中心(平台)",
+        title: $t("menus.personalCenterPlatform"),
         showLink: true,
         showParent: true
       }
@@ -49,7 +58,7 @@ export default {
       name: "PersonalCenterMerchant",
       component: () => import("@/views/system/personalCenterMerchant.vue"),
       meta: {
-        title: "个人中心(商户)",
+        title: $t("menus.personalCenterMerchant"),
         showLink: true,
         showParent: true
       }

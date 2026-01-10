@@ -17,6 +17,7 @@ export type AccountManagementItem = {
   groups: string;
   groups_text: string;
   createtime: string;
+  merchant_id?: number | string; // 商户ID
 };
 
 /** 账号管理列表查询参数 */
@@ -395,6 +396,37 @@ export const deleteBatchMenu = (params: DeleteBatchMenuParams) => {
   );
 };
 
+/** 批量切换菜单状态请求参数 */
+export type StatusBatchMenuParams = {
+  ids: string; // 多个ID用逗号分隔
+  status: string; // normal 或 hidden
+};
+
+/** 批量切换菜单状态响应 */
+export type StatusBatchMenuResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 批量切换菜单状态 */
+export const statusBatchMenu = (params: StatusBatchMenuParams) => {
+  const formData = new FormData();
+  formData.append("ids", params.ids);
+  formData.append("status", params.status);
+
+  return http.request<StatusBatchMenuResult>(
+    "post",
+    baseUrlApi("/auth/rule/status_batch"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
 // ==================== 角色管理相关接口 ====================
 
 /** 角色管理列表项 */
@@ -459,6 +491,78 @@ export const getRoleTree = (params: GetRoleTreeParams) => {
   return http.request<GetRoleTreeResult>(
     "post",
     baseUrlApi("/auth/group/roletree"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 新增角色参数 */
+export type AddRoleParams = {
+  pid: string | number;
+  name: string;
+  status: string; // normal | hidden
+  rules: string; // 权限菜单id，多个用逗号分隔
+};
+
+/** 新增角色响应 */
+export type AddRoleResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 新增角色 */
+export const addRole = (params: AddRoleParams) => {
+  const formData = new FormData();
+  formData.append("pid", params.pid.toString());
+  formData.append("name", params.name);
+  formData.append("status", params.status);
+  formData.append("rules", params.rules);
+
+  return http.request<AddRoleResult>(
+    "post",
+    baseUrlApi("/auth/group/add"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 编辑角色参数 */
+export type EditRoleParams = {
+  id: string | number;
+  pid: string | number;
+  name: string;
+  status: string; // normal | hidden
+  rules: string; // 权限菜单id，多个用逗号分隔
+};
+
+/** 编辑角色响应 */
+export type EditRoleResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 编辑角色 */
+export const editRole = (params: EditRoleParams) => {
+  const formData = new FormData();
+  formData.append("id", params.id.toString());
+  formData.append("pid", params.pid.toString());
+  formData.append("name", params.name);
+  formData.append("status", params.status);
+  formData.append("rules", params.rules);
+
+  return http.request<EditRoleResult>(
+    "post",
+    baseUrlApi("/auth/group/edit"),
     {
       data: formData,
       headers: {

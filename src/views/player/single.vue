@@ -7,6 +7,7 @@ import { useRouter } from "vue-router";
 import { type PlusColumn, PlusSearch } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
 import { utils, writeFile } from "xlsx";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
 import { ElMessageBox } from "element-plus";
 import {
@@ -27,6 +28,11 @@ import dayjs from "dayjs";
 
 // 路由
 const router = useRouter();
+
+
+// 国际化
+const { t } = useI18n();
+
 
 /*  -----搜索表单相关-----  */
 // 币种列表（用于下拉选择）
@@ -131,18 +137,37 @@ const searchColumns: PlusColumn[] = [
     ]
   },
   {
-    label: "注册时间",
-    prop: "registerTime",
+    label: "登录IP",
+    renderLabel: () => t("player.search.login_ip"),
+    prop: "login_ip",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: t("placeholder.input")
+    }))
+  },
+  {
+    label: "注册IP",
+    renderLabel: () => t("player.search.register_ip"),
+    prop: "register_ip",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: t("placeholder.input")
+    }))
+  },
+  {
+    label: "登录时间",
+    renderLabel: () => t("player.search.login_time"),
+    prop: "loginTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -152,7 +177,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -162,7 +187,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -173,7 +198,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -184,7 +209,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -194,7 +219,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -207,18 +232,19 @@ const searchColumns: PlusColumn[] = [
     }))
   },
   {
-    label: "登录时间",
-    prop: "loginTime",
+    label: "注册时间",
+    renderLabel: () => t("player.search.register_time"),
+    prop: "registerTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder:  t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -228,7 +254,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -238,7 +264,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -249,7 +275,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -260,7 +286,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -270,7 +296,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [

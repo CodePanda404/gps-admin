@@ -265,6 +265,7 @@ export type ProductStatisticsDailyParams = {
   admin_id?: string | number;
   type_name?: string;
   provider?: string;
+  currency?: string;
   start_time?: string;
   end_time?: string;
   pageNumber?: number;
@@ -276,6 +277,7 @@ export type ProductStatisticsMonthlyParams = {
   admin_id?: string | number;
   type_name?: string;
   provider?: string;
+  currency?: string;
   month?: string;
   pageNumber?: number;
   pageSize?: number;

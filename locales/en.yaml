@@ -62,12 +62,53 @@ panel:
   pureMultiTagsCache: MultiTags Cache
 menus:
   home: Home
-  dashboard: Dashboard,
-  player: Player,
-  transfer: transfer
-  single: single
-  depositAndWithdrawalDetails: depositAndWithdrawalDetails
+  dashboard: Dashboard
+  player: Player
+  transfer: Transfer Mode
+  single: Single Mode
+  betDetail: Bet Detail
+  depWithDrawDetail: DepWithDraw Detail
+  # 游戏管理
   game: Game
+  supplier: Supplier
+  playType: Play Type
+  gameList: Game List
+  gameBrand: Game Brand
+  # 商户管理
+  merchant: Merchant
+  merchantList: Merchant List
+  adjustRecord: Adjust Record
+  merchantAccount: Merchant Account
+  merchantProduct: Merchant Product
+  currencyType: Currency Type
+  WlgAccount: WLG Account
+  PgfAccount: PGF Account
+  operationLog: Operation Log
+  # 代理管理
+  agent: Agent
+  agentList: Agent List
+  # 财务管理
+  finance: Finance
+  # 文章管理
+  article: Article
+  help: Help
+  # 数据统计
+  statistics: Statistics
+  playerStatistics: Player Statistics
+  gameStatistics: Game Statistics
+  productStatistics: Product Statistics
+  # 权限管理
+  permission: Permission
+  account: Account
+  role: Role
+  menu: Menu
+  gameTestLog: Game Test Log
+  # 系统设置
+  systemSettings: System Settings
+  systemConfig: System Config
+  attachment: Attachment
+  personalCenterPlatform: Personal Center (Platform)
+  personalCenterMerchant: Personal Center (Merchant)
 home:
   todayData: Today's Data
   updateTime: Update Time
@@ -142,34 +183,105 @@ login:
     confirm: Confirm
     resetSuccess: Password reset successful
     resetFailed: Password reset failed
+placeholder:
+  input: Please enter the value
+  select: Please select the value
+  start_time: Start Time
+  end_time: End Time
+
+# 时间选择器
+Time:
+  today: Today
+  yesterday: Yesterday
+  last7Days: Last 7 Days
+  last30Days: Last 30 Days
+  thisMonth: This Month
+  lastMonth: Last Month
+
+# 玩家管理
 player:
-  transfer:
-    idPlaceholder: Please enter the id
-    namePlaceholder: Please enter the name
-    adminIdPlaceholder: Please enter the merchantID
-    userIdPlaceholder: Please enter the userId
-    statusPlaceholder: Please select the status
-    registerTimePlaceholder: Please select
-    reset: Reset
-    search: Search
+  search:
     id: ID
-    name: name
+    username: username
     admin_id: merchantID
     userId: userId
+    balance: balance
+    currency: currency
+    merchant_id: merchantID
+    login_time: loginTime
+    login_ip: loginIP
+    register_time: regTime
+    register_ip: regIP
+    status: status
     all: all
     disabled: disabled
     normal: normal
+  buttons:
+    reset: Reset
+    search: Search
+  table:
+    id: ID
+    username: username
+    admin_id: merchantID
+    userId: userId
     balance: balance
     currency: currency
-    merchantID: merchantID
-    totalBet: totalBet
-    totalPet: totalPet
-    totalWinLoss: totalWinLoss
-    loginTime: loginTime
-    loginIP: loginIP
-    registerTime: regTime
-    registerIP: registerIP
+    merchant_id: merchantID
+    bet_all: totalBet
+    win_all: totalPet
+    company_win_all: totalWinLoss
+    login_time: loginTime
+    login_ip: loginIP
+    register_time: regTime
+    register_ip: regIP
     status: status
     depWithDrawDetail: depWithDrawDetail
     betDetail: betDetail
     action: action
+
+# 游戏管理
+game:
+  supplier:
+    search:
+      id: ID
+      supplier: supplier
+      status: status
+      remark: remark
+      all: all
+      hidden: hidden
+      normal: normal
+      updateTime: updateTime
+    buttons:
+      reset: Reset
+      search: Search
+      add: Add
+      edit: Edit
+      delete: Delete
+      confirm: Confirm
+      cancel: Cancel
+    table:
+      id: ID
+      supplier: supplier
+      status: status
+      hidden: hidden
+      normal: normal
+      pic: pic
+      remark: remark
+      sort_no: sortNo
+      updateTime: updateTime
+      createTime: createTime  
+      action: action
+    addTitle: Add Supplier
+    addSuccess: Add Supplier Success
+    addFail: Add Supplier Fail
+    editTitle: Edit Supplier
+    editFail: Edit Supplier Fail
+    editSuccess: Edit Supplier Success
+    deleteTitle: Delete Supplier
+    deleteFail: Delete Supplier Fail
+    deleteSuccess: Delete Supplier Success
+    deleteTip: Confirm Delete suppler
+    upload: Upload
+    uploadTip: Click Upload The Picture
+    uploadSuccess: Upload Success
+    uploadFail: Upload Fail

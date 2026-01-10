@@ -19,7 +19,7 @@ export default {
       name: "Supplier",
       component: () => import("@/views/game/supplier.vue"),
       meta: {
-        title: "供应商",
+        title: $t("menus.supplier"),
         showLink: true,
         showParent: true
       }
@@ -29,7 +29,7 @@ export default {
       name: "GamePlayType",
       component: () => import("@/views/game/gamePlayType.vue"),
       meta: {
-        title: "玩法类型",
+        title: $t("menus.playType"),
         showLink: true,
         showParent: true
       }
@@ -39,7 +39,7 @@ export default {
       name: "GameList",
       component: () => import("@/views/game/gameList.vue"),
       meta: {
-        title: "游戏列表",
+        title: $t("menus.gameList"),
         showLink: true,
         showParent: true
       }
@@ -49,7 +49,7 @@ export default {
       name: "GameBrand",
       component: () => import("@/views/game/gameBrand.vue"),
       meta: {
-        title: "游戏品牌",
+        title: $t("menus.gameBrand"),
         showLink: true,
         showParent: true
       }

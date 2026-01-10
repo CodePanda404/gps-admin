@@ -270,3 +270,139 @@ export const logout = () => {
     }
   });
 };
+
+// ==================== 商户信息相关接口 ====================
+
+/** 商户信息数据 */
+export type MerchantProfileData = {
+  id: number;
+  gruop_name: string;
+  username: string;
+  nickname: string;
+  email_hidden: string;
+  email: string;
+  type: number;
+  wallet_type: number;
+  google_status: number;
+  currency: string | null;
+  category: string | null;
+  api_key: string | null;
+  api_secret: string | null;
+  white_ip: string | null;
+  callback_url: string;
+  open_api_host: string;
+  api_doc_url: string;
+  transfer_api_doc_url: string;
+};
+
+/** 获取商户信息响应 */
+export type GetMerchantProfileResult = {
+  code: number;
+  msg: string;
+  data: MerchantProfileData;
+};
+
+/** 获取商户信息 */
+export const getMerchantProfile = () => {
+  return http.request<GetMerchantProfileResult>(
+    "get",
+    baseUrlApi("/general/profile/index")
+  );
+};
+
+/** 谷歌验证码验证请求参数 */
+export type GoogleCheckParams = {
+  google_code: string;
+};
+
+/** 谷歌验证码验证响应 */
+export type GoogleCheckResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 谷歌验证码验证 */
+export const googleCheck = (params: GoogleCheckParams) => {
+  const formData = new FormData();
+  formData.append("google_code", params.google_code);
+
+  return http.request<GoogleCheckResult>("post", baseUrlApi("/login/google_check"), {
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data"
+    }
+  });
+};
+
+/** 更新商户信息请求参数 */
+export type UpdateMerchantProfileParams = {
+  white_ip?: string;
+  callback_url?: string;
+  nickname?: string;
+  google_code?: string;
+};
+
+/** 更新商户信息响应 */
+export type UpdateMerchantProfileResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 更新商户信息 */
+export const updateMerchantProfile = (params: UpdateMerchantProfileParams) => {
+  const formData = new FormData();
+  if (params.white_ip !== undefined) {
+    formData.append("white_ip", params.white_ip);
+  }
+  if (params.callback_url !== undefined) {
+    formData.append("callback_url", params.callback_url);
+  }
+  if (params.nickname !== undefined) {
+    formData.append("nickname", params.nickname);
+  }
+  if (params.google_code !== undefined) {
+    formData.append("google_code", params.google_code);
+  }
+
+  return http.request<UpdateMerchantProfileResult>(
+    "post",
+    baseUrlApi("/general/profile/update"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};
+
+/** 解绑谷歌验证请求参数 */
+export type UnbindGoogleParams = {
+  google_code: string;
+};
+
+/** 解绑谷歌验证响应 */
+export type UnbindGoogleResult = {
+  code: number;
+  msg: string;
+  data?: any;
+};
+
+/** 解绑谷歌验证 */
+export const unbindGoogle = (params: UnbindGoogleParams) => {
+  const formData = new FormData();
+  formData.append("google_code", params.google_code);
+
+  return http.request<UnbindGoogleResult>(
+    "post",
+    baseUrlApi("/general/profile/unbind_google"),
+    {
+      data: formData,
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }
+  );
+};

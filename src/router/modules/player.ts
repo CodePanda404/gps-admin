@@ -28,7 +28,7 @@ export default {
           component: () =>
             import("@/views/player/depositAndWithdrawalDetails.vue"),
           meta: {
-            title: "存取款明细",
+            title: $t("menus.depWithDrawDetail"),
             keepAlive: true
           }
         },
@@ -37,7 +37,7 @@ export default {
           name: "BettingDetails",
           component: () => import("@/views/player/bettingDetails.vue"),
           meta: {
-            title: "投注明细",
+            title: $t("menus.betDetail"),
             keepAlive: true
           }
         }
@@ -59,11 +59,11 @@ export default {
           component: () =>
             import("@/views/player/singleBettingDetails.vue"),
           meta: {
-            title: "投注明细",
+            title: $t("menus.betDetail"),
             showLink: true,
             showParent: true
           }
-      }
+        }
       ]
     }
   ]

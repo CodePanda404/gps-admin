@@ -13,11 +13,13 @@ import {
   addMenu,
   editMenu,
   deleteBatchMenu,
+  statusBatchMenu,
   type MenuItem,
   type MenuListParams,
   type AddMenuParams,
   type EditMenuParams,
-  type DeleteBatchMenuParams
+  type DeleteBatchMenuParams,
+  type StatusBatchMenuParams
 } from "@/api/auth";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
@@ -534,6 +536,62 @@ const handleDelete = async (row: TableRow) => {
     }
   }
 };
+
+// 状态切换对话框相关
+const showStatusSwitchDialog = ref(false);
+const statusSwitchForm = ref({
+  status: "normal"
+});
+
+// 打开状态切换对话框
+const handleStatusSwitch = () => {
+  if (multipleSelection.value.length === 0) {
+    message("请选择要切换状态的数据", { type: "warning" });
+    return;
+  }
+  showStatusSwitchDialog.value = true;
+  // 如果选中的菜单状态都相同，则默认选择该状态，否则默认选择 normal
+  const statuses = multipleSelection.value.map(item => item.status);
+  const allSameStatus = statuses.every(status => status === statuses[0]);
+  statusSwitchForm.value.status = allSameStatus ? statuses[0] : "normal";
+};
+
+// 关闭状态切换对话框
+const handleCloseStatusSwitchDialog = () => {
+  showStatusSwitchDialog.value = false;
+  statusSwitchForm.value.status = "normal";
+};
+
+// 提交状态切换
+const handleSubmitStatusSwitch = async () => {
+  if (multipleSelection.value.length === 0) {
+    message("请选择要切换状态的数据", { type: "warning" });
+    return;
+  }
+
+  try {
+    const ids = multipleSelection.value.map(item => item.id).join(",");
+    const params: StatusBatchMenuParams = {
+      ids,
+      status: statusSwitchForm.value.status
+    };
+
+    const res = await statusBatchMenu(params);
+
+    if (res.code === 0) {
+      message("状态切换成功", { type: "success" });
+      handleCloseStatusSwitchDialog();
+      multipleSelection.value = [];
+      // 刷新列表
+      getList();
+    } else {
+      message(res.msg || "状态切换失败", { type: "error" });
+    }
+  } catch (error: any) {
+    console.error("状态切换失败:", error);
+    message(error?.message || "状态切换失败", { type: "error" });
+  }
+};
 </script>
 
 <template>
@@ -594,6 +652,15 @@ const handleDelete = async (row: TableRow) => {
           >
             <el-icon><component :is="Delete" /></el-icon>
             <span style="margin-left: 3px;">删除</span>
+          </el-button>
+          <el-button 
+            type="warning" 
+            @click="handleStatusSwitch" 
+            size="default"
+            :disabled="multipleSelection.length === 0"
+          >
+            <el-icon><component :is="Edit" /></el-icon>
+            <span style="margin-left: 3px;">状态切换</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
@@ -834,6 +901,40 @@ const handleDelete = async (row: TableRow) => {
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="handleCloseDetailDialog">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 状态切换对话框 -->
+    <el-dialog
+      v-model="showStatusSwitchDialog"
+      title="状态切换"
+      width="500px"
+      :close-on-click-modal="false"
+      @close="handleCloseStatusSwitchDialog"
+    >
+      <el-form :model="statusSwitchForm" label-width="100px">
+        <el-form-item label="状态" required>
+          <el-select
+            v-model="statusSwitchForm.status"
+            placeholder="请选择状态"
+            style="width: 100%"
+          >
+            <el-option
+              label="正常"
+              value="normal"
+            />
+            <el-option
+              label="隐藏"
+              value="hidden"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleCloseStatusSwitchDialog">取消</el-button>
+          <el-button type="primary" @click="handleSubmitStatusSwitch">确认</el-button>
         </div>
       </template>
     </el-dialog>

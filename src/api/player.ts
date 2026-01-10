@@ -242,8 +242,17 @@ export const lockSinglePlayer = (data?: LockSinglePlayerParams) => {
 export type SingleBettingItem = {
   id: number;
   user_id: number;
+  user_admin_id?: number;
   username: string;
   game_id: string;
+  game_name?: string;
+  game_type?: string;
+  game_type_id?: number | string;
+  type_id?: number | string;
+  provider?: string;
+  provider_id?: number | string;
+  currency_code?: string;
+  currency_id?: number | string;
   bet_id: string;
   transaction_id: string;
   bet_amount: string;
@@ -251,14 +260,30 @@ export type SingleBettingItem = {
   win_and_lose: number;
   status_text: string; // 中奖/未中奖
   createtime: string;
+  round_id?: number | string;
+  settle_time?: string;
 };
 
 /** 单一模式玩家投注明细查询参数 */
 export type SingleBettingListParams = {
   /** 用户ID */
   user_id?: string | number;
-  /** 用户名 */
+  /** 商户ID */
+  user_admin_id?: string | number;
+  /** 用户名（玩家ID） */
   username?: string;
+  /** 游戏ID */
+  game_id?: string;
+  /** 供应商 */
+  provider?: string;
+  /** 币种代码 */
+  currency_code?: string;
+  /** 投注ID */
+  bet_id?: string;
+  /** 交易ID */
+  transaction_id?: string;
+  /** 状态 */
+  status?: string;
   /** 类型 */
   type?: string;
   /** 创建开始时间 */
@@ -297,8 +322,16 @@ export const getSingleBettingList = (params?: SingleBettingListParams) => {
 export type TransferBettingItem = {
   id: number;
   user_id: number;
+  user_admin_id?: number;
   username: string;
   game_id: string;
+  game_name?: string;
+  game_type?: string;
+  type_id?: number | string;
+  provider?: string;
+  provider_id?: number | string;
+  currency_code?: string;
+  currency_id?: number | string;
   bet_id: string;
   transaction_id: string;
   bet_amount: string;
@@ -307,9 +340,6 @@ export type TransferBettingItem = {
   status_text: string;
   createtime: string;
   game_type_id?: number | string;
-  type_id?: number | string;
-  provider_id?: number | string;
-  currency_id?: number | string;
   round_id?: number | string;
   settle_time?: string;
 };
@@ -320,10 +350,24 @@ export type TransferBettingListParams = {
   id?: string | number;
   /** 用户ID */
   user_id?: string | number;
-  /** 用户名 */
+  /** 商户ID */
+  user_admin_id?: string | number;
+  /** 用户名（游戏ID） */
   username?: string;
   /** 游戏ID */
   game_id?: string;
+  /** 游戏名称 */
+  game_name?: string;
+  /** 游戏类型 */
+  game_type?: string;
+  /** 分类ID */
+  type_id?: string | number;
+  /** 供应商 */
+  provider?: string;
+  /** 供应商ID */
+  provider_id?: string | number;
+  /** 币种代码 */
+  currency_code?: string;
   /** 币种ID */
   currency_id?: string | number;
   /** 投注ID */
@@ -334,10 +378,6 @@ export type TransferBettingListParams = {
   status?: string;
   /** 游戏类型ID */
   game_type_id?: string | number;
-  /** 分类ID */
-  type_id?: string | number;
-  /** 供应商ID */
-  provider_id?: string | number;
   /** 回合ID */
   round_id?: string | number;
   /** 创建开始时间 */

@@ -30,6 +30,8 @@ import Lock from '~icons/tdesign/lock-on';
 import Check from "~icons/ep/check";
 import User from '~icons/tdesign/user';
 import RiGoogleFill from '~icons/ri/google-fill';
+import logoLight from '@/assets/login/logo.png';
+import logoDark from '@/assets/login/logo-dark.png';
 
 defineOptions({
   name: "Login"
@@ -97,9 +99,7 @@ onBeforeUnmount(() => {
 // 根据主题色动态获取logo
 const logoUrl = computed(() => {
   // 深色模式使用 logo-dark.png，浅色模式使用 logo.png
-  return isDark.value
-    ? "/src/assets/login/logo-dark.png"
-    : "/src/assets/login/logo.png";
+  return isDark.value ? logoDark : logoLight;
 });
 
 const ruleForm = reactive({

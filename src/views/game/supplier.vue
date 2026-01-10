@@ -6,6 +6,7 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import { ElMessageBox, ElTag } from "element-plus";
@@ -20,7 +21,7 @@ import {
   type AddSupplierParams,
   type EditSupplierParams
 } from "@/api/game";
-import { ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElSwitch, ElUpload, ElButton, ElRadioGroup, ElRadio } from "element-plus";
+import { ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElUpload, ElButton, ElRadioGroup, ElRadio } from "element-plus";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
@@ -28,7 +29,6 @@ import Filter from "~icons/ep/filter";
 import Plus from "~icons/ep/plus";
 import Edit from "~icons/ep/edit";
 import Delete from "~icons/ep/delete";
-import More from "~icons/ep/more";
 
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
@@ -42,67 +42,78 @@ const searchData = ref({
 // 搜索表单显示控制
 const showSearch = ref(true);
 
+// 国际化
+const { t } = useI18n();
+
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("game.supplier.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "ID"
+      placeholder: t("game.supplier.search.id")
     }))
   },
   {
     label: "供应商",
+    renderLabel: () => t("game.supplier.search.supplier"),
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "供应商"
+      placeholder: t("game.supplier.search.supplier")
     }))
   },
   {
     label: "备注",
+    renderLabel: () => t("game.supplier.search.remark"),
     prop: "remark",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "备注"
+      placeholder: t("game.supplier.search.remark")
     }))
   },
   {
     label: "状态",
+    renderLabel: () => t("game.supplier.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("placeholder.select")
     })),
     options: [
       {
-        label: "全部",
+        label: t("game.supplier.search.all"),
+        renderLabel: () => t("game.supplier.search.all"),
         value: ""
       },
       {
-        label: "正常",
+        label: t("game.supplier.search.normal"),
+        renderLabel: () => t("game.supplier.search.normal"),
         value: "1"
       },
       {
-        label: "隐藏",
+        label: t("game.supplier.search.hidden"),
+        renderLabel: () => t("game.supplier.search.hidden"),
         value: "-1"
       }
     ]
   },
   {
     label: "更新时间",
+    renderLabel: () => t("game.supplier.search.updateTime"),
     prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -112,7 +123,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -122,7 +133,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -133,7 +144,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -144,7 +155,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -154,7 +165,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -200,6 +211,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("player.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -207,6 +219,7 @@ const tableConfig: any = ref([
   },
   {
     label: "供应商名称",
+    renderHeader: () => t("game.supplier.table.supplier"),
     prop: "name",
     tableColumnProps: {
       align: "center"
@@ -214,6 +227,7 @@ const tableConfig: any = ref([
   },
  {
     label: 'logo',
+    renderHeader: () => t("game.supplier.table.pic"),
     prop: 'pic',
     valueType: 'img',
     fieldProps: {
@@ -225,6 +239,7 @@ const tableConfig: any = ref([
   },
   {
     label: "备注",
+    renderHeader: () => t("game.supplier.table.remark"),
     prop: "remark",
     tableColumnProps: {
       align: "center"
@@ -232,6 +247,7 @@ const tableConfig: any = ref([
   },
   {
     label: "排序",
+    renderHeader: () => t("game.supplier.table.sort_no"),
     prop: "sort_no",
     tableColumnProps: {
       align: "center"
@@ -239,6 +255,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("game.supplier.table.createTime"),
     prop: "createtime",
     width: "160",
     tableColumnProps: {
@@ -248,6 +265,7 @@ const tableConfig: any = ref([
   },
   {
     label: "更新时间",
+    renderHeader: () => t("game.supplier.table.updateTime"),
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
@@ -257,11 +275,12 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("game.supplier.table.status"),
     prop: "status",
     render: (value: string) => {
       return h(ElTag, {
         type: value === '1' ? "success" : "danger"
-      }, () => value === '1' ? '正常' : '隐藏');
+      }, () => value === '1' ? t("game.supplier.table.normal") : t("game.supplier.table.hidden"));
     },
     tableColumnProps: {
       sortable: true,
@@ -273,7 +292,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: t("game.supplier.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -424,17 +443,20 @@ getList();
 // 操作按钮 loading 状态
 const deleteLoading = ref(false);
 
-// 新增供应商对话框相关
-const showAddDialog = ref(false);
-const addFormRef = ref();
-const addFormData = ref({
+// 统一对话框相关（新增和编辑共用）
+const showDialog = ref(false);
+const isEdit = ref(false);
+const dialogTitle = computed(() => isEdit.value ? t("game.supplier.editTitle") : t("game.supplier.addTitle"));
+const formRef = ref();
+const formData = ref({
+  id: 0,
   name: "",
   remark: "",
   sort_no: 1,
   pic: "",
   status: "1"
 });
-const addFormRules = {
+const formRules = {
   name: [
     { required: true, message: "请输入供应商名称", trigger: "blur" }
   ]
@@ -465,7 +487,6 @@ const handleImageUpload = async (options: any) => {
   uploading.value = true;
   
   try {
-    // Element Plus 的 http-request 中，file 就是 File 对象
     const res = await uploadImage({
       file: file,
       type: "1"
@@ -473,7 +494,7 @@ const handleImageUpload = async (options: any) => {
 
     if (res.code === 0) {
       imageUrl.value = res.data;
-      addFormData.value.pic = res.data;
+      formData.value.pic = res.data;
       message("图片上传成功", { type: "success" });
     } else {
       message(res.msg || "图片上传失败", { type: "error" });
@@ -493,7 +514,6 @@ const triggerImageUpload = () => {
 
 // 触发图片选择
 const triggerImageSelect = () => {
-  // 触发隐藏的 upload 组件的点击事件
   const uploadEl = imageUploadRef.value?.$el?.querySelector('input[type="file"]');
   if (uploadEl) {
     uploadEl.click();
@@ -503,14 +523,16 @@ const triggerImageSelect = () => {
 // 移除图片
 const handleRemoveImage = () => {
   imageUrl.value = "";
-  addFormData.value.pic = "";
+  formData.value.pic = "";
 };
 
 // 打开新增对话框
 const handleAdd = () => {
-  showAddDialog.value = true;
+  isEdit.value = false;
+  showDialog.value = true;
   // 重置表单
-  addFormData.value = {
+  formData.value = {
+    id: 0,
     name: "",
     remark: "",
     sort_no: 1,
@@ -518,53 +540,7 @@ const handleAdd = () => {
     status: "1"
   };
   imageUrl.value = "";
-};
-
-// 关闭新增对话框
-const handleCloseAddDialog = () => {
-  showAddDialog.value = false;
-  addFormRef.value?.resetFields();
-  addFormData.value = {
-    name: "",
-    remark: "",
-    sort_no: 1,
-    pic: "",
-    status: "1"
-  };
-  imageUrl.value = "";
-};
-
-// 提交新增表单
-const handleSubmitAdd = async () => {
-  if (!addFormRef.value) return;
-
-  await addFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      try {
-        const params: AddSupplierParams = {
-          name: addFormData.value.name,
-          remark: addFormData.value.remark,
-          sort_no: addFormData.value.sort_no,
-          pic: addFormData.value.pic,
-          status: addFormData.value.status
-        };
-
-        const res = await addSupplier(params);
-
-        if (res.code === 0) {
-          message("新增供应商成功", { type: "success" });
-          handleCloseAddDialog();
-          // 刷新列表
-          getList();
-        } else {
-          message(res.msg || "新增供应商失败", { type: "error" });
-        }
-      } catch (error: any) {
-        console.error("新增供应商失败:", error);
-        message(error?.message || "新增供应商失败", { type: "error" });
-      }
-    }
-  });
+  formRef.value?.resetFields();
 };
 
 // 编辑（批量）- 只有一条选中时才能编辑
@@ -577,92 +553,12 @@ const handleEdit = () => {
   handleEditRow(multipleSelection.value[0]);
 };
 
-// 编辑供应商对话框相关
-const showEditDialog = ref(false);
-const editFormRef = ref();
-const editFormData = ref({
-  id: 0,
-  name: "",
-  remark: "",
-  sort_no: 1,
-  pic: "",
-  status: "1"
-});
-const editFormRules = {
-  name: [
-    { required: true, message: "请输入供应商名称", trigger: "blur" }
-  ]
-};
-const editImageUrl = ref("");
-const editUploading = ref(false);
-const editImageUploadRef = ref();
-
-// 编辑图片上传前的处理
-const beforeEditUpload = (file: File) => {
-  const isImage = file.type.startsWith("image/");
-  const isLt2M = file.size / 1024 / 1024 < 2;
-
-  if (!isImage) {
-    message("只能上传图片文件！", { type: "error" });
-    return false;
-  }
-  if (!isLt2M) {
-    message("图片大小不能超过 2MB！", { type: "error" });
-    return false;
-  }
-  return true;
-};
-
-// 处理编辑图片上传
-const handleEditImageUpload = async (options: any) => {
-  const { file } = options;
-  editUploading.value = true;
-  
-  try {
-    const res = await uploadImage({
-      file: file,
-      type: "1"
-    });
-
-    if (res.code === 0) {
-      editImageUrl.value = res.data;
-      editFormData.value.pic = res.data;
-      message("图片上传成功", { type: "success" });
-    } else {
-      message(res.msg || "图片上传失败", { type: "error" });
-    }
-  } catch (error: any) {
-    console.error("图片上传失败:", error);
-    message(error?.message || "图片上传失败", { type: "error" });
-  } finally {
-    editUploading.value = false;
-  }
-};
-
-// 触发编辑图片上传
-const triggerEditImageUpload = () => {
-  triggerEditImageSelect();
-};
-
-// 触发编辑图片选择
-const triggerEditImageSelect = () => {
-  const uploadEl = editImageUploadRef.value?.$el?.querySelector('input[type="file"]');
-  if (uploadEl) {
-    uploadEl.click();
-  }
-};
-
-// 移除编辑图片
-const handleRemoveEditImage = () => {
-  editImageUrl.value = "";
-  editFormData.value.pic = "";
-};
-
 // 编辑单行数据
 const handleEditRow = (row: TableRow) => {
-  showEditDialog.value = true;
+  isEdit.value = true;
+  showDialog.value = true;
   // 回填数据
-  editFormData.value = {
+  formData.value = {
     id: row.id,
     name: row.name,
     remark: row.remark || "",
@@ -670,14 +566,15 @@ const handleEditRow = (row: TableRow) => {
     pic: row.pic || "",
     status: row.status || "1"
   };
-  editImageUrl.value = row.pic || "";
+  imageUrl.value = row.pic || "";
+  formRef.value?.resetFields();
 };
 
-// 关闭编辑对话框
-const handleCloseEditDialog = () => {
-  showEditDialog.value = false;
-  editFormRef.value?.resetFields();
-  editFormData.value = {
+// 关闭对话框
+const handleCloseDialog = () => {
+  showDialog.value = false;
+  formRef.value?.resetFields();
+  formData.value = {
     id: 0,
     name: "",
     remark: "",
@@ -685,38 +582,59 @@ const handleCloseEditDialog = () => {
     pic: "",
     status: "1"
   };
-  editImageUrl.value = "";
+  imageUrl.value = "";
 };
 
-// 提交编辑表单
-const handleSubmitEdit = async () => {
-  if (!editFormRef.value) return;
+// 提交表单（新增和编辑共用）
+const handleSubmit = async () => {
+  if (!formRef.value) return;
 
-  await editFormRef.value.validate(async (valid: boolean) => {
+  await formRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
-        const params: EditSupplierParams = {
-          id: editFormData.value.id,
-          name: editFormData.value.name,
-          remark: editFormData.value.remark,
-          sort_no: editFormData.value.sort_no,
-          pic: editFormData.value.pic,
-          status: editFormData.value.status
-        };
+        if (isEdit.value) {
+          // 编辑
+          const params: EditSupplierParams = {
+            id: formData.value.id,
+            name: formData.value.name,
+            remark: formData.value.remark,
+            sort_no: formData.value.sort_no,
+            pic: formData.value.pic,
+            status: formData.value.status
+          };
 
-        const res = await editSupplier(params);
+          const res = await editSupplier(params);
 
-        if (res.code === 0) {
-          message("编辑供应商成功", { type: "success" });
-          handleCloseEditDialog();
-          // 刷新列表
-          getList();
+          if (res.code === 0) {
+            message(t("game.supplier.editSuccess"), { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || t("game.supplier.editFail"), { type: "error" });
+          }
         } else {
-          message(res.msg || "编辑供应商失败", { type: "error" });
+          // 新增
+          const params: AddSupplierParams = {
+            name: formData.value.name,
+            remark: formData.value.remark,
+            sort_no: formData.value.sort_no,
+            pic: formData.value.pic,
+            status: formData.value.status
+          };
+
+          const res = await addSupplier(params);
+
+          if (res.code === 0) {
+            message(t("game.supplier.addSuccess"), { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || t("game.supplier.addFail"), { type: "error" });
+          }
         }
       } catch (error: any) {
-        console.error("编辑供应商失败:", error);
-        message(error?.message || "编辑供应商失败", { type: "error" });
+        console.error(`${isEdit.value ? "编辑" : "新增"}供应商失败:`, error);
+        message(error?.message || `${isEdit.value ? "编辑" : "新增"}供应商失败`, { type: "error" });
       }
     }
   });
@@ -731,12 +649,12 @@ const handleDelete = async () => {
 
   // 构建删除确认消息
   const supplierNames = multipleSelection.value.map(item => item.name).join("、");
-  const confirmMessage = `确定删除供应商 ${supplierNames}？`;
+  const confirmMessage = `${t("game.supplier.deleteTip")} ${supplierNames}？`;
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "删除供应商", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("game.supplier.deleteTitle"), {
+      confirmButtonText: t("game.supplier.buttons.confirm"),
+      cancelButtonText: t("game.supplier.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -748,23 +666,23 @@ const handleDelete = async () => {
       const res = await deleteBatchSupplier({ ids });
 
       if (res.code === 0) {
-        message("删除成功", { type: "success" });
+        message(t("game.supplier.deleteSuccess"), { type: "success" });
         // 清空选中数据
         multipleSelection.value = [];
         // 刷新列表
         getList();
       } else {
-        message(res.msg || "删除失败", { type: "error" });
+        message(res.msg || t("game.supplier.deleteFail"), { type: "error" });
       }
     } catch (error: any) {
-      console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      console.error(t("game.supplier.deleteFail"), error);
+      message(error?.message || t("game.supplier.deleteFail"), { type: "error" });
     } finally {
       deleteLoading.value = false;
     }
   } catch (error: any) {
     if (error !== "cancel") {
-      console.error("删除失败:", error);
+      console.error(t("game.supplier.deleteFail"), error);
     }
   }
 };
@@ -831,8 +749,8 @@ const exportJson = () => {
         label-width="80"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('game.supplier.buttons.search')"
+        :resetText="t('game.supplier.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -850,7 +768,7 @@ const exportJson = () => {
         :action-bar="{
           buttons,
           width: '120px',
-          label: '操作'
+          label: t('game.supplier.table.action')
         }"
         @selection-change="handleSelectionChange"
         @formChange="handleStatusChange"
@@ -861,7 +779,7 @@ const exportJson = () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t("game.supplier.buttons.add") }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -870,7 +788,7 @@ const exportJson = () => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t("game.supplier.buttons.edit") }}</span>
           </el-button>
             <el-button 
               type="danger" 
@@ -880,7 +798,7 @@ const exportJson = () => {
               :loading="deleteLoading"
             >
               <el-icon><component :is="Delete" /></el-icon>
-              <span style="margin-left: 3px;">删除</span>
+              <span style="margin-left: 3px;">{{ t("game.supplier.buttons.delete") }}</span>
             </el-button>
         </template>
         <!-- 工具栏 -->
@@ -971,38 +889,38 @@ const exportJson = () => {
       />
     </el-card>
 
-    <!-- 新增供应商对话框 -->
+    <!-- 新增/编辑供应商对话框（共用） -->
     <el-dialog
-      v-model="showAddDialog"
-      title="新增供应商"
+      v-model="showDialog"
+      :title="dialogTitle"
       width="500px"
       :close-on-click-modal="false"
-      @close="handleCloseAddDialog"
+      @close="handleCloseDialog"
     >
       <el-form
-        ref="addFormRef"
-        :model="addFormData"
-        :rules="addFormRules"
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
         label-width="80px"
       >
-        <el-form-item label="供应商" prop="name">
+        <el-form-item :label="t('game.supplier.search.supplier')" prop="name">
           <el-input
-            v-model="addFormData.name"
-            placeholder="请输入"
+            v-model="formData.name"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="图片">
+        <el-form-item :label="t('game.supplier.table.pic')">
           <div class="image-upload-container">
             <div class="image-input-group">
               <el-input
-                v-model="addFormData.pic"
-                placeholder="请输入"
+                v-model="formData.pic"
+                :placeholder="t('placeholder.input')"
                 readonly
               />
               <el-button type="primary" @click="triggerImageUpload" :loading="uploading">
                 <el-icon><Upload /></el-icon>
-                上传
+                {{ t('game.supplier.upload') }}
               </el-button>
             </div>
             <div class="image-upload-area">
@@ -1023,7 +941,7 @@ const exportJson = () => {
                 @click="triggerImageSelect"
               >
                 <el-icon class="upload-icon"><Plus /></el-icon>
-                <div class="upload-text">点击上传图片</div>
+                <div class="upload-text">{{ t('game.supplier.uploadTip') }}</div>
               </div>
               <div v-else class="image-preview">
                 <img :src="imageUrl" class="preview-image" />
@@ -1033,139 +951,39 @@ const exportJson = () => {
                   class="delete-btn"
                   @click="handleRemoveImage"
                 >
-                  删除
+                  {{ t('game.supplier.buttons.delete') }}
                 </el-button>
               </div>
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="备注">
+        <el-form-item :label="t('game.supplier.search.remark')">
           <el-input
-            v-model="addFormData.remark"
-            placeholder="请输入"
+            v-model="formData.remark"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item :label="t('game.supplier.table.sort_no')">
           <el-input-number
-            v-model="addFormData.sort_no"
+            v-model="formData.sort_no"
             :min="1"
             :max="9999"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="addFormData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="-1">关闭</el-radio>
+        <el-form-item :label="t('game.supplier.search.status')">
+          <el-radio-group v-model="formData.status">
+            <el-radio label="1">{{ t("game.supplier.table.normal") }}</el-radio>
+            <el-radio label="-1">{{ t("game.supplier.table.hidden") }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseAddDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitAdd" :loading="uploading">
-            确定
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <!-- 编辑供应商对话框 -->
-    <el-dialog
-      v-model="showEditDialog"
-      title="编辑供应商"
-      width="500px"
-      :close-on-click-modal="false"
-      @close="handleCloseEditDialog"
-    >
-      <el-form
-        ref="editFormRef"
-        :model="editFormData"
-        :rules="editFormRules"
-        label-width="80px"
-      >
-        <el-form-item label="供应商" prop="name">
-          <el-input
-            v-model="editFormData.name"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="图片">
-          <div class="image-upload-container">
-            <div class="image-input-group">
-              <el-input
-                v-model="editFormData.pic"
-                placeholder="请输入"
-                readonly
-              />
-              <el-button type="primary" @click="triggerEditImageUpload" :loading="editUploading">
-                <el-icon><Upload /></el-icon>
-                上传
-              </el-button>
-            </div>
-            <div class="image-upload-area">
-              <el-upload
-                ref="editImageUploadRef"
-                class="avatar-uploader"
-                :action="''"
-                :auto-upload="true"
-                :show-file-list="false"
-                :before-upload="beforeEditUpload"
-                :http-request="handleEditImageUpload"
-                style="display: none"
-              >
-              </el-upload>
-              <div
-                v-if="!editImageUrl"
-                class="upload-placeholder"
-                @click="triggerEditImageSelect"
-              >
-                <el-icon class="upload-icon"><Plus /></el-icon>
-                <div class="upload-text">点击上传图片</div>
-              </div>
-              <div v-else class="image-preview">
-                <img :src="editImageUrl" class="preview-image" />
-                <el-button
-                  type="primary"
-                  link
-                  class="delete-btn"
-                  @click="handleRemoveEditImage"
-                >
-                  删除
-                </el-button>
-              </div>
-            </div>
-          </div>
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input
-            v-model="editFormData.remark"
-            placeholder="请输入"
-            maxlength="200"
-          />
-        </el-form-item>
-        <el-form-item label="排序">
-          <el-input-number
-            v-model="editFormData.sort_no"
-            :min="1"
-            :max="9999"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="editFormData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="-1">关闭</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseEditDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitEdit" :loading="editUploading">
-            确定
+          <el-button @click="handleCloseDialog">{{ t("game.supplier.buttons.cancel") }}</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="uploading">
+            {{ t("game.supplier.buttons.confirm") }}
           </el-button>
         </div>
       </template>

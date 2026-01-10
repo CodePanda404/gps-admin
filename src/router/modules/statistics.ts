@@ -9,7 +9,7 @@ export default {
   redirect: "/statistics/player",
   meta: {
     icon: DataLine,
-    title: "数据统计",
+    title: $t("menus.statistics"),
     rank: 6
   },
   children: [
@@ -18,7 +18,7 @@ export default {
       name: "PlayerStatistics",
       component: () => import("@/views/statistics/playerStatistics.vue"),
       meta: {
-        title: "玩家统计",
+        title: $t("menus.playerStatistics"),
         showLink: true,
         showParent: true
       }
@@ -28,7 +28,7 @@ export default {
       name: "GameStatistics",
       component: () => import("@/views/statistics/gameStatistics.vue"),
       meta: {
-        title: "游戏统计",
+        title: $t("menus.gameStatistics"),
         showLink: true,
         showParent: true
       }
@@ -38,7 +38,7 @@ export default {
       name: "ProductStatistics",
       component: () => import("@/views/statistics/productStatistics.vue"),
       meta: {
-        title: "产品统计",
+        title: $t("menus.productStatistics"),
         showLink: true,
         showParent: true
       }
@@ -49,7 +49,7 @@ export default {
       component: () => import("@/views/statistics/merchantDailyReport.vue"),
       meta: {
         title: "商户日报表",
-        showLink: true,
+        showLink: false,
         showParent: true
       }
     }

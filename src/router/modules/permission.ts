@@ -9,7 +9,7 @@ export default {
   redirect: "/permission/account",
   meta: {
     icon: Lock,
-    title: "权限管理",
+    title: $t("menus.permission"),
     rank: 7
   },
   children: [
@@ -18,7 +18,7 @@ export default {
       name: "AccountManagement",
       component: () => import("@/views/permission/accountManagement.vue"),
       meta: {
-        title: "账号管理",
+        title: $t("menus.account"),
         showLink: true,
         showParent: true
       }
@@ -28,7 +28,7 @@ export default {
       name: "RoleManagement",
       component: () => import("@/views/permission/roleManagement.vue"),
       meta: {
-        title: "角色管理",
+        title: $t("menus.role"),
         showLink: true,
         showParent: true
       }
@@ -38,7 +38,7 @@ export default {
       name: "MenuManagement",
       component: () => import("@/views/permission/menuManagement.vue"),
       meta: {
-        title: "菜单管理",
+        title: $t("menus.menu"),
         showLink: true,
         showParent: true
       }
@@ -48,7 +48,7 @@ export default {
       name: "GameTestLog",
       component: () => import("@/views/permission/gameTestLog.vue"),
       meta: {
-        title: "游戏测试日志",
+        title: $t("menus.gameTestLog"),
         showLink: true,
         showParent: true
       }
@@ -58,7 +58,7 @@ export default {
       name: "OperationLog",
       component: () => import("@/views/permission/operationLog.vue"),
       meta: {
-        title: "操作日志",
+        title: $t("menus.operationLog"),
         showLink: true,
         showParent: true
       }

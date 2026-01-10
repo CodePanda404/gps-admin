@@ -140,7 +140,8 @@ export function useNav() {
 
   /** 获取`logo` */
   function getLogo() {
-    return new URL("/logo2.svg", import.meta.url).href;
+    // 使用 public 目录下的 logo，直接返回路径即可
+    return "/logo2.svg";
   }
 
   return {

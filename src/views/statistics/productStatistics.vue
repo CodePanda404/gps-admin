@@ -31,7 +31,7 @@ import Filter from "~icons/ep/filter";
 const activeTab = ref("daily");
 
 // 币种选项
-const currencyOptions = ref<Array<{ label: string; value: number }>>([]);
+const currencyOptions = ref<Array<{ label: string; value: string }>>([]);
 // 厂商选项（供应商）
 const supplierOptions = ref<Array<{ label: string; value: number }>>([]);
 
@@ -42,7 +42,7 @@ const fetchCurrencyList = async () => {
     if (res.code === 0) {
       currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
         label: item.name,
-        value: item.id
+        value: item.name // 使用币种名称作为值
       }));
     }
   } catch (error: any) {
@@ -78,7 +78,8 @@ const dailySearchData = ref({
   date: [] as string[],
   admin_id: "",
   type_name: "",
-  provider: ""
+  provider: "",
+  currency: ""
 });
 
 // 日报表搜索表单配置
@@ -118,6 +119,22 @@ const dailySearchColumns: PlusColumn[] = [
     fieldProps: computed(() => ({
       placeholder: "请输入厂商"
     }))
+  },
+  {
+    label: "币种",
+    prop: "currency",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择币种",
+      filterable: true
+    })),
+    options: computed(() => [
+      { label: "全部", value: "" },
+      ...currencyOptions.value.map(item => ({
+        label: item.label,
+        value: item.value
+      }))
+    ])
   }
 ];
 
@@ -127,7 +144,8 @@ const monthlySearchData = ref({
   month: [] as string[],
   admin_id: "",
   type_name: "",
-  provider: ""
+  provider: "",
+  currency: ""
 });
 
 // 月报表搜索表单配置
@@ -167,6 +185,22 @@ const monthlySearchColumns: PlusColumn[] = [
     fieldProps: computed(() => ({
       placeholder: "请输入厂商"
     }))
+  },
+  {
+    label: "币种",
+    prop: "currency",
+    valueType: "select",
+    fieldProps: computed(() => ({
+      placeholder: "请选择币种",
+      filterable: true
+    })),
+    options: computed(() => [
+      { label: "全部", value: "" },
+      ...currencyOptions.value.map(item => ({
+        label: item.label,
+        value: item.value
+      }))
+    ])
   }
 ];
 
@@ -186,14 +220,16 @@ const handleRest = () => {
       date: [],
       admin_id: "",
       type_name: "",
-      provider: ""
+      provider: "",
+      currency: ""
     };
   } else {
     monthlySearchData.value = {
       month: [],
       admin_id: "",
       type_name: "",
-      provider: ""
+      provider: "",
+      currency: ""
     };
   }
   pageInfo.value.page = 1;
@@ -469,14 +505,15 @@ const getList = async () => {
     const { page, pageSize } = pageInfo.value;
     
     if (activeTab.value === "daily") {
-      const { date, admin_id, type_name, provider } = dailySearchData.value;
+      const { date, admin_id, type_name, provider, currency } = dailySearchData.value;
       
       const params: ProductStatisticsDailyParams = {
         pageNumber: page,
         pageSize,
         admin_id: admin_id || undefined,
         type_name: type_name || undefined,
-        provider: provider || undefined
+        provider: provider || undefined,
+        currency: currency || undefined
       };
       
       // 处理日期范围
@@ -514,14 +551,15 @@ const getList = async () => {
         message(res.msg || "获取列表数据失败", { type: "error" });
       }
     } else {
-      const { month, admin_id, type_name, provider } = monthlySearchData.value;
+      const { month, admin_id, type_name, provider, currency } = monthlySearchData.value;
       
       const params: ProductStatisticsMonthlyParams = {
         pageNumber: page,
         pageSize,
         admin_id: admin_id || undefined,
         type_name: type_name || undefined,
-        provider: provider || undefined
+        provider: provider || undefined,
+        currency: currency || undefined
       };
       
       // 处理月份范围

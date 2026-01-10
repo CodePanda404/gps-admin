@@ -1,23 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import dayjs from "dayjs";
+import { ref, watch } from "vue";
 defineOptions({
   name: "GameConfig"
 });
-import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
-import { useTable } from "plus-pro-components";
 import { message } from "@/utils/message";
-import { ElCard, ElButton, ElTooltip, ElIcon } from "element-plus";
-import {
-  getCurrencyList,
-  type CurrencyItem
-} from "@/api/game";
-import type { ConfigGroup } from "@/api/system";
-import Upload from "~icons/ep/upload";
-import Monitor from "~icons/ep/monitor";
-import Grid from "~icons/ep/grid";
-import Filter from "~icons/ep/filter";
-import Edit from "~icons/ep/edit";
+import { 
+  ElCard, 
+  ElForm, 
+  ElFormItem, 
+  ElInput, 
+  ElButton, 
+  ElDialog,
+  ElMessageBox
+} from "element-plus";
+import { editConfig, deleteConfig } from "@/api/system";
+import type { ConfigGroup, ConfigItem } from "@/api/system";
+import Delete from "~icons/ep/delete";
 
 // Props
 const props = defineProps<{
@@ -29,452 +27,235 @@ const emit = defineEmits<{
   refresh: [];
 }>();
 
-// 币种选项
-const currencyOptions = ref<Array<{ label: string; value: string }>>([]);
+// 编辑模式状态
+const isEditMode = ref(false);
 
-// 获取币种列表
-const fetchCurrencyList = async () => {
-  try {
-    const res = await getCurrencyList({ pageSize: 1000 });
-    if (res.code === 0) {
-      currencyOptions.value = res.data.rows.map((item: CurrencyItem) => ({
-        label: item.name,
-        value: item.name
-      }));
-    }
-  } catch (error: any) {
-    console.error("获取币种列表失败:", error);
-  }
-};
+// 表单数据
+const formData = ref<Record<string, string>>({});
 
-/*  -----搜索表单相关-----  */
-// 搜索表单数据
-const searchData = ref({
-  id: "",
-  merchant_number: "",
-  currency: "",
-  agent_number: "",
-  createTime: [] as string[]
-});
+// 原始数据（用于取消时恢复）
+const originalFormData = ref<Record<string, string>>({});
 
-// 搜索表单显示控制
-const showSearch = ref(true);
+// 保存按钮禁用状态
+const isSaveDisabled = ref(true);
 
-// 搜索表单配置
-const searchColumns: PlusColumn[] = [
-  {
-    label: "ID",
-    prop: "id",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入ID"
-    }))
-  },
-  {
-    label: "商户号",
-    prop: "merchant_number",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入商户号"
-    }))
-  },
-  {
-    label: "币种",
-    prop: "currency",
-    valueType: "select",
-    fieldProps: computed(() => ({
-      placeholder: "请选择币种",
-      filterable: true
-    })),
-    options: computed(() => [
-      {
-        label: "全部",
-        value: ""
-      },
-      ...currencyOptions.value
-    ])
-  },
-  {
-    label: "代理号",
-    prop: "agent_number",
-    valueType: "copy",
-    fieldProps: computed(() => ({
-      placeholder: "请输入代理号"
-    }))
-  },
-  {
-    label: "创建时间",
-    prop: "createTime",
-    valueType: "date-picker",
-    fieldProps: computed(() => ({
-      type: "daterange",
-      format: "YYYY-MM-DD HH:mm:ss",
-      valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
-      shortcuts: [
-        {
-          text: "今天",
-          value: () => {
-            const today = dayjs();
-            return [
-              today.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              today.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "昨天",
-          value: () => {
-            const yesterday = dayjs().subtract(1, "day");
-            return [
-              yesterday.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              yesterday.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "最近7天",
-          value: () => {
-            const end = dayjs();
-            const start = dayjs().subtract(6, "day");
-            return [
-              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "最近30天",
-          value: () => {
-            const end = dayjs();
-            const start = dayjs().subtract(29, "day");
-            return [
-              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
-              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "本月",
-          value: () => {
-            const now = dayjs();
-            return [
-              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
-              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        },
-        {
-          text: "上月",
-          value: () => {
-            const lastMonth = dayjs().subtract(1, "month");
-            return [
-              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
-              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
-            ];
-          }
-        }
-      ]
-    }))
-  }
-];
+// 谷歌验证码对话框
+const showGoogleVerifyDialog = ref(false);
+const googleVerifyCode = ref("");
 
-// 点击搜索按钮
-const handleSearch = (values: any) => {
-  pageInfo.value.page = 1;
-  getList();
-};
-
-// 重置搜索表单
-const handleRest = () => {
-  searchData.value = {
-    id: "",
-    merchant_number: "",
-    currency: "",
-    agent_number: "",
-    createTime: []
-  };
-  pageInfo.value.page = 1;
-  getList();
-};
-
-// 表格数据类型
-type TableRow = {
-  id: number;
-  manufacturer_name: string;
-  merchant_number: string;
-  currency: string;
-  api_address: string;
-  token_value: string;
-  secret_key: string;
-  agent_number: string;
-  createtime: string;
-};
-
-// 多选选中数据
-const multipleSelection = ref<TableRow[]>([]);
-// 表格相关数据和操作
-const { tableData, buttons, pageInfo, total, loadingStatus } =
-  useTable<TableRow[]>();
-
-// 表格配置
-const tableConfig: any = ref([
-  {
-    label: "ID",
-    prop: "id",
-    tableColumnProps: {
-      align: "center"
-    },
-    width: 100
-  },
-  {
-    label: "厂商名称",
-    prop: "manufacturer_name",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "商户号",
-    prop: "merchant_number",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "币种",
-    prop: "currency",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "API地址",
-    prop: "api_address",
-    tableColumnProps: {
-      align: "center"
-    },
-    minWidth: 200
-  },
-  {
-    label: "Token值",
-    prop: "token_value",
-    tableColumnProps: {
-      align: "center"
-    },
-    minWidth: 150
-  },
-  {
-    label: "秘钥",
-    prop: "secret_key",
-    tableColumnProps: {
-      align: "center"
-    },
-    minWidth: 150
-  },
-  {
-    label: "代理号",
-    prop: "agent_number",
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "创建时间",
-    prop: "createtime",
-    width: 160,
-    tableColumnProps: {
-      align: "center"
-    }
-  }
-]);
-
-// 表格操作栏按钮定义
-buttons.value = [
-  {
-    text: "编辑",
-    code: "edit",
-    props: {
-      type: "primary"
-    },
-    onClick: (params: any) => {
-      const row = params.row as TableRow;
-      handleEditRow(row);
-    }
-  }
-];
-
-// 编辑单行数据
-const handleEditRow = (row: TableRow) => {
-  // TODO: 实现编辑功能
-  message("编辑功能待实现", { type: "info" });
-};
-
-// 获取列表数据
-const getList = async () => {
-  loadingStatus.value = true;
-  try {
-    // 从configGroup中获取配置项列表
-    if (props.configGroup && props.configGroup.list) {
-      // 将配置项转换为表格数据格式
-      tableData.value = props.configGroup.list.map((item, index) => ({
-        id: item.id,
-        manufacturer_name: item.title || item.name, // 使用title或name作为厂商名称
-        merchant_number: item.name, // 使用name作为标识
-        currency: "", // 游戏配置可能没有币种字段
-        api_address: item.name.includes("api") || item.name.includes("host") ? String(item.value || "") : "",
-        token_value: item.name.includes("key") || item.name.includes("secret") ? String(item.value || "") : "",
-        secret_key: item.name.includes("secret") ? String(item.value || "") : "",
-        agent_number: item.name.includes("operator") || item.name.includes("agent") ? String(item.value || "") : "",
-        createtime: "" // 配置项可能没有创建时间
-      })) as any[];
-      total.value = props.configGroup.list.length;
-    } else {
-      tableData.value = [];
-      total.value = 0;
-    }
-  } catch (error: any) {
-    console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
-    tableData.value = [];
-    total.value = 0;
-  } finally {
-    loadingStatus.value = false;
-  }
+// 从后端数据初始化表单
+const initFormData = () => {
+  if (!props.configGroup || !props.configGroup.list) return;
+  
+  const newFormData: Record<string, string> = {};
+  
+  // 遍历后端返回的配置项，初始化表单数据
+  props.configGroup.list.forEach((item: ConfigItem) => {
+    newFormData[item.name] = item.value ? String(item.value) : "";
+  });
+  
+  formData.value = newFormData;
+  // 保存原始数据
+  originalFormData.value = JSON.parse(JSON.stringify(newFormData));
 };
 
 // 监听配置组变化
 watch(() => props.configGroup, () => {
   if (props.configGroup && props.configGroup.list) {
-    getList();
+    initFormData();
+    // 切换配置组时重置编辑状态
+    isEditMode.value = false;
+    isSaveDisabled.value = true;
   }
 }, { immediate: true, deep: true });
 
-// 记录上一次的 pageSize
-const previousPageSize = ref(pageInfo.value.pageSize);
-
-// 分页处理
-const handlePageChange = () => {
-  if (pageInfo.value.pageSize !== previousPageSize.value) {
-    pageInfo.value.page = 1;
-    previousPageSize.value = pageInfo.value.pageSize;
+// 监听表单数据变化
+watch(formData, () => {
+  if (isEditMode.value) {
+    // 检查数据是否有变化
+    const hasChanged = JSON.stringify(formData.value) !== JSON.stringify(originalFormData.value);
+    isSaveDisabled.value = !hasChanged;
   }
-  getList();
+}, { deep: true });
+
+// 点击修改按钮
+const handleEdit = () => {
+  isEditMode.value = true;
+  isSaveDisabled.value = false;
+  // 保存当前数据作为原始数据
+  originalFormData.value = JSON.parse(JSON.stringify(formData.value));
 };
 
-// 初始化加载数据
-fetchCurrencyList();
+// 保存配置
+const handleSave = () => {
+  showGoogleVerifyDialog.value = true;
+  googleVerifyCode.value = "";
+};
+
+// 取消修改
+const handleCancel = () => {
+  // 恢复原始数据
+  formData.value = JSON.parse(JSON.stringify(originalFormData.value));
+  isEditMode.value = false;
+  isSaveDisabled.value = true;
+};
+
+// 关闭谷歌验证对话框
+const handleCloseGoogleVerifyDialog = () => {
+  showGoogleVerifyDialog.value = false;
+  googleVerifyCode.value = "";
+};
+
+// 确认保存（带谷歌验证）
+const handleConfirmSave = async () => {
+  if (!googleVerifyCode.value) {
+    message("请输入谷歌验证码", { type: "warning" });
+    return;
+  }
+
+  try {
+    // 构建保存数据对象，包含所有配置项
+    const saveData: Record<string, string> = {};
+    
+    props.configGroup.list.forEach((item: ConfigItem) => {
+      const value = formData.value[item.name];
+      saveData[item.name] = value || "";
+    });
+
+    // 添加谷歌验证码到保存数据中
+    saveData.google_code = googleVerifyCode.value;
+
+    // 一次性保存所有配置项
+    const res = await editConfig(saveData);
+
+    if (res.code === 0) {
+      message("保存成功", { type: "success" });
+      showGoogleVerifyDialog.value = false;
+      googleVerifyCode.value = "";
+      isEditMode.value = false;
+      isSaveDisabled.value = true;
+      // 重新获取数据
+      emit("refresh");
+    } else {
+      message(res.msg || "保存失败", { type: "error" });
+    }
+  } catch (error: any) {
+    console.error("保存失败:", error);
+    message(error?.message || "保存失败", { type: "error" });
+  }
+};
+
+// 删除配置项
+const handleDeleteConfig = async (item: ConfigItem) => {
+  try {
+    await ElMessageBox.confirm(
+      `确定要删除配置项"${item.title}"吗？`,
+      "删除确认",
+      {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning"
+      }
+    );
+
+    const res = await deleteConfig({
+      name: item.name
+    });
+
+    if (res.code === 0) {
+      message("删除成功", { type: "success" });
+      // 重新获取数据
+      emit("refresh");
+    } else {
+      message(res.msg || "删除失败", { type: "error" });
+    }
+  } catch (error: any) {
+    if (error !== "cancel") {
+      console.error("删除失败:", error);
+      message(error?.message || "删除失败", { type: "error" });
+    }
+  }
+};
 </script>
 
 <template>
   <div class="game-config-container">
-    <!-- 搜索表单 -->
-    <el-card v-show="showSearch" class="search-card" shadow="never">
-      <PlusSearch
-        v-model="searchData"
-        :columns="searchColumns"
-        label-width="80"
-        label-position="right"
-        :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
-        @search="handleSearch"
-        @reset="handleRest"
-      />
+    <el-card shadow="never">
+      <template #header>
+        <div class="card-header">
+          <span>{{ configGroup.title }}</span>
+          <div class="header-buttons">
+            <el-button 
+              v-if="!isEditMode" 
+              type="primary" 
+              @click="handleEdit"
+            >
+              修改
+            </el-button>
+            <template v-else>
+              <el-button @click="handleCancel">取消</el-button>
+              <el-button 
+                type="primary" 
+                :disabled="isSaveDisabled"
+                @click="handleSave"
+              >
+                保存
+              </el-button>
+            </template>
+          </div>
+        </div>
+      </template>
+
+      <el-form label-width="200px" class="config-form">
+        <el-form-item 
+          v-for="item in configGroup.list" 
+          :key="item.id"
+          :label="item.title"
+        >
+          <div class="form-item-content">
+            <el-input
+              v-model="formData[item.name]"
+              :placeholder="item.tip || `请输入${item.title}`"
+              :disabled="!isEditMode"
+            />
+            <el-button
+              type="danger"
+              size="small"
+              :icon="Delete"
+              @click="handleDeleteConfig(item)"
+              style="margin-left: 10px"
+            >
+              删除
+            </el-button>
+          </div>
+          <div v-if="item.tip" class="form-tip">{{ item.tip }}</div>
+        </el-form-item>
+      </el-form>
     </el-card>
 
-    <!-- 表格 -->
-    <el-card class="table-card" shadow="never">
-      <PlusTable
-        v-loading="loadingStatus"
-        :columns="tableConfig"
-        :table-data="tableData"
-        :stripe="true"
-        :is-selection="true"
-        :adaptive="true"
-        :action-bar="{
-          buttons,
-          width: '120px',
-          label: '操作'
-        }"
-        width="100%"
-        height="90%"
-        @selection-change="(val: TableRow[]) => multipleSelection = val"
-      >
-        <!-- 工具栏 -->
-        <template #density-icon>
-          <el-tooltip content="密度" placement="top">
-            <el-icon
-              :size="18"
-              style=" margin-right: 15px;cursor: pointer; outline: none"
-              color="#606266"
-            >
-              <component :is="Monitor" />
-            </el-icon>
-          </el-tooltip>
-        </template>
-        <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
-            <el-icon
-              :size="18"
-              style=" margin-right: 5px;cursor: pointer; outline: none"
-              color="#606266"
-            >
-              <component :is="Grid" />
-            </el-icon>
-          </el-tooltip>
-        </template>
-        <template #toolbar>
-          <!-- 筛选：点击切换搜索表单显示/隐藏 -->
-          <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
-            placement="top"
-            :trigger="'hover'"
-          >
-            <span style="display: inline-block">
-              <el-icon
-                :size="18"
-                style="
-                  margin-right: 15px;
-                  cursor: pointer;
-                  outline: none;
-                "
-                color="#606266"
-                @click="showSearch = !showSearch"
-              >
-                <component :is="Filter" />
-              </el-icon>
-            </span>
-          </el-tooltip>
-          <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
-            <span style="display: inline-block">
-              <el-icon
-                :size="18"
-                style="
-                  display: inline-block;
-                  margin-right: 15px;
-                  cursor: pointer;
-                  outline: none;
-                "
-                color="#606266"
-              >
-                <component :is="Upload" />
-              </el-icon>
-            </span>
-          </el-tooltip>
-        </template>
-      </PlusTable>
-      <PlusPagination
-        v-model="pageInfo"
-        :total="total"
-        :small="true"
-        :page-sizes="[10, 20, 50, 100]"
-        :layout="'total, sizes, prev, pager, next, jumper'"
-        @change="handlePageChange"
-      />
-    </el-card>
+    <!-- 谷歌验证对话框 -->
+    <el-dialog
+      v-model="showGoogleVerifyDialog"
+      title="谷歌验证"
+      width="400px"
+      :close-on-click-modal="false"
+      @close="handleCloseGoogleVerifyDialog"
+    >
+      <el-form>
+        <el-form-item>
+          <el-input
+            v-model="googleVerifyCode"
+            placeholder="请输入谷歌验证码"
+            maxlength="6"
+            @keyup.enter="handleConfirmSave"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="handleCloseGoogleVerifyDialog">取消</el-button>
+        <el-button type="primary" @click="handleConfirmSave">确认</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -483,27 +264,43 @@ fetchCurrencyList();
   padding: 0 20px;
 }
 
-.search-card {
-  margin-top: 20px;
-  margin-bottom: 0;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.table-card {
-  margin-top: 20px;
-  margin-bottom: 20px;
+.header-buttons {
+  display: flex;
+  gap: 10px;
 }
-.game-config-container {
+
+.config-form {
+  padding: 20px 0;
+}
+
+.config-form :deep(.el-form-item) {
+  margin-bottom: 24px;
+}
+
+.config-form :deep(.el-form-item__label) {
+  font-weight: normal;
+  color: #606266;
+}
+
+.form-item-content {
+  display: flex;
+  align-items: center;
   width: 100%;
-  padding: 0 20px;
 }
 
-.search-card {
-  margin-top: 20px;
-  margin-bottom: 0;
+.form-item-content > :first-child {
+  flex: 1;
 }
 
-.table-card {
-  margin-top: 20px;
-  margin-bottom: 20px;
+.form-tip {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
 }
 </style>

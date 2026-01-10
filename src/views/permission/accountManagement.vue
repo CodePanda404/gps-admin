@@ -41,6 +41,8 @@ import Delete from "~icons/ep/delete";
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
 const searchData = ref({
+  id: "",
+  merchant_id: "",
   username: "",
   nickname: "",
   role_group: "",
@@ -56,6 +58,14 @@ const showSearch = ref(true);
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
   {
+    label: "ID",
+    prop: "id",
+    valueType: "copy",
+    fieldProps: computed(() => ({
+      placeholder: "请输入ID"
+    }))
+  },
+  {
     label: "用户名",
     prop: "username",
     valueType: "copy",
@@ -63,12 +73,12 @@ const searchColumns: PlusColumn[] = [
       placeholder: "请输入用户名"
     }))
   },
-  {
-    label: "昵称",
-    prop: "nickname",
+   {
+    label: "商户ID",
+    prop: "merchant_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入昵称"
+      placeholder: "请输入商户ID"
     }))
   },
   {
@@ -144,6 +154,37 @@ const searchColumns: PlusColumn[] = [
               end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
             ];
           }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
         }
       ]
     }))
@@ -187,6 +228,37 @@ const searchColumns: PlusColumn[] = [
             return [
               start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
               end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "最近30天",
+          value: () => {
+            const end = dayjs();
+            const start = dayjs().subtract(29, "day");
+            return [
+              start.startOf("day").format("YYYY-MM-DD HH:mm:ss"),
+              end.endOf("day").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "本月",
+          value: () => {
+            const now = dayjs();
+            return [
+              now.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              now.endOf("month").format("YYYY-MM-DD HH:mm:ss")
+            ];
+          }
+        },
+        {
+          text: "上月",
+          value: () => {
+            const lastMonth = dayjs().subtract(1, "month");
+            return [
+              lastMonth.startOf("month").format("YYYY-MM-DD HH:mm:ss"),
+              lastMonth.endOf("month").format("YYYY-MM-DD HH:mm:ss")
             ];
           }
         }
@@ -312,6 +384,8 @@ const handleSearch = (values: any) => {
 // 重置搜索表单
 const handleRest = () => {
   searchData.value = {
+    id: "",
+    merchant_id: "",
     username: "",
     nickname: "",
     role_group: "",
@@ -326,6 +400,7 @@ const handleRest = () => {
 
 // 表格数据类型（直接使用API响应类型，但需要扩展显示字段）
 type TableRow = AccountManagementItem & {
+  merchant_id?: number | string;
   nickname?: string;
   role_group?: string;
   superior?: string;
@@ -344,6 +419,14 @@ const { tableData, pageInfo, total, buttons: buttonsRef, loadingStatus } =
 // 表格配置
 const tableConfig: any = ref([
   {
+    label: "ID",
+    prop: "id",
+    width: 100,
+    tableColumnProps: {
+      align: "center"
+    }
+  },
+  {
     label: "用户名",
     prop: "username",
     minWidth: 160,
@@ -352,13 +435,12 @@ const tableConfig: any = ref([
     }
   },
   {
-    label: "昵称",
-    prop: "nickname",
-    render: (value: string, row: TableRow) => {
-      // 如果没有nickname，使用username
-      return value || row.username || "-";
+    label: "商户ID",
+    prop: "merchant_id",
+    width: 120,
+    render: (value: number | string) => {
+      return value || "-";
     },
-    minWidth: 160,
     tableColumnProps: {
       align: "center"
     }
@@ -504,11 +586,13 @@ const getList = async () => {
   loadingStatus.value = true;
   try {
     const { page, pageSize } = pageInfo.value;
-    const { username, nickname, role_group, superior, loginTime, createTime, status } = searchData.value;
+    const { id, merchant_id, username, nickname, role_group, superior, loginTime, createTime, status } = searchData.value;
     
     const params: AccountManagementListParams = {
       pageNumber: page,
       pageSize,
+      id: id || undefined,
+      merchant_id: merchant_id || undefined,
       username: username || undefined,
       status: status || undefined
     };
@@ -536,6 +620,7 @@ const getList = async () => {
       // 转换数据以匹配表格显示
       tableData.value = res.data.rows.map((item: AccountManagementItem) => ({
         ...item,
+        merchant_id: (item as any).merchant_id || item.id, // 如果有merchant_id使用它，否则使用id
         nickname: item.username, // 如果没有nickname，使用username
         role_group: item.groups_text || "",
         superior: item.agentname || "无",

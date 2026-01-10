@@ -72,42 +72,43 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("player.search.id"),
     prop: "id",
     valueType: "copy",
-    // 国际化
     fieldProps: computed(() => ({
-      placeholder: t("player.transfer.idPlaceholder")
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "用户名",
-    renderLabel: () => t("player.transfer.name"),
+    renderLabel: () => t("player.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: t("player.transfer.namePlaceholder")
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "商户ID",
-    renderLabel: () => t("player.transfer.admin_id"),
+    renderLabel: () => t("player.search.admin_id"),
     prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: t("player.transfer.adminIdPlaceholder")
+      placeholder: t("placeholder.input")
     }))
   },
    {
     label: "币种",
+    renderLabel: () => t("player.search.currency"),
     prop: "currency_id",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择",
+      placeholder: t("placeholder.select"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("player.search.all"),
         value: ""
       },
       ...currencyOptions.value.map(item => ({
@@ -118,60 +119,62 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "状态",
-    renderLabel: () => t("player.transfer.status"),
+    renderLabel: () => t("player.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: t("player.transfer.statusPlaceholder")
+      placeholder: t("placeholder.select")
     })),
     options: [
       {
-        label: "全部",
-        renderLabel: () => t("player.transfer.all"),
+        label: t("player.search.all"),
+        renderLabel: () => t("player.search.all"),
         value: ""
       },
       {
-        label: "禁用",
-        renderLabel: () => t("player.transfer.disabled"),
+        label: t("player.search.disabled"),
+        renderLabel: () => t("player.search.disabled"),
         value: "hidden"
       },
       {
-        label: "正常",
-        renderLabel: () => t("player.transfer.normal"),
+        label: t("player.search.normal"),
+        renderLabel: () => t("player.search.normal"),
         value: "normal"
       }
     ]
   },
   {
     label: "登录IP",
+    renderLabel: () => t("player.search.login_ip"),
     prop: "login_ip",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入登录IP"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "注册IP",
+    renderLabel: () => t("player.search.register_ip"),
     prop: "register_ip",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入注册IP"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "登录时间",
-    renderLabel: () => t("player.transfer.loginTime"),
+    renderLabel: () => t("player.search.login_time"),
     prop: "loginTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -181,7 +184,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -191,7 +194,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -202,7 +205,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -213,7 +216,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -223,7 +226,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -237,18 +240,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "注册时间",
-    renderLabel: () => t("player.transfer.registerTime"),
+    renderLabel: () => t("player.search.register_time"),
     prop: "registerTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder:  t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -258,7 +261,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -268,7 +271,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -279,7 +282,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -290,7 +293,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -300,7 +303,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -355,7 +358,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    renderHeader: () => t("player.transfer.id"),
+    renderHeader: () => t("player.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -363,7 +366,7 @@ const tableConfig: any = ref([
   },
   {
     label: "用户名",
-    renderHeader: () => t("player.transfer.name"),
+    renderHeader: () => t("player.table.username"),
     prop: "username",
     minWidth: "200",
     tableColumnProps: {
@@ -372,7 +375,7 @@ const tableConfig: any = ref([
   },
   {
     label: "余额",
-    renderHeader: () => t("player.transfer.balance"),
+    renderHeader: () => t("player.table.balance"),
     prop: "money",
     tableColumnProps: {
       align: "center"
@@ -380,23 +383,25 @@ const tableConfig: any = ref([
   },
   {
     label: "币种",
-    renderHeader: () => t("player.transfer.currency"),
+    renderHeader: () => t("player.table.currency"),
     prop: "currency",
+    width: 100,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "商户ID",
-    renderHeader: () => t("player.transfer.merchantID"),
+    renderHeader: () => t("player.table.admin_id"),
     prop: "admin_id",
+    width: 130,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "累计投注",
-    renderHeader: () => t("player.transfer.totalBet"),
+    renderHeader: () => t("player.table.bet_all"),
     prop: "bet_all",
     width: "100",
     tableColumnProps: {
@@ -405,7 +410,7 @@ const tableConfig: any = ref([
   },
   {
     label: "累计派彩",
-    renderHeader: () => t("player.transfer.totalPet"),
+    renderHeader: () => t("player.table.win_all"),
     prop: "win_all",
     width: "100",
     tableColumnProps: {
@@ -414,16 +419,16 @@ const tableConfig: any = ref([
   },
   {
     label: "累计输赢",
-    renderHeader: () => t("player.transfer.totalWinLoss"),
+    renderHeader: () => t("player.table.company_win_all"),
     prop: "company_win_all",
-    width: "100",
+    width: "130",
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "登录时间",
-    renderHeader: () => t("player.transfer.loginTime"),
+    renderHeader: () => t("player.table.login_time"),
     prop: "logintime",
     minWidth: "160",
     tableColumnProps: {
@@ -432,7 +437,7 @@ const tableConfig: any = ref([
   },
   {
     label: "登录IP",
-    renderHeader: () => t("player.transfer.loginIP"),
+    renderHeader: () => t("player.table.login_ip"),
     prop: "loginip",
     minWidth: "140",
     tableColumnProps: {
@@ -441,7 +446,7 @@ const tableConfig: any = ref([
   },
   {
     label: "注册时间",
-    renderHeader: () => t("player.transfer.registerTime"),
+    renderHeader: () => t("player.table.register_time"),
     prop: "jointime",
     width: "160",
     tableColumnProps: {
@@ -450,7 +455,7 @@ const tableConfig: any = ref([
   },
   {
     label: "注册IP",
-    renderHeader: () => t("player.transfer.registerIP"),
+    renderHeader: () => t("player.table.register_ip"),
     prop: "joinip",
     width: "140",
     tableColumnProps: {
@@ -459,7 +464,7 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
-    renderHeader: () => t("player.transfer.status"),
+    renderHeader: () => t("player.table.status"),
     prop: "status",
     valueType: "switch",
     editable: true,
@@ -468,7 +473,6 @@ const tableConfig: any = ref([
       inactiveValue: "hidden"
     },
     tableColumnProps: {
-       sortable: true,
        fixed: "right",
        align: "center"
     }
@@ -478,7 +482,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: () => t("player.transfer.depWithDrawDetail"),
+    text: () => t("player.table.depWithDrawDetail"),
     code: "depWithDrawDetail",
     props: {
       type: "primary"
@@ -495,7 +499,7 @@ buttons.value = [
     }
   },
   {
-    text: () => t("player.transfer.betDetail"),
+    text: () => t("player.table.betDetail"),
     code: "betDetail",
     props: {
       type: "primary"
@@ -709,8 +713,8 @@ const exportJson = () => {
       label-width="80"
       label-position="right"
       :has-unfold="false"
-      :searchText="t('player.transfer.search')"
-      :resetText="t('player.transfer.reset')"
+      :searchText="t('player.buttons.search')"
+      :resetText="t('player.buttons.reset')"
       @search="handleSearch"
       @reset="handleRest"
     />
@@ -726,7 +730,7 @@ const exportJson = () => {
       :action-bar="{
         buttons,
         width: '220px',
-        label: t('player.transfer.action')
+        label: t('player.table.action')
       }"
         width="100%"
         height="90%"

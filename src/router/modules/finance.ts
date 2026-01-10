@@ -9,7 +9,7 @@ export default {
   redirect: "/finance/merchant-bill-detail",
   meta: {
     icon: Wallet,
-    title: "财务管理",
+    title: $t("menus.finance"),
     rank: 4
   },
   children: [

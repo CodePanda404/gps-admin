@@ -1,23 +1,52 @@
 <script setup lang="ts">
-import { ref, onMounted } from "vue";
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { message } from "@/utils/message";
 defineOptions({
   name: "SystemConfig"
 });
-import { ElTabs, ElTabPane, ElCard } from "element-plus";
+import { ElTabs, ElTabPane, ElCard, ElButton } from "element-plus";
 import { getSystemConfig, type ConfigGroup, type SystemConfigResult } from "@/api/system";
+import Plus from "~icons/ep/plus";
+import DynamicConfig from "./dynamicConfig.vue";
+import GameConfig from "./gameConfig.vue";
 
 // 当前激活的标签页
-const activeTab = ref("featureControl");
+const activeTab = ref("");
 
 // 配置数据
 const configData = ref<SystemConfigResult["data"] | null>(null);
 const loading = ref(false);
 
+// 路由
+const router = useRouter();
+
+// 跳转到新增配置页面
+const handleAddConfig = () => {
+  router.push({
+    path: "/system/config/add"
+  });
+};
+
+// 标签页选项（根据groupList动态生成）
+const tabOptions = computed(() => {
+  if (!configData.value?.groupList) return [];
+  return Object.entries(configData.value.groupList).map(([key, value]) => ({
+    label: value,
+    value: key
+  }));
+});
+
 // 标签页切换处理
 const handleTabChange = (tabName: string) => {
   activeTab.value = tabName;
 };
+
+// 获取当前配置组
+const currentConfigGroup = computed(() => {
+  if (!configData.value || !activeTab.value) return null;
+  return configData.value.siteList[activeTab.value as keyof typeof configData.value.siteList] || null;
+});
 
 // 获取配置数据
 const getConfig = async () => {
@@ -26,6 +55,10 @@ const getConfig = async () => {
     const res = await getSystemConfig();
     if (res.code === 0 && res.data) {
       configData.value = res.data;
+      // 设置默认激活的标签页（第一个）
+      if (tabOptions.value.length > 0 && !activeTab.value) {
+        activeTab.value = tabOptions.value[0].value;
+      }
     } else {
       message(res.msg || "获取配置失败", { type: "error" });
     }
@@ -41,60 +74,46 @@ const getConfig = async () => {
 onMounted(() => {
   getConfig();
 });
-
-// 导入各个子页面组件
-import FeatureControl from "./featureControl.vue";
-import ParameterConfig from "./parameterConfig.vue";
-import GameConfig from "./gameConfig.vue";
-import SiteConfig from "./siteConfig.vue";
-import EmailConfig from "./emailConfig.vue";
-import DictionaryConfig from "./dictionaryConfig.vue";
 </script>
 
 <template>
   <div class="system-config-container">
     <!-- 标签页容器 -->
-    <el-card class="tabs-card" shadow="never" style="margin: 20px">
-      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="功能控制" name="featureControl" />
-        <el-tab-pane label="参数配置" name="parameterConfig" />
-        <el-tab-pane label="游戏配置" name="gameConfig" />
-        <el-tab-pane label="站点配置" name="siteConfig" />
-        <el-tab-pane label="邮件配置" name="emailConfig" />
-        <el-tab-pane label="字典配置" name="dictionaryConfig" />
+    <el-card class="tabs-card" shadow="never" style="margin: 20px" v-loading="loading">
+      <template #header>
+        <div class="card-header">
+          <span>系统配置</span>
+          <el-button type="primary" @click="handleAddConfig" size="default">
+            <el-icon><component :is="Plus" /></el-icon>
+            <span style="margin-left: 3px;">新增</span>
+          </el-button>
+        </div>
+      </template>
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange" v-if="tabOptions.length > 0">
+        <el-tab-pane
+          v-for="tab in tabOptions"
+          :key="tab.value"
+          :label="tab.label"
+          :name="tab.value"
+        />
       </el-tabs>
     </el-card>
 
     <!-- 内容区域 -->
-    <div class="content-area" v-loading="loading">
-      <FeatureControl 
-        v-if="activeTab === 'featureControl' && configData" 
-        :config-group="configData.siteList.ability"
-        @refresh="getConfig"
-      />
-      <ParameterConfig 
-        v-if="activeTab === 'parameterConfig' && configData" 
-        :config-group="configData.siteList.pay"
-        @refresh="getConfig"
-      />
+    <div class="content-area">
+      <!-- 游戏配置使用表格形式 -->
       <GameConfig 
-        v-if="activeTab === 'gameConfig' && configData" 
-        :config-group="configData.siteList.game"
+        v-if="activeTab === 'game' && currentConfigGroup" 
+        :key="`game-${activeTab}`"
+        :config-group="currentConfigGroup"
         @refresh="getConfig"
       />
-      <SiteConfig 
-        v-if="activeTab === 'siteConfig' && configData" 
-        :config-group="configData.siteList.basic"
-        @refresh="getConfig"
-      />
-      <EmailConfig 
-        v-if="activeTab === 'emailConfig' && configData" 
-        :config-group="configData.siteList.email"
-        @refresh="getConfig"
-      />
-      <DictionaryConfig 
-        v-if="activeTab === 'dictionaryConfig' && configData" 
-        :config-group="configData.siteList.dictionary"
+      <!-- 其他配置使用动态表单 -->
+      <DynamicConfig
+        v-else-if="currentConfigGroup && activeTab !== 'game'"
+        :key="`dynamic-${activeTab}`"
+        :config-group="currentConfigGroup"
+        :type-list="configData?.typeList"
         @refresh="getConfig"
       />
     </div>
@@ -108,6 +127,12 @@ import DictionaryConfig from "./dictionaryConfig.vue";
 
 .content-area {
   width: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 </style>
 

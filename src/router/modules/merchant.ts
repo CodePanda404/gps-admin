@@ -10,7 +10,7 @@ export default {
   redirect: "/merchant/merchant-list",
   meta: {
     icon: Store,
-    title: "商户管理",
+    title: $t("menus.merchant"),
     rank: 3
   },
   children: [
@@ -19,7 +19,7 @@ export default {
       name: "MerchantList",
       component: () => import("@/views/merchant/merchantList.vue"),
       meta: {
-        title: "商户列表",
+        title: $t("menus.merchantList"),
         showLink: true,
         showParent: true
       },
@@ -29,7 +29,7 @@ export default {
           name: "AdjustmentRecord",
           component: () => import("@/views/merchant/adjustmentRecord.vue"),
           meta: {
-            title: "调额记录",
+            title: $t("menus.adjustRecord"),
             keepAlive: true,
             showLink: true,
             showParent: true
@@ -42,7 +42,7 @@ export default {
       name: "MerchantAccount",
       component: () => import("@/views/merchant/merchantAccount.vue"),
       meta: {
-        title: "商户账号",
+        title: $t("menus.merchantAccount"),
         showLink: true,
         showParent: true
       }
@@ -52,7 +52,7 @@ export default {
       name: "MerchantProduct",
       component: () => import("@/views/merchant/merchantProduct.vue"),
       meta: {
-        title: "商户产品",
+        title: $t("menus.merchantProduct"),
         showLink: true,
         showParent: true
       }
@@ -62,7 +62,7 @@ export default {
       name: "Currency",
       component: () => import("@/views/merchant/currency.vue"),
       meta: {
-        title: "币种管理",
+        title: $t("menus.currencyType"),
         showLink: true,
         showParent: true
       }
@@ -72,7 +72,7 @@ export default {
       name: "WlgAccount",
       component: () => import("@/views/merchant/wlgAccount.vue"),
       meta: {
-        title: "WLG账号管理",
+        title: $t("menus.WlgAccount"),
         showLink: true,
         showParent: true
       }
@@ -82,7 +82,7 @@ export default {
       name: "PgfAccount",
       component: () => import("@/views/merchant/pgfAccount.vue"),
       meta: {
-        title: "PGF账号管理",
+        title: $t("menus.PgfAccount"),
         showLink: true,
         showParent: true
       }
@@ -92,7 +92,7 @@ export default {
       name: "OperationLog",
       component: () => import("@/views/merchant/operationLog.vue"),
       meta: {
-        title: "操作日志",
+        title: $t("menus.operationLog"),
         showLink: true,
         showParent: true
       }
