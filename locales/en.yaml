@@ -61,6 +61,7 @@ panel:
   pureHiddenFooter: Hidden Footer
   pureMultiTagsCache: MultiTags Cache
 menus:
+  login: Login
   home: Home
   dashboard: Dashboard
   player: Player
@@ -141,6 +142,7 @@ status:
   pureNoNotify: No Notify
   pureNoTodo: No Todo
 login:
+  title: GamePlus Control
   username: Username
   password: Password
   login: Login
@@ -200,57 +202,239 @@ Time:
 
 # 玩家管理
 player:
-  search:
-    id: ID
-    username: username
-    admin_id: merchantID
-    userId: userId
-    balance: balance
-    currency: currency
-    merchant_id: merchantID
-    login_time: loginTime
-    login_ip: loginIP
-    register_time: regTime
-    register_ip: regIP
-    status: status
-    all: all
-    disabled: disabled
-    normal: normal
-  buttons:
-    reset: Reset
-    search: Search
-  table:
-    id: ID
-    username: username
-    admin_id: merchantID
-    userId: userId
-    balance: balance
-    currency: currency
-    merchant_id: merchantID
-    bet_all: totalBet
-    win_all: totalPet
-    company_win_all: totalWinLoss
-    login_time: loginTime
-    login_ip: loginIP
-    register_time: regTime
-    register_ip: regIP
-    status: status
-    depWithDrawDetail: depWithDrawDetail
-    betDetail: betDetail
-    action: action
+  transfer:
+    search:
+      id: ID
+      username: Username
+      admin_id: Merchant ID
+      currency: Currency
+      status: Status
+      login_ip: Login IP
+      register_ip: Register IP
+      login_time: Login Time
+      register_time: Register Time
+      all: All
+      normal: Normal
+      disabled: Disabled
+    table:
+      id: ID
+      username: Username
+      balance: Balance
+      currency: Currency
+      admin_id: Merchant ID
+      bet_all: Total Bet
+      win_all: Total Payout
+      company_win_all: Total Win/Loss
+      login_time: Login Time
+      login_ip: Login IP
+      register_time: Register Time
+      register_ip: Register IP
+      status: Status
+      action: Action
+      normal: Normal
+      disabled: Disabled
+      depWithDrawDetail: DepWithDraw Detail
+      betDetail: Bet Detail
+    buttons:
+      search: Search
+      reset: Reset
+      confirm: Confirm
+      cancel: Cancel
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    statusSwitch:
+      title: Switch Status
+    export:
+      sheetName: Data Report
+      fileName: Transfer Mode Players.xlsx
+      jsonFileName: Transfer Mode Players.json
+      json: Json
+      excel: Excel
+    message:
+      getListFail: Failed to get list data
+      dataNotFound: Operation failed, Unable to find corresponding data
+      confirmUnlock: Are you sure to unlock player {username}?
+      confirmLock: Are you sure to lock player {username}?
+      unlockSuccess: Player has been unlocked
+      lockSuccess: Player has been locked
+      statusSwitchFail: Player status switch failed
+      selectToExport: Please select data to export first!
+  single:
+    search:
+      id: ID
+      username: Username
+      admin_id: Merchant ID
+      currency: Currency
+      status: Status
+      login_ip: Login IP
+      register_ip: Register IP
+      login_time: Login Time
+      register_time: Register Time
+      all: All
+      normal: Normal
+      disabled: Disabled
+    table:
+      id: ID
+      username: Username
+      balance: Balance
+      currency: Currency
+      admin_id: Merchant ID
+      login_time: Login Time
+      login_ip: Login IP
+      register_time: Register Time
+      register_ip: Register IP
+      status: Status
+      action: Action
+      normal: Normal
+      disabled: Disabled
+      betDetail: Bet Detail
+    buttons:
+      search: Search
+      reset: Reset
+      confirm: Confirm
+      cancel: Cancel
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    statusSwitch:
+      title: Switch Status
+    export:
+      sheetName: Data Report
+      fileName: Single Mode Players.xlsx
+      jsonFileName: Single Mode Players.json
+      json: Json
+      excel: Excel
+    message:
+      getListFail: Failed to get list data
+      dataNotFound: Operation failed, Unable to find corresponding data
+      confirmUnlock: Are you sure to unlock player {username}?
+      confirmLock: Are you sure to lock player {username}?
+      unlockSuccess: Player has been unlocked
+      lockSuccess: Player has been locked
+      statusSwitchFail: Player status switch failed
+      selectToExport: Please select data to export first!
+  depositWithdrawal:
+    search:
+      id: ID
+      userId: User ID
+      username: Username
+      type: Type
+      createTime: Create Time
+      all: All
+      deposit: Deposit
+      withdrawal: Withdrawal
+    table:
+      id: ID
+      userId: User ID
+      username: Username
+      type: Type
+      changedAmount: Changed Amount
+      beforeAmount: Before Amount
+      afterAmount: After Amount
+      createTime: Create Time
+      remark: Remark
+    buttons:
+      search: Search
+      reset: Reset
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    export:
+      sheetName: Data Report
+      fileName: Deposit/Withdrawal Details.xlsx
+      jsonFileName: Deposit/Withdrawal Details.json
+      json: Json
+      excel: Excel
+    message:
+      getListFail: Failed to get list data
+      selectToExport: Please select data to export first!
+      dataNotFound: Operation failed, Unable to find corresponding data
+  betDetail:
+    search:
+      userId: User ID
+      adminId: Merchant ID
+      username: Player ID
+      gameId: Game ID
+      supplier: Supplier
+      currency: Currency
+      betId: Bet ID
+      transactionId: Transaction ID
+      status: Status
+      win: Win
+      lose: Lose
+      all: All
+      createTime: Create Time
+      updateTime: Update Time
+    table:
+      id: ID
+      userId: User ID
+      username: Player ID
+      merchantId: Merchant ID
+      game_id: Game ID
+      gameName: Game Name
+      gameType: Game Type
+      category: Category
+      supplier: Supplier
+      currency: Currency
+      betId: Bet ID
+      transactionId: Transaction ID
+      betAmount: Bet Amount
+      winAmount: Win Amount
+      winLoss: Win/Loss
+      createTime: Create Time
+      status: Status
+      action: Action
+      win: Win
+      lose: Lose
+      gameHistory: Game History
+    buttons:
+      search: Search
+      reset: Reset
+      confirm: Confirm
+      cancel: Cancel
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    stats:
+      totalBet: Total Bet
+      totalWinLoss: Total Win/Loss
+      totalCount: Total Count
+    export:
+      sheetName: Data Report
+      fileName: Betting Details.xlsx
+      jsonFileName: Betting Details.json
+      json: Json
+      excel: Excel
+    message:
+      getListFail: Failed to get list data
+      selectToExport: Please select data to export first!
+      dataNotFound: Operation failed, Unable to find corresponding data
 
 # 游戏管理
 game:
   supplier:
     search:
       id: ID
-      supplier: supplier
-      status: status
-      remark: remark
-      all: all
+      supplier: Supplier
+      status: Status
+      remark: Remark
+      all: All
       hidden: hidden
       normal: normal
-      updateTime: updateTime
+      updateTime: Update Time
     buttons:
       reset: Reset
       search: Search
@@ -261,27 +445,1832 @@ game:
       cancel: Cancel
     table:
       id: ID
-      supplier: supplier
-      status: status
+      supplier: Supplier
+      status: Status
       hidden: hidden
       normal: normal
-      pic: pic
-      remark: remark
-      sort_no: sortNo
-      updateTime: updateTime
-      createTime: createTime  
-      action: action
-    addTitle: Add Supplier
-    addSuccess: Add Supplier Success
-    addFail: Add Supplier Fail
-    editTitle: Edit Supplier
-    editFail: Edit Supplier Fail
-    editSuccess: Edit Supplier Success
-    deleteTitle: Delete Supplier
-    deleteFail: Delete Supplier Fail
-    deleteSuccess: Delete Supplier Success
-    deleteTip: Confirm Delete suppler
-    upload: Upload
-    uploadTip: Click Upload The Picture
-    uploadSuccess: Upload Success
-    uploadFail: Upload Fail
+      pic: Pic
+      remark: Remark
+      sort_no: SortNo
+      updateTime: Update Time
+      createTime: Create Time  
+      action: Action
+    add:
+      title: Add Supplier
+      success: Add Supplier Success
+      fail: Add Supplier Fail
+      upload: Upload
+      uploadTip: Click Upload The Picture
+    edit:
+      title: Edit Supplier
+      success: Edit Supplier Success
+      fail: Edit Supplier Fail
+    delete:
+      title: Delete Supplier
+      fail: Delete Supplier Fail
+      success: Delete Success
+      tip: Confirm Delete Supplier
+    status:
+      switchTitle: Switch Status
+      confirmHide: Are you sure to hide supplier {name}?
+      confirmRestore: Are you sure to restore supplier {name}?
+      success: Status Change Success
+      fail: Status Change Fail
+      hidden: Hidden
+      restored: Restored
+    form:
+      nameRequired: Please enter supplier name
+    upload:
+      onlyImage: Only image files are allowed!
+      sizeLimit: Image size cannot exceed 2MB!
+      success: Image Upload Success
+      fail: Image Upload Fail
+    message:
+      selectOneToEdit: Please select one data to edit!
+      selectToDelete: Please select data to delete first!
+      selectToExport: Please select data to export first!
+      getListFail: Failed to get list data
+    export:
+      sheetName: Supplier
+      fileName: Supplier.xlsx
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+  playType:
+    search:
+      id: ID
+      name: Play Type
+      shortname: ST Name
+      name_cn: CN Name
+      status: Status
+      updateTime: Update Time
+      all: All
+      hidden: Hidden
+      normal: Normal
+    buttons:
+      reset: Reset
+      search: Search
+      add: Add
+      edit: Edit
+      delete: Delete
+      confirm: Confirm
+      cancel: Cancel
+      select: Select
+    table:
+      id: ID
+      name: Play Type
+      shortname: Short Name
+      name_cn: Chinese Name
+      pic: Pic
+      sort_no: Sort
+      createTime: Create Time
+      updateTime: Update Time
+      status: Status
+      hidden: Hidden
+      normal: Normal
+      disabled: Disabled
+      action: Action
+    add:
+      title: Add Play Type
+      success: Add Play Type Success
+      fail: Add Play Type Fail
+      upload: Upload
+      uploadTip: Click Upload The Picture
+    edit:
+      title: Edit Play Type
+      success: Edit Play Type Success
+      fail: Edit Play Type Fail
+    delete:
+      title: Delete Play Type
+      fail: Delete Play Type Fail
+      success: Delete Success
+      tip: Confirm Delete Play Type
+    form:
+      nameRequired: Please enter play type
+      shortnameRequired: Please enter short name
+      nameCnRequired: Please enter Chinese name
+    upload:
+      onlyImage: Only image files are allowed!
+      sizeLimit: Image size cannot exceed 2MB!
+      success: Image Upload Success
+      fail: Image Upload Fail
+    message:
+      selectOneToEdit: Please select one data to edit!
+      selectToDelete: Please select data to delete first!
+      selectToExport: Please select data to export first!
+      getListFail: Failed to get list data
+    export:
+      sheetName: Play Type
+      fileName: Play Type.xlsx
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    addSuccess: Add Play Type Success
+    addFail: Add Play Type Fail
+    editSuccess: Edit Play Type Success
+    editFail: Edit Play Type Fail
+  gameList:
+    search:
+      id: ID
+      wallet_type: Wallet Type
+      provider: Supplier
+      game_id: Game ID
+      game_code: Game Code
+      name: English Name
+      name_cn: Chinese Name
+      common_name: Product Abbr
+      product_code: Product ID
+      common_content: Game Type
+      type_id: Category
+      tag: Tag
+      has_pic: Has Pic
+      currency: Supported CUR
+      disabled_currency: Disabled CUR
+      createTime: Create Time
+      updateTime: Update Time
+      status: Status
+      all: All
+      single: Single Mode
+      transfer: Transfer Mode
+      normal: Normal
+      hidden: Hidden
+      maintenance: Maintenance
+      has: Has
+      no: No
+    buttons:
+      reset: Reset
+      search: Search
+      add: Add
+      edit: Edit
+      delete: Delete
+      test: Test Game
+      confirm: Confirm
+      cancel: Cancel
+    table:
+      id: ID
+      wallet_type: Wallet Type
+      provider: Supplier
+      game_id: Game ID
+      game_code: Game Code
+      name: Game English Name
+      name_cn: Game Chinese Name
+      common_name: Product Abbr
+      product_code: Product ID
+      common_content: Game Type
+      type_id: Category
+      tag: Tag
+      product_pic: Product Pic
+      web_pic: Demo Site Pic
+      pic: WebP Pic
+      is_local: Image Storage
+      local: Local
+      remote: Remote
+      has_pic: Has Pic
+      currency: Supported Currency
+      disabled_currency: Disabled Currency
+      createTime: Create Time
+      updateTime: Update Time
+      status: Status
+      normal: Normal
+      hidden: Hidden
+      maintenance: Maintenance
+      action: Action
+    add:
+      title: Add Game
+      success: Add Game Success
+      fail: Add Game Fail
+    edit:
+      title: Edit Game
+      success: Edit Game Success
+      fail: Edit Game Fail
+    delete:
+      title: Delete Game
+      fail: Delete Game Fail
+      success: Delete Success
+      tip: Confirm Delete Game
+    status:
+      switchTitle: Switch Status
+      success: Status Change Success
+      fail: Status Change Fail
+      normal: Normal
+      hidden: Hidden
+      maintenance: Maintenance
+    test:
+      title: Test Game
+      success: Test Game Success
+      fail: Test Game Fail
+      tip: Are you sure to test game
+      gameUrlOpen: Game page opened
+    form:
+      gameIdRequired: Please enter game ID
+      nameRequired: Please enter game name
+      tag: Remark
+      wallet_type: Wallet Mode
+      game_code: Game Code
+      common_name: Product Abbreviation
+      product_code: Product ID
+      type_id: Category
+      currency: Supported Currency
+      common_content: Game Type
+      currentGameType: Current Custom Game Type
+      modifyGameType: Modify Custom Game Type
+      product_pic: Main Pic
+      web_pic: Demo Site Pic
+      weigh: Hot Sort
+      ranking: Sort
+      fee_rate: Promotion Rate
+      prize_rate: RTP
+      pic_text: Cover Text Content
+      pic_text_status: Cover Text Display
+      recommend: Recommend
+      open: Open
+      close: Close
+      upload: Upload
+      select: Select
+      delete: Delete
+      uploadTip: Click Upload The Picture
+      originalCategory: Original Category
+    upload:
+      onlyImage: Only image files are allowed!
+      sizeLimit: Image size cannot exceed 2MB!
+      success: Image Upload Success
+      fail: Image Upload Fail
+    message:
+      selectOneToEdit: Please select one data to edit!
+      selectToDelete: Please select data to delete first!
+      selectToExport: Please select data to export first!
+      selectToTest: Please select game to test first!
+      getListFail: Failed to get list data
+    export:
+      sheetName: Game List
+      fileName: Game List.xlsx
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    addSuccess: Add Game Success
+    addFail: Add Game Fail
+    editSuccess: Edit Game Success
+    editFail: Edit Game Fail
+  gameBrand:
+    search:
+      id: ID
+      wallet_type: Wallet Type
+      name: Product Name
+      type: Type
+      shortname: Short Name
+      game_count: Game Count
+      provider: Supplier
+      product_id: Product ID
+      currency: Currency
+      type_code: Type Code
+      type_description: Type Desc
+      status: Status
+      updateTime: Update Time
+      all: All
+      single: Single Mode
+      transfer: Transfer Mode
+      normal: Normal
+      hidden: Hidden
+      maintenance: Maintenance
+    buttons:
+      reset: Reset
+      search: Search
+      add: Add
+      edit: Edit
+      delete: Delete
+      syncGames: Sync Games
+      syncImages: Sync Images
+      test: Test Game
+      confirm: Confirm
+      cancel: Cancel
+    table:
+      id: ID
+      wallet_type: Wallet Type
+      name: Product Name
+      name_original: Original Name 
+      pic: Product Pic
+      category: Category
+      shortname: Short Name
+      game_count: Game Count
+      provider: Supplier
+      product_code: Product ID
+      currency: Currency
+      cost_price_asia: Asia Price
+      cost_price: Europe Price
+      market_price_asia: Asia Market Price
+      market_price: Europe Market Price
+      sort_no: Sort
+      type_code: Type Code
+      type_description: Type Description
+      updateTime: Update Time
+      status: Status
+      normal: Normal
+      hidden: Hidden
+      maintenance: Maintenance
+      action: Action
+    add:
+      title: Add Game Brand
+      success: Add Game Brand Success
+      fail: Add Game Brand Fail
+      upload: Upload
+      uploadTip: Click Upload The Picture
+    edit:
+      title: Edit Game Brand
+      success: Edit Game Brand Success
+      fail: Edit Game Brand Fail
+    delete:
+      title: Delete Game Brand
+      fail: Delete Game Brand Fail
+      success: Delete Success
+      tip: Confirm Delete Game Brand
+    status:
+      switchTitle: Switch Status
+      success: Status Change Success
+      fail: Status Change Fail
+      normal: Normal
+      hidden: Hidden
+      maintenance: Maintenance
+      open: Open
+    sync:
+      games:
+        title: Sync Games
+        success: Sync Games Success
+        fail: Sync Games Fail
+        tip: Are you sure to sync brand
+      images:
+        title: Sync Images
+        success: Sync Images Success
+        fail: Sync Images Fail
+        tip: Are you sure to sync brand
+    test:
+      title: Test Game
+      success: Game page opened
+      fail: Failed to get game link
+      tip: Are you sure to test brand
+    form:
+      nameRequired: Please enter product name
+      syncCurrency: Sync Currency 
+      open: Open
+      close: Close
+    upload:
+      onlyImage: Only image files are allowed!
+      sizeLimit: Image size cannot exceed 2MB!
+      success: Image Upload Success
+      fail: Image Upload Fail
+    message:
+      selectOneToEdit: Please select one data to edit!
+      selectToDelete: Please select data to delete first!
+      selectToExport: Please select data to export first!
+      selectOneToSync: Please select one data to sync!
+      selectOneToTest: Please select one data to test!
+      getListFail: Failed to get list data
+    export:
+      sheetName: Game Brand
+      fileName: Game Brand.xlsx
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    addSuccess: Add Game Brand Success
+    addFail: Add Game Brand Fail
+    editSuccess: Edit Game Brand Success
+    editFail: Edit Game Brand Fail
+
+# 统计管理
+statistics:
+  productStatistics:
+    tabs:
+      daily: Daily Report
+      monthly: Monthly Report
+    search:
+      date: Date
+      month: Month
+      admin_id: Merchant ID
+      type_name: Category
+      provider: Provider
+      currency: Currency
+      startDate: Start Date
+      endDate: End Date
+      startMonth: Start Month
+      endMonth: End Month
+      all: All
+    buttons:
+      search: Search
+      reset: Reset
+    table:
+      date: Date
+      month: Month
+      admin_id: Merchant ID
+      type_name: Category
+      provider: Provider
+      currency: Currency
+      bet: Total Bet
+      win: Total Payout
+      company_win: Win/Loss
+      cost_price: Cost Price
+      agent_price: Agent Point
+      cost: Cost
+      agent_sale: Agent Sale
+      sale: Platform Sale
+      agent_profit: Agent Profit
+      profit: Platform Profit
+    stats:
+      totalOrderAmount: Total Order Amount
+      totalPayoutAmount: Total Payout Amount
+      totalWinLoss: Total Win/Loss
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+      message:
+        getListFail: Failed to get list data
+  playerStatistics:
+    tabs:
+      daily: Daily Report
+      monthly: Monthly Report
+    search:
+      date: Date
+      month: Month
+      admin_id: Merchant ID
+      user_id: Player ID
+      currency: Currency
+      wallet_type: Wallet Type
+      game_name: Game Name
+      startDate: Start Date
+      endDate: End Date
+      startMonth: Start Month
+      endMonth: End Month
+      all: All
+      single: Single Wallet
+      transfer: Transfer Wallet
+    buttons:
+      search: Search
+      reset: Reset
+    table:
+      date: Date
+      month: Month
+      admin_id: Merchant ID
+      user_id: Player ID
+      currency: Currency
+      bet: Total Bet
+      win: Total Payout
+      company_win: Win/Loss
+    stats:
+      totalOrderAmount: Total Order Amount
+      totalPayoutAmount: Total Payout Amount
+      totalWinLoss: Total Win/Loss
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    message:
+      getListFail: Failed to get list data
+  gameStatistics:
+    tabs:
+      daily: Daily Report
+      monthly: Monthly Report
+    search:
+      date: Date
+      month: Month
+      game_id: Game ID
+      game_name: Game Name
+      type_name: Category
+      provider: Provider
+      admin_id: Merchant ID
+      admin_name: Merchant Name
+      wallet_type: Wallet Type
+      startDate: Start Date
+      endDate: End Date
+      startMonth: Start Month
+      endMonth: End Month
+      all: All
+      single: Single Wallet
+      transfer: Transfer Wallet
+    buttons:
+      search: Search
+      reset: Reset
+    table:
+      date: Date
+      month: Month
+      game_id: Game ID
+      currency: Currency
+      game_name: Game Name
+      type_name: Category
+      provider: Provider
+      admin_id: Merchant ID
+      admin_name: Merchant Name
+      wallet_type: Wallet Type
+      bet: Total Bet
+      win: Total Payout
+      company_win: Win/Loss
+      cost_price: Cost Price
+      agent_price: Agent Point
+      cost: Cost
+      agent_sale: Agent Sale
+      sale: Platform Sale
+      agent_profit: Agent Profit
+      profit: Platform Profit
+    stats:
+      totalOrderAmount: Total Order Amount
+      totalPayoutAmount: Total Payout Amount
+      totalWinLoss: Total Win/Loss
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    message:
+      getListFail: Failed to get list data
+  merchantDailyReport:
+    search:
+      merchant_id: Merchant ID
+      date: Date
+      startDate: Start Date
+      endDate: End Date
+    buttons:
+      search: Search
+      reset: Reset
+    table:
+      date: Date
+      merchant_id: Merchant ID
+      merchant_name: Merchant Name
+      bet_amount: Bet Amount
+      win_amount: Win Amount
+      profit_loss: Profit/Loss
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    message:
+      getListFail: Failed to get list data
+
+# 商户管理
+merchant:
+  merchantList:
+    search:
+      id: ID
+      username: Merchant Name
+      admin_id: Merchant ID
+      type: Merchant Type
+      wallet_type: Wallet Type
+      currency: Currency
+      status: Status
+      parent_name: Parent Name
+      pid: PID
+      wlg_account_id: WLG Account ID
+      all: All
+      formal: Formal
+      test: Test
+      single: Single Mode
+      transfer: Transfer Mode
+      normal: Normal
+      hidden: Hidden
+    table:
+      id: ID
+      username: Merchant Name
+      admin_id: Merchant ID
+      type: Merchant Type
+      currency: Currency
+      status: Status
+      parent_name: Parent Name
+      pid: PID
+      wlg_account_id: WLG Account ID
+      transfer: Transfer Wallet
+      wallet_type: Wallet Type
+      deposit_balance: Margin Balance
+      credit_balance: Credit Balance
+      credit_limit: Credit Limit
+      update_time: Update Time
+      action: Action
+    buttons:
+      reset: Reset
+      search: Search
+      add: Add
+      edit: Edit
+      delete: Delete
+      confirm: Confirm
+      cancel: Cancel
+      creditAdjust: Credit Adjust
+      adjustRecord: Adjust Record
+      viewApiKey: API Key
+    message:
+      getListFail: Failed to get list data
+  merchantAccount:
+    title: Merchant Account
+    developing: Under development...
+  merchantProduct:
+    search:
+      id: ID
+      merchant_id: Merchant ID
+      merchant_name: Merchant Name
+      type_name: Product
+      product_name: Full Name
+      product_code: Product ID
+      wallet_type: Wallet Type
+      currency: Currency
+      support_state: Support State
+      updateTime: Update Time
+      status: Status
+      all: All
+      single: Single Mode
+      transfer: Transfer Mode
+      normal: Normal
+      hidden: Hidden
+      maintenance: Maintenance
+      startDateTime: Start Date Time
+      endDateTime: End Date Time
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      delete: Delete
+      test: Test Game (Single Wallet)
+      confirm: Confirm
+      cancel: Cancel
+    table:
+      id: ID
+      merchant_id: Merchant ID
+      merchant_name: Merchant Name
+      type_name: Product
+      product_name: Full Name
+      product_code: Product ID
+      wallet_type: Wallet Type
+      currency: Currency
+      game_type: Game Type
+      support_state: Support State
+      price: Price
+      agent_price: Agent Price
+      createtime: Create Time
+      updatetime: Update Time
+      status: Status
+      single: Single Mode
+      transfer: Transfer Mode
+      normal: Normal
+      hidden: Hidden
+      maintenance: Maintenance
+      action: Action
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    message:
+      getListFail: Failed to get list data
+      addNotOpen: Add feature not yet available
+      editSuccess: Edit success
+      editFail: Edit fail
+      selectOneToEdit: Please select one data to edit!
+      selectToDelete: Please select data to delete first!
+      selectToTest: Please select one data to test!
+      selectToExport: Please select data to export first!
+      confirmDelete: Are you sure to delete product {name}?
+      confirmBatchDelete: Are you sure to delete selected {count} product data?
+      confirmTest: Are you sure to test product {name} game?
+      deleteSuccess: Delete success
+      deleteFail: Delete fail
+      testSuccess: Test game success
+      testFail: Test game fail
+    add:
+      title: Add Merchant Product
+    edit:
+      title: Edit Merchant Product
+    delete:
+      title: Delete Product
+      batchTitle: Batch Delete
+    test:
+      title: Test Game
+    form:
+      type_name: Product
+      merchant_id: Merchant ID
+      merchant_name: Merchant Name
+      currency: Currency
+      price: Merchant Point
+      agent_price: Agent Point
+      status: Status
+      open: Open
+      close: Close
+      typeNameRequired: Please enter product
+      merchantIdRequired: Please enter merchant ID
+      merchantNameRequired: Please enter merchant name
+      currencyRequired: Please enter currency
+      priceRequired: Please enter merchant point
+      agentPriceRequired: Please enter agent point
+    export:
+      sheetName: Merchant Product List
+      fileName: Merchant Product List.xlsx
+      jsonFileName: Merchant Product List.json
+  currency:
+    search:
+      id: ID
+      name: Currency Name
+      remark: Remark
+      createTime: Create Time
+      updateTime: Update Time
+      status: Status
+      all: All
+      normal: Normal
+      disabled: Disabled
+      startDateTime: Start Date Time
+      endDateTime: End Date Time
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      delete: Delete
+      more: More
+      action1: Action 1
+      action2: Action 2
+      confirm: Confirm
+      cancel: Cancel
+    table:
+      id: ID
+      name: Currency
+      remark: Remark
+      difftime: Time Difference
+      createtime: Create Time
+      updatetime: Update Time
+      status: Status
+      normal: Normal
+      disabled: Disabled
+      action: Action
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    message:
+      getListFail: Failed to get list data
+      addSuccess: Add currency success
+      addFail: Add currency fail
+      editSuccess: Edit currency success
+      editFail: Edit currency fail
+      selectOneToEdit: Please select one data to edit!
+      selectToDelete: Please select data to delete first!
+      selectToExport: Please select data to export first!
+      confirmDelete: Are you sure to delete currency {names}?
+      deleteSuccess: Delete success
+      deleteFail: Delete fail
+      deleteFailCount: Delete failed {count} data
+    add:
+      title: Add Currency
+    edit:
+      title: Edit Currency
+    delete:
+      title: Delete Currency
+    form:
+      name: Currency Name
+      remark: Remark
+      difftime: Time Difference
+      status: Status
+      open: Open
+      close: Close
+      nameRequired: Please enter currency name
+    export:
+      sheetName: Currency Type
+      fileName: Currency Type.xlsx
+      jsonFileName: Currency Type.json
+  wlgAccount:
+    search:
+      id: ID
+      wallet_type: Wallet Type
+      type: Account Type
+      currency_id: Currency
+      dealer_name: Dealer Name
+      bound_merchant: Bound Merchant
+      dealer_id: Dealer ID
+      agent_id: Agent ID
+      key: API Key
+      api_host: API Address
+      dealer_account: Dealer Account
+      dealer_pwd: Dealer Password
+      agent_account: Agent Account
+      agent_pwd: Agent Password
+      sn_url: Dealer Backend
+      agent_url: Agent Backend
+      remark: Remark
+      status: Status
+      createTime: Create Time
+      updateTime: Update Time
+      all: All
+      single: Single Mode
+      transfer: Transfer Mode
+      formal: Formal Account
+      test: Test Account
+      normal: Normal
+      hidden: Hidden
+      startDateTime: Start Date Time
+      endDateTime: End Date Time
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      delete: Delete
+      unbind: Unbind Merchant
+      confirm: Confirm
+      cancel: Cancel
+    table:
+      id: ID
+      wallet_type: Wallet Type
+      type: Account Type
+      currency_id: Currency
+      dealer_name: Dealer Name
+      bound_merchant: Bound Merchant
+      dealer_id: Dealer ID
+      agent_id: Agent ID
+      key: API Key
+      api_host: API Address
+      dealer_account: Dealer Account
+      dealer_pwd: Dealer Password
+      agent_account: Agent Account
+      agent_pwd: Agent Password
+      sn_url: Dealer Backend
+      agent_url: Agent Backend
+      remark: Remark
+      createtime: Create Time
+      updatetime: Update Time
+      status: Status
+      single: Single Mode
+      transfer: Transfer Mode
+      formal: Formal Account
+      test: Test Account
+      normal: Normal
+      hidden: Hidden
+      action: Action
+      boundMerchantPlaceholder: SB Merchant
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    message:
+      getListFail: Failed to get list data
+      addSuccess: Add WLG account successfully
+      addFail: Failed to add WLG account
+      editSuccess: Edit WLG account successfully
+      editFail: Failed to edit WLG account
+      selectOneToEdit: Please select one record to edit!
+      selectToDelete: Please select data to delete first!
+      selectToExport: Please select data to export first!
+      selectToUnbind: Please select data to unbind first!
+      confirmDelete: Are you sure to delete WLG account {names}?
+      deleteSuccess: Delete successfully
+      deleteFail: Delete failed
+      confirmUnbind: Are you sure to unbind merchant?
+      unbindSuccess: Unbind successfully
+      unbindFail: Unbind failed
+    add:
+      title: Add
+    edit:
+      title: Edit
+    delete:
+      title: Delete WLG Account
+    unbind:
+      title: Unbind Merchant
+    form:
+      wallet_type: Wallet Mode
+      type: Account Type
+      currency_id: Select Currency
+      dealer_name: Dealer Name
+      dealer_id: Dealer ID
+      agent_id: Agent ID
+      key: API Key
+      api_host: API Address
+      sn_url: Dealer Backend
+      dealer_account: Dealer Account
+      dealer_pwd: Dealer Password
+      agent_url: Agent Backend
+      agent_account: Agent Account
+      agent_pwd: Agent Password
+      status: Status
+      single: Single Mode
+      transfer: Transfer Mode
+      formal: Formal Account
+      test: Test Account
+      open: Open
+      close: Close
+      walletTypeRequired: Please select wallet mode
+      dealerNameRequired: Please enter dealer name
+    export:
+      sheetName: WLG Account Management
+      fileName: WLG Account Management.xlsx
+      jsonFileName: WLG Account Management.json
+  pgfAccount:
+    search:
+      id: ID
+      wallet_type: Wallet Type
+      type: Account Type
+      currency_id: Currency
+      bound_merchant: Bound Merchant
+      token: Token Value
+      key: API Key
+      api_host: API Address
+      status: Status
+      createTime: Create Time
+      updateTime: Update Time
+      all: All
+      single: Single Mode
+      transfer: Transfer Mode
+      formal: Formal Account
+      test: Test Account
+      normal: Normal
+      hidden: Hidden
+      startDateTime: Start Date Time
+      endDateTime: End Date Time
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      delete: Delete
+      unbind: Unbind Merchant
+      confirm: Confirm
+      cancel: Cancel
+    table:
+      id: ID
+      wallet_type: Wallet Type
+      type: Account Type
+      currency_id: Currency
+      bound_merchant: Bound Merchant
+      token: Token Value
+      key: API Key
+      api_host: API Address
+      createtime: Create Time
+      updatetime: Update Time
+      status: Status
+      single: Single Mode
+      transfer: Transfer Mode
+      formal: Formal Account
+      test: Test Account
+      normal: Normal
+      hidden: Hidden
+      action: Action
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    message:
+      getListFail: Failed to get list data
+      addSuccess: Add PGF account successfully
+      addFail: Failed to add PGF account
+      editSuccess: Edit PGF account successfully
+      editFail: Failed to edit PGF account
+      selectOneToEdit: Please select one record to edit!
+      selectToDelete: Please select data to delete first!
+      selectToExport: Please select data to export first!
+      selectToUnbind: Please select data to unbind first!
+      confirmDelete: Are you sure to delete PGF account {ids}?
+      deleteSuccess: Delete successfully
+      deleteFail: Delete failed
+      confirmUnbind: Are you sure to unbind merchant?
+      unbindSuccess: Unbind successfully
+      unbindFail: Unbind failed
+    add:
+      title: Add
+    edit:
+      title: Edit
+    delete:
+      title: Delete PGF Account
+    unbind:
+      title: Unbind Merchant
+    form:
+      wallet_type: Wallet Mode
+      type: Account Type
+      currency_id: Select Currency
+      api_host: API Address
+      token: Token Value
+      key: API Key
+      status: Status
+      single: Single Mode
+      transfer: Transfer Mode
+      formal: Formal Account
+      test: Test Account
+      open: Open
+      close: Close
+      walletTypeRequired: Please select wallet mode
+    export:
+      sheetName: PGF Account Management
+      fileName: PGF Account Management.xlsx
+      jsonFileName: PGF Account Management.json
+
+# 代理管理
+agent:
+  agentList:
+    search:
+      username: Agent Account
+      nickname: Nickname
+      email: Email
+      merchant: Merchant
+      whitelist_ip: Whitelist IP
+      loginTime: Login Time
+      createTime: Create Time
+      status: Status
+      all: All
+      normal: Normal
+      hidden: Hidden
+    table:
+      username: Agent Account
+      nickname: Nickname
+      merchant_pro_num: Production Merchants
+      merchant_test_num: Test Merchants
+      email: Email
+      google_verify: Google Verify
+      merchant: Merchant
+      whitelist_ip: Whitelist IP
+      last_login_time: Last Login Time
+      createTime: Create Time
+      status: Status
+      action: Action
+      normal: Normal
+      hidden: Hidden
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      confirm: Confirm
+      cancel: Cancel
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    statusSwitch:
+      title: Switch Status
+    export:
+      sheetName: Data Report
+      fileName: Agent List.xlsx
+      jsonFileName: Agent List.json
+    message:
+      getListFail: Failed to get list data
+      dataNotFound: Operation failed, Unable to find corresponding data
+      confirmSetNormal: Are you sure to set agent {username} to normal status?
+      confirmSetHidden: Are you sure to set agent {username} to hidden status?
+      setNormalSuccess: Agent has been set to normal status
+      setHiddenSuccess: Agent has been set to hidden status
+      statusSwitchFail: Agent status switch failed
+      selectToExport: Please select data to export first!
+      addNotImplemented: Add function not implemented
+      editNotImplemented: Edit function not implemented
+
+# 文章管理
+article:
+  help:
+    search:
+      id: ID
+      title: Title
+      createTime: Create Time
+      updateTime: Update Time
+    table:
+      id: ID
+      title: Title
+      sort: Sort
+      createTime: Create Time
+      updateTime: Update Time
+      action: Action
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      delete: Delete
+      confirm: Confirm
+      cancel: Cancel
+      close: Close
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    add:
+      title: Add Help
+    edit:
+      title: Edit Help
+    delete:
+      title: Delete
+      batchTitle: Batch Delete
+    form:
+      title: Title
+      content: Content
+      weigh: Sort
+      contentPlaceholder: Please enter content
+      titleRequired: Please enter title
+      contentRequired: Please enter content
+      weighRequired: Please enter sort
+      weighMin: Sort must be greater than or equal to 0
+    message:
+      getListFail: Failed to get list data
+      selectOneToEdit: Please select one record to edit
+      addSuccess: Add successful
+      addFail: Add failed
+      editSuccess: Edit successful
+      editFail: Edit failed
+      submitFail: Submit failed
+      selectToDelete: Please select data to delete
+      confirmDelete: Are you sure to delete data with title "{title}"?
+      confirmBatchDelete: Are you sure to delete {count} selected data?
+      deleteSuccess: Delete successful
+      deleteFail: Delete failed
+
+# 权限管理
+permission:
+  accountManagement:
+    search:
+      id: ID
+      username: Username
+      merchant_id: Merchant ID
+      role_group: Role Group
+      superior: Superior
+      loginTime: Login Time
+      createTime: Create Time
+      status: Status
+      all: All
+      none: None
+      normal: Normal
+      disabled: Disabled
+    table:
+      id: ID
+      username: Username
+      merchant_id: Merchant ID
+      role_group: Role Group
+      superior: Superior
+      email: Email
+      google_verify: Google Verify
+      whitelist_ip: Whitelist IP
+      remark: Remark
+      loginTime: Login Time
+      createTime: Create Time
+      status: Status
+      none: None
+      normal: Normal
+      disabled: Disabled
+      enabled: Enabled
+      action: Action
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      delete: Delete
+      confirm: Confirm
+      cancel: Cancel
+      refresh: Refresh
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    add:
+      title: Add Account
+    edit:
+      title: Edit Account
+    delete:
+      title: Delete Confirmation
+      batchTitle: Batch Delete
+    form:
+      role_group: Role Group
+      superior: Superior
+      username: Username
+      nickname: Nickname
+      email: Email
+      password: Password
+      type: Account Type
+      wallet_type: Wallet Type
+      version: API Version
+      currency: Currency
+      type_ids: Enabled Games
+      google_verify: Google Verify
+      whitelist_ip: API Whitelist
+      remark: Remark
+      status: Status
+      formal: Formal Account
+      test: Test Account
+      single: Single
+      transfer: Transfer
+      enabled: Enabled
+      disabled: Disabled
+      normal: Normal
+      secret: Secret
+      type_idsPlaceholder: Please select game brand
+      roleGroupRequired: Please select role group
+      usernameRequired: Please enter username
+      nicknameRequired: Please enter nickname
+      emailFormat: Please enter a valid email format
+      passwordRequired: Please enter password
+      passwordLength: Password length must be between 6-30 characters
+      whitelistTip: Multiple whitelist IPs separated by commas
+    message:
+      getListFail: Failed to get list data
+      selectOneToEdit: Please select one record to edit
+      addSuccess: Add successful
+      addFail: Add failed
+      editSuccess: Edit successful
+      editFail: Edit failed
+      submitFail: Submit failed
+      selectToDelete: Please select data to delete first!
+      onlyDeleteDisabled: Only disabled accounts can be deleted
+      confirmDelete: Are you sure to delete account "{username}"?
+      confirmBatchDelete: Are you sure to delete {count} selected account(s)?
+      deleteSuccess: Delete successful
+      deleteFail: Delete failed
+      secretRefreshed: Secret refreshed
+      qrCodeNotImplemented: QR code feature not implemented
+  roleManagement:
+    table:
+      id: ID
+      parent: Parent
+      name: Name
+      status: Status
+      none: None
+      normal: Normal
+      disabled: Disabled
+      action: Action
+    buttons:
+      add: Add
+      edit: Edit
+      delete: Delete
+      confirm: Confirm
+      cancel: Cancel
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      export: Export
+    add:
+      title: Add Role
+    edit:
+      title: Edit Role
+    delete:
+      title: Delete Confirmation
+      batchTitle: Batch Delete Confirmation
+    form:
+      parent: Parent
+      name: Name
+      permissions: Permissions
+      none: None
+      checkAll: Check All
+      expandAll: Expand All
+      view: View
+      add: Add
+      edit: Edit
+      delete: Delete
+      nameRequired: Please enter name
+    message:
+      getListFail: Failed to get list data
+      selectOneToEdit: Please select one record to edit
+      addSuccess: Add successful
+      addFail: Add failed
+      editSuccess: Edit successful
+      editFail: Edit failed
+      submitFail: Submit failed
+      selectToDelete: Please select data to delete
+      confirmDelete: Are you sure to delete role "{name}"?
+      confirmBatchDelete: Are you sure to delete {count} selected record(s)?
+      deleteSuccess: Delete successful
+      deleteFail: Delete failed
+      getMenuListFail: Failed to get menu list
+      getPermissionTreeFail: Failed to get permission tree data
+  operationLog:
+    search:
+      id: ID
+      username: Username
+      title: Title
+      content: Content
+      url: URL
+      ip: IP
+      createTime: Create Time
+    table:
+      id: ID
+      username: Username
+      title: Title
+      content: Detail
+      url: URL
+      ip: IP
+      browser: Browser
+      createTime: Create Time
+      action: Action
+    buttons:
+      search: Search
+      reset: Reset
+      detail: Detail
+      delete: Delete
+      confirm: Confirm
+      cancel: Cancel
+      close: Close
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    delete:
+      title: Delete
+      batchTitle: Batch Delete
+    detail:
+      title: Operation Log Detail
+      id: ID
+      username: Username
+      event: Event
+      content: Content
+      url: URL
+      ip: IP
+      browser: Browser
+      createTime: Create Time
+    event:
+      addAccount: Add Account
+      changePassword: Change Password
+      changeGoogle: Change Google Verify
+      addMerchant: Add Merchant
+      maintainGame: Maintain Game
+      disableGame: Disable Game
+    message:
+      getListFail: Failed to get list data
+      selectToDelete: Please select data to delete
+      confirmDelete: Are you sure to delete operation log with ID {id}?
+      confirmBatchDelete: Are you sure to delete {count} selected operation logs?
+      deleteSuccess: Delete successful
+      deleteFail: Delete failed
+  gameTestLog:
+    search:
+      id: ID
+      shortname: Shortname
+      type_name: Product Name
+      wallet_type: Wallet Type
+      currency: Currency
+      game_id: Game ID
+      merchant_id: Merchant ID
+      username: User
+      createTime: Create Time
+      status: Status
+      all: All
+      single: Single Wallet
+      transfer: Transfer Wallet
+      normal: Normal
+      disabled: Disabled
+    table:
+      id: ID
+      wallet_type: Wallet Type
+      currency: Currency
+      game_id: Game ID
+      error_message: API Error Message
+      type_id: Category ID
+      type_name: Product Name
+      shortname: Shortname
+      merchant_id: Merchant ID
+      username: User
+      createTime: Create Time
+      status: Status
+      single: Single Wallet
+      transfer: Transfer Wallet
+      normal: Normal
+      disabled: Disabled
+      action: Action
+    buttons:
+      search: Search
+      reset: Reset
+      detail: Detail
+      close: Close
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    detail:
+      title: Test Log Detail
+      backendRequest: Backend Request Info
+      apiRequest: API Request Info
+      requestUrl: Request URL
+      promptMessage: Prompt Message
+      gameLink: Game Link
+      requestHeader: Request Header
+      requestBody: Request Body
+      requestResult: Request Result
+      apiRequestUrl: API Request URL
+      apiRequestParams: API Request Params
+      apiRequestResult: API Request Result
+    message:
+      getListFail: Failed to get list data
+      getDetailFail: Failed to get detail
+  menuManagement:
+    search:
+      id: ID
+      title: Title
+      name: Name
+      status: Status
+      ismenu: Menu Switch
+      all: All
+      normal: Normal
+      hidden: Hidden
+      enabled: Enabled
+      disabled: Disabled
+    table:
+      id: ID
+      title: Title
+      icon: Icon
+      name: Name
+      weigh: Sort
+      status: Status
+      ismenu: Menu Switch
+      normal: Normal
+      hidden: Hidden
+      enabled: Enabled
+      disabled: Disabled
+      action: Action
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      delete: Delete
+      detail: Detail
+      confirm: Confirm
+      cancel: Cancel
+      close: Close
+      statusSwitch: Status Switch
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    add:
+      title: Add Menu
+    edit:
+      title: Edit Menu
+    delete:
+      title: Delete Confirmation
+      batchTitle: Batch Delete
+    detail:
+      title: Menu Detail
+      id: ID
+      # title: Title
+      name: Name
+      icon: Icon
+      url: URL
+      weigh: Sort
+      status: Status
+      ismenu: Menu Switch
+      enabled: Enabled
+      disabled: Disabled
+    statusSwitch:
+      title: Status Switch
+      status: Status
+      normal: Normal
+      hidden: Hidden
+    form:
+      ismenu: Menu Switch
+      remark: Remark
+      parent: Parent
+      name: Name
+      title: Title
+      url: URL
+      icon: Icon
+      condition: Condition
+      menutype: Menu Type
+      extend: Extend
+      weigh: Sort
+      status: Status
+      none: None
+      enabled: Enabled
+      disabled: Disabled
+      normal: Normal
+      hidden: Hidden
+      select: Select
+      addtabs: Add tabs
+      dialog: Dialog
+      ajax: Ajax
+      blank: Blank
+      nameRequired: Please enter name
+      titleRequired: Please enter title
+      weighRequired: Please enter sort
+    message:
+      getListFail: Failed to get list data
+      selectOneToEdit: Please select one record to edit
+      addSuccess: Add successful
+      addFail: Add failed
+      editSuccess: Edit successful
+      editFail: Edit failed
+      submitFail: Submit failed
+      selectToDelete: Please select data to delete first!
+      confirmDelete: Are you sure to delete menu "{title}"?
+      confirmBatchDelete: Are you sure to delete {count} selected menus?
+      deleteSuccess: Delete successful
+      deleteFail: Delete failed
+      selectToSwitchStatus: Please select data to switch status
+      statusSwitchSuccess: Status switch successful
+      statusSwitchFail: Status switch failed
+
+
+# 系统设置
+systemSettings:
+  personalCenterMerchant:
+    nickname: Nickname
+    notSet: Not Set
+    notBound: Not Bound
+    bound: Bound
+    googleNotBound: Google Verify Not Bound
+    personalInfo:
+      title: Personal Information
+      nickname: Nickname
+      nicknamePlaceholder: Please enter nickname
+      username: Username
+      roleGroup: Role Group
+    securityInfo:
+      title: Security Information
+      email: Email
+      googleVerify: Google Verify
+    merchantInfo:
+      title: Merchant Information
+      apiDocUrl: Single Wallet API Documentation Link
+      currency: Currency
+      gameCategory: Game Category
+      apiGateway: API Gateway
+      viewApiSecret: View API Secret
+      apiWhitelist: API Whitelist
+      callbackAddress: Callback Address
+    buttons:
+      edit: Edit
+      save: Save
+      cancel: Cancel
+      change: Change
+      bind: Bind
+      unbind: Unbind
+      confirm: Confirm
+      back: Back
+      next: Next
+      copy: Copy
+      confirmBind: Confirm Bind
+      confirmUnbind: Confirm Unbind
+    googleVerify:
+      title: Google Verify
+      verifyCode: Verify Code
+      verifyCodePlaceholder: Please enter Google verify code
+    apiSecret:
+      title: API Secret
+      apiGateway: API Gateway
+      apiKey: API Key/operatorcode
+      apiSecret: API Secret
+    whitelist:
+      title: Edit API Whitelist
+      tip: Please enter API whitelist, separate multiple entries with commas
+      placeholder: Please enter API whitelist, separate multiple entries with commas
+    callbackAddress:
+      title: Edit Callback Address
+      label: Callback Address
+      placeholder: Please enter callback address
+    changeEmail:
+      title: Enter Email Verification Code
+      tip: Verification code has been sent to {email}, valid for 10 minutes
+      warning: Email disabled? Please contact administrator
+      newEmail: New Email
+      newEmailPlaceholder: Please enter new email
+      verifyCode: Verification Code
+      verifyCodePlaceholder: Please enter verification code
+      resendCode: Resend Code
+      googleCode: Google Verify Code
+      googleCodePlaceholder: Please enter Google verify code
+    bindGoogle:
+      title: Setup Google Authenticator
+      step1: Step 1 Download Google Authenticator App
+      step2: Step 2 Scan QR Code or Manually Enter Secret
+      step3: Step 3 Enter Verification Code
+      androidDownload: Android Download
+      iosDownload: iOS Download
+      manualInput: Manually Enter Secret
+      verifyCode: Verification Code
+      verifyCodePlaceholder: Please enter verification code
+    unbind:
+      title: Unbind Confirmation
+      warning: Unbinding will reduce security level, please proceed with caution.
+      verifyCode: Verification Code
+      verifyCodePlaceholder: Please enter Google verify code
+    message:
+      inputGoogleCode: Please enter Google verify code
+      googleCodeError: Verification code error
+      verifyFail: Verification failed
+      inputWhitelist: Please enter API whitelist
+      verifyGoogleFirst: Please verify with Google first
+      saveSuccess: Save successful
+      saveFail: Save failed
+      getInfoFail: Failed to get merchant information
+      nicknameNotEmpty: Nickname cannot be empty
+      emailCountdown: "Resend code in {seconds} seconds"
+      inputEmail: Please enter email
+      emailCodeSent: Verification code sent
+      sendEmailCodeFail: Failed to send verification code
+      inputEmailCode: Please enter email verification code
+      changeEmailSuccess: Change email successful
+      changeEmailFail: Change email failed
+      inputCallbackAddress: Please enter callback address
+      secretCopied: Secret copied
+      inputVerifyCode: Please enter verification code
+      bindGoogleSuccess: Bind Google verify successful
+      bindGoogleFail: Bind Google verify failed
+      unbindWarning: Unbinding will reduce security level, please proceed with caution.
+      unbindGoogleSuccess: Unbind Google verify successful
+      unbindGoogleFail: Unbind Google verify failed
+  personalCenterPlatform:
+    notSet: Not Set
+    notBound: Not Bound
+    bound: Bound
+    googleNotBound: Google Verify Not Bound
+    personalInfo:
+      title: Personal Information
+      nickname: Nickname
+      nicknamePlaceholder: Please enter nickname
+      username: Username
+      department: Department
+      role: Role
+    securityInfo:
+      title: Security Information
+      email: Email
+      googleVerify: Google Verify
+    buttons:
+      edit: Edit
+      save: Save
+      cancel: Cancel
+      change: Change
+      bind: Bind
+      unbind: Unbind
+      back: Back
+      next: Next
+      copy: Copy
+      confirmBind: Confirm Bind
+      confirmUnbind: Confirm Unbind
+    changeEmail:
+      title: Enter Email Verification Code
+      tip: Verification code has been sent to {email}, valid for 10 minutes
+      warning: Email disabled? Please contact administrator
+      verifyCode: Verification Code
+      verifyCodePlaceholder: Please enter verification code
+      resendCode: Resend Code
+      googleCode: Verification Code
+      googleCodePlaceholder: Please enter Google verify code
+    bindGoogle:
+      title: Setup Google Authenticator
+      step1: Step 1 Download Google Authenticator App
+      step2: Step 2 Scan QR Code or Manually Enter Secret
+      step3: Step 3 Enter Verification Code
+      androidDownload: Android Download
+      iosDownload: iOS Download
+      manualInput: Manually Enter Secret
+      verifyCode: Verification Code
+      verifyCodePlaceholder: Please enter verification code
+    unbind:
+      title: Unbind Confirmation
+      warning: Unbinding will reduce security level, please proceed with caution.
+      verifyCode: Verification Code
+      verifyCodePlaceholder: Please enter Google verify code
+    message:
+      nicknameNotEmpty: Nickname cannot be empty
+      saveSuccess: Save successful
+      saveFail: Save failed
+      emailCountdown: "Resend code in {seconds} seconds"
+      inputEmail: Please enter email
+      emailCodeSent: Verification code sent
+      sendEmailCodeFail: Failed to send verification code
+      inputEmailCode: Please enter email verification code
+      inputGoogleCode: Please enter Google verify code
+      changeEmailSuccess: Change email successful
+      changeEmailFail: Change email failed
+      secretCopied: Secret copied
+      inputVerifyCode: Please enter verification code
+      bindGoogleSuccess: Bind Google verify successful
+      bindGoogleFail: Bind Google verify failed
+      unbindWarning: Unbinding will reduce security level, please proceed with caution.
+      unbindGoogleSuccess: Unbind Google verify successful
+      unbindGoogleFail: Unbind Google verify failed
+  attachment:
+    search:
+      id: ID
+      category: Category
+      filename: Filename
+      fileType: File Type
+      fileTypePlaceholder: Please select file type
+      storage: Storage
+      storagePlaceholder: Please select storage
+      imageType: Image Type
+      imageTypePlaceholder: Please select image type
+      createTime: Create Time
+      all: All
+      local: Local
+      oss: OSS
+      cos: COS
+      jpg: JPG
+      png: PNG
+      gif: GIF
+      webp: WEBP
+    table:
+      id: ID
+      category: Category
+      preview: Preview
+      filename: Filename
+      fileType: File Type
+      fileSize: File Size
+      storage: Storage
+      imageType: Image Type
+      createTime: Create Time
+      action: Action
+    buttons:
+      search: Search
+      reset: Reset
+      add: Add
+      edit: Edit
+      delete: Delete
+      classify: Classify
+      confirm: Confirm
+      cancel: Cancel
+    toolbar:
+      density: Density
+      columnSettings: Column Settings
+      hideSearch: Hide Search
+      showSearch: Show Search
+      export: Export
+    add:
+      title: Add
+      fileType: Attachment Type
+      selectFile: Select File
+      clickUpload: Click to Upload
+    edit:
+      title: Edit Attachment
+      category: Category
+      image: Image
+      upload: Upload
+      select: Select
+      clickUploadImage: Click to Upload Image
+      jumpType: Jump Type
+      jumpLink: Jump Link
+      sort: Sort
+      imageWidth: Image Width
+      imageHeight: Image Height
+      imageType: Image Type
+      fileSize: File Size
+      uploadTime: Upload Time
+      storage: Storage
+    classify:
+      title: Classify
+      category: Category
+    select:
+      pleaseSelect: Please select
+      homePage: Home Page
+      subPage: Sub Page
+      external: External
+      emptyLink: Empty Link
+    delete:
+      title: Delete Confirmation
+      batchTitle: Batch Delete Confirmation
+    message:
+      getListFail: Failed to get list data
+      onlyImage: Only image files can be uploaded!
+      imageUploadSuccess: Image upload successful
+      imageUploadFail: Image upload failed
+      editSuccess: Edit attachment successful
+      editFail: Edit attachment failed
+      confirmDelete: Are you sure to delete attachment "{filename}"?
+      deleteSuccess: Delete attachment successful
+      deleteFail: Delete attachment failed
+      selectFileType: Please select attachment type first
+      fileUploadSuccess: File upload successful
+      fileUploadFail: File upload failed
+      selectFileTypeWarning: Please select attachment type
+      uploadAtLeastOne: Please upload at least one file
+      addSuccess: Add attachment successful
+      addFail: Add attachment failed
+      selectToEdit: Please select data to edit
+      selectOneToEdit: Please select one record to edit
+      selectToDelete: Please select data to delete
+      confirmBatchDelete: Are you sure to delete {count} selected records?
+      batchDeleteSuccess: Batch delete attachment successful
+      batchDeleteFail: Batch delete attachment failed
+      selectToClassify: Please select data to classify
+      selectCategory: Please select attachment category
+      classifySuccess: Classify successful
+      classifyFail: Classify failed

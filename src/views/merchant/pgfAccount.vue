@@ -7,8 +7,12 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import {
   getPgfAccountList,
   getCurrencyList,
@@ -77,67 +81,71 @@ const searchColumns: PlusColumn[] = [
   // Row 1
   {
     label: "ID",
+    renderLabel: () => t("merchant.pgfAccount.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "ID"
+      placeholder: t("merchant.pgfAccount.search.id")
     }))
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("merchant.pgfAccount.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "选择"
+      placeholder: t("merchant.pgfAccount.search.wallet_type")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.pgfAccount.search.all"),
         value: ""
       },
       {
-        label: "单一模式",
+        label: t("merchant.pgfAccount.search.single"),
         value: "1"
       },
       {
-        label: "转账模式",
+        label: t("merchant.pgfAccount.search.transfer"),
         value: "2"
       }
-    ]
+    ])
   },
   {
     label: "账号类型",
+    renderLabel: () => t("merchant.pgfAccount.search.type"),
     prop: "type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "选择"
+      placeholder: t("merchant.pgfAccount.search.type")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.pgfAccount.search.all"),
         value: ""
       },
       {
-        label: "正式账号",
+        label: t("merchant.pgfAccount.search.formal"),
         value: "1"
       },
       {
-        label: "测试账号",
+        label: t("merchant.pgfAccount.search.test"),
         value: "2"
       }
-    ]
+    ])
   },
   {
     label: "币种",
+    renderLabel: () => t("merchant.pgfAccount.search.currency_id"),
     prop: "currency_id",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择币种",
+      placeholder: t("merchant.pgfAccount.search.currency_id"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.pgfAccount.search.all"),
         value: ""
       },
       ...currencyOptions.value.map(item => ({
@@ -148,73 +156,79 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "绑定商户",
+    renderLabel: () => t("merchant.pgfAccount.search.bound_merchant"),
     prop: "bound_merchant",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "绑定商户"
+      placeholder: t("merchant.pgfAccount.search.bound_merchant")
     }))
   },
   // Row 2
   {
     label: "Token值",
+    renderLabel: () => t("merchant.pgfAccount.search.token"),
     prop: "token",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "Token值"
+      placeholder: t("merchant.pgfAccount.search.token")
     }))
   },
   {
     label: "API密钥",
+    renderLabel: () => t("merchant.pgfAccount.search.key"),
     prop: "key",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "API密钥"
+      placeholder: t("merchant.pgfAccount.search.key")
     }))
   },
   {
     label: "API地址",
+    renderLabel: () => t("merchant.pgfAccount.search.api_host"),
     prop: "api_host",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "API地址"
+      placeholder: t("merchant.pgfAccount.search.api_host")
     }))
   },
   {
     label: "状态",
+    renderLabel: () => t("merchant.pgfAccount.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "选择"
+      placeholder: t("merchant.pgfAccount.search.status")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.pgfAccount.search.all"),
         value: ""
       },
       {
-        label: "正常",
+        label: t("merchant.pgfAccount.search.normal"),
         value: "1"
       },
       {
-        label: "隐藏",
+        label: t("merchant.pgfAccount.search.hidden"),
         value: "-1"
       }
-    ]
+    ])
   },
   // Row 3
   {
     label: "创建时间",
+    renderLabel: () => t("merchant.pgfAccount.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -224,7 +238,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -234,7 +248,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -245,7 +259,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -256,7 +270,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -266,7 +280,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -280,17 +294,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "更新时间",
+    renderLabel: () => t("merchant.pgfAccount.search.updateTime"),
     prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -300,7 +315,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -310,7 +325,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -321,7 +336,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -332,7 +347,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -342,7 +357,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -394,6 +409,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("merchant.pgfAccount.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -401,48 +417,52 @@ const tableConfig: any = ref([
   },
   {
     label: "钱包类型",
+    renderHeader: () => t("merchant.pgfAccount.table.wallet_type"),
     prop: "wallet_type",
     render: (value: number) => {
       return h(ElTag, {
         type: value === 1 ? "success" : "warning"
-      }, () => value === 1 ? "单一模式" : value === 2 ? "转账模式" : value);
+      }, () => value === 1 ? t("merchant.pgfAccount.table.single") : value === 2 ? t("merchant.pgfAccount.table.transfer") : value);
     },
-    width: 100,
+    width: 120,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "账户类型",
+    renderHeader: () => t("merchant.pgfAccount.table.type"),
     prop: "type",
     render: (value: number) => {
       return h(ElTag, {
         type: value === 1 ? "success" : "warning"
-      }, () => value === 1 ? "正式账号" : value === 2 ? "测试账号" : value);
+      }, () => value === 1 ? t("merchant.pgfAccount.table.formal") : value === 2 ? t("merchant.pgfAccount.table.test") : value);
     },
-    width: 100,
+    width: 130,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "币种",
+    renderHeader: () => t("merchant.pgfAccount.table.currency_id"),
     prop: "currency_id",
     render: () => {
       // TODO: 币种字段需要从其他接口获取，暂时显示空
       return h("span", "PHP");
     },
-    width: 100,
+    width: 110,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "绑定商户",
+    renderHeader: () => t("merchant.pgfAccount.table.bound_merchant"),
     prop: "bound_merchant",
     render: () => {
       // TODO: 绑定商户字段需要从其他接口获取，暂时显示占位文本
-      return h("span", "SB商户");
+      return h("span", "-");
     },
     width: 140,
     tableColumnProps: {
@@ -451,6 +471,7 @@ const tableConfig: any = ref([
   },
   {
     label: "Token值",
+    renderHeader: () => t("merchant.pgfAccount.table.token"),
     prop: "token",
     width: 300,
     tableColumnProps: {
@@ -459,6 +480,7 @@ const tableConfig: any = ref([
   },
   {
     label: "API密钥",
+    renderHeader: () => t("merchant.pgfAccount.table.key"),
     prop: "key",
     width: 140,
     tableColumnProps: {
@@ -467,6 +489,7 @@ const tableConfig: any = ref([
   },
     {
     label: "API地址",
+    renderHeader: () => t("merchant.pgfAccount.table.api_host"),
     prop: "api_host",
     width: 220,
     tableColumnProps: {
@@ -475,6 +498,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("merchant.pgfAccount.table.createtime"),
     prop: "createtime",
     width: "160",
     tableColumnProps: {
@@ -484,6 +508,7 @@ const tableConfig: any = ref([
   },
   {
     label: "更新时间",
+    renderHeader: () => t("merchant.pgfAccount.table.updatetime"),
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
@@ -493,24 +518,26 @@ const tableConfig: any = ref([
   },
    {
     label: "状态",
+    renderHeader: () => t("merchant.pgfAccount.table.status"),
     prop: "status",
     render: (value: string) => {
       return h(ElTag, {
         type: value === "1" ? "success" : "danger"
-      }, () => value === "1" ? "正常" : "隐藏");
+      }, () => value === "1" ? t("merchant.pgfAccount.table.normal") : t("merchant.pgfAccount.table.hidden"));
     },
     tableColumnProps: {
        sortable: true,
        fixed: "right",
        align: "center"
-    }
+    },
+    width: 100,
   },
 ]);
 
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: () => t("merchant.pgfAccount.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -579,11 +606,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("merchant.pgfAccount.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("merchant.pgfAccount.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -610,10 +637,12 @@ getList();
 const deleteLoading = ref(false);
 const unbindLoading = ref(false);
 
-// 新增PGF账号对话框相关
-const showAddDialog = ref(false);
-const addFormRef = ref();
-const addFormData = ref({
+// 对话框相关（统一新增和编辑）
+const showDialog = ref(false);
+const isEdit = ref(false);
+const formRef = ref();
+const formData = ref({
+  id: 0,
   wallet_type: "",
   type: "",
   currency_id: "",
@@ -622,11 +651,16 @@ const addFormData = ref({
   key: "",
   status: "1"
 });
-const addFormRules = {
+const formRules = {
   wallet_type: [
-    { required: true, message: "请选择钱包模式", trigger: "change" }
+    { required: true, message: t("merchant.pgfAccount.form.walletTypeRequired"), trigger: "change" }
   ]
 };
+
+// 对话框标题
+const dialogTitle = computed(() => {
+  return isEdit.value ? t("merchant.pgfAccount.edit.title") : t("merchant.pgfAccount.add.title");
+});
 
 // API地址选项（根据实际需求调整）
 const apiHostOptions = ref([
@@ -637,9 +671,9 @@ const apiHostOptions = ref([
 
 // 打开新增对话框
 const handleAdd = () => {
-  showAddDialog.value = true;
-  // 重置表单
-  addFormData.value = {
+  isEdit.value = false;
+  formData.value = {
+    id: 0,
     wallet_type: "",
     type: "",
     currency_id: "",
@@ -648,95 +682,28 @@ const handleAdd = () => {
     key: "",
     status: "1"
   };
-};
-
-// 关闭新增对话框
-const handleCloseAddDialog = () => {
-  showAddDialog.value = false;
-  addFormRef.value?.resetFields();
-  addFormData.value = {
-    wallet_type: "",
-    type: "",
-    currency_id: "",
-    api_host: "",
-    token: "",
-    key: "",
-    status: "1"
-  };
-};
-
-// 提交新增表单
-const handleSubmitAdd = async () => {
-  if (!addFormRef.value) return;
-
-  await addFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      try {
-        const params: AddPgfAccountParams = {
-          wallet_type: addFormData.value.wallet_type,
-          type: addFormData.value.type || undefined,
-          status: addFormData.value.status,
-          token: addFormData.value.token || undefined,
-          key: addFormData.value.key || undefined,
-          api_host: addFormData.value.api_host || undefined
-        };
-
-        const res = await addPgfAccount(params);
-
-        if (res.code === 0) {
-          message("新增PGF账号成功", { type: "success" });
-          handleCloseAddDialog();
-          // 刷新列表
-          getList();
-        } else {
-          message(res.msg || "新增PGF账号失败", { type: "error" });
-        }
-      } catch (error: any) {
-        console.error("新增PGF账号失败:", error);
-        message(error?.message || "新增PGF账号失败", { type: "error" });
-      }
-    }
-  });
+  showDialog.value = true;
 };
 
 // 编辑（批量）- 只有一条选中时才能编辑
 const handleEdit = () => {
   if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑！", { type: "warning" });
+    message(t("merchant.pgfAccount.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   handleEditRow(multipleSelection.value[0]);
 };
 
-// 编辑PGF账号对话框相关
-const showEditDialog = ref(false);
-const editFormRef = ref();
-const editFormData = ref({
-  id: 0,
-  wallet_type: "",
-  type: "",
-  currency_id: "",
-  api_host: "",
-  token: "",
-  key: "",
-  status: "1"
-});
-const editFormRules = {
-  wallet_type: [
-    { required: true, message: "请选择钱包模式", trigger: "change" }
-  ]
-};
-
 // 编辑单行数据
 const handleEditRow = (row: TableRow) => {
-  showEditDialog.value = true;
+  isEdit.value = true;
   
   // 查找PHP币种的ID（因为表格中显示的是PHP，但API响应中没有currency_id字段）
   const phpCurrency = currencyOptions.value.find(opt => opt.label === "PHP");
   const defaultCurrencyId = phpCurrency ? phpCurrency.value.toString() : "";
   
   // 回填数据
-  editFormData.value = {
+  formData.value = {
     id: row.id,
     wallet_type: row.wallet_type.toString(),
     type: row.type.toString(),
@@ -746,13 +713,14 @@ const handleEditRow = (row: TableRow) => {
     key: row.key || "",
     status: row.status || "1"
   };
+  showDialog.value = true;
 };
 
-// 关闭编辑对话框
-const handleCloseEditDialog = () => {
-  showEditDialog.value = false;
-  editFormRef.value?.resetFields();
-  editFormData.value = {
+// 关闭对话框
+const handleCloseDialog = () => {
+  showDialog.value = false;
+  formRef.value?.resetFields();
+  formData.value = {
     id: 0,
     wallet_type: "",
     type: "",
@@ -764,36 +732,58 @@ const handleCloseEditDialog = () => {
   };
 };
 
-// 提交编辑表单
-const handleSubmitEdit = async () => {
-  if (!editFormRef.value) return;
+// 提交表单
+const handleSubmit = async () => {
+  if (!formRef.value) return;
 
-  await editFormRef.value.validate(async (valid: boolean) => {
+  await formRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
-        const params: EditPgfAccountParams = {
-          id: editFormData.value.id,
-          wallet_type: editFormData.value.wallet_type || undefined,
-          type: editFormData.value.type || undefined,
-          status: editFormData.value.status || undefined,
-          token: editFormData.value.token || undefined,
-          key: editFormData.value.key || undefined,
-          api_host: editFormData.value.api_host || undefined
-        };
+        if (isEdit.value) {
+          // 编辑
+          const params: EditPgfAccountParams = {
+            id: formData.value.id,
+            wallet_type: formData.value.wallet_type || undefined,
+            type: formData.value.type || undefined,
+            status: formData.value.status || undefined,
+            token: formData.value.token || undefined,
+            key: formData.value.key || undefined,
+            api_host: formData.value.api_host || undefined
+          };
 
-        const res = await editPgfAccount(params);
+          const res = await editPgfAccount(params);
 
-        if (res.code === 0) {
-          message("编辑PGF账号成功", { type: "success" });
-          handleCloseEditDialog();
-          // 刷新列表
-          getList();
+          if (res.code === 0) {
+            message(t("merchant.pgfAccount.message.editSuccess"), { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || t("merchant.pgfAccount.message.editFail"), { type: "error" });
+          }
         } else {
-          message(res.msg || "编辑PGF账号失败", { type: "error" });
+          // 新增
+          const params: AddPgfAccountParams = {
+            wallet_type: formData.value.wallet_type,
+            type: formData.value.type || undefined,
+            status: formData.value.status,
+            token: formData.value.token || undefined,
+            key: formData.value.key || undefined,
+            api_host: formData.value.api_host || undefined
+          };
+
+          const res = await addPgfAccount(params);
+
+          if (res.code === 0) {
+            message(t("merchant.pgfAccount.message.addSuccess"), { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || t("merchant.pgfAccount.message.addFail"), { type: "error" });
+          }
         }
       } catch (error: any) {
-        console.error("编辑PGF账号失败:", error);
-        message(error?.message || "编辑PGF账号失败", { type: "error" });
+        console.error(isEdit.value ? "编辑PGF账号失败:" : "新增PGF账号失败:", error);
+        message(error?.message || (isEdit.value ? t("merchant.pgfAccount.message.editFail") : t("merchant.pgfAccount.message.addFail")), { type: "error" });
       }
     }
   });
@@ -802,18 +792,18 @@ const handleSubmitEdit = async () => {
 // 删除
 const handleDelete = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
+    message(t("merchant.pgfAccount.message.selectToDelete"), { type: "warning" });
     return;
   }
 
   // 构建删除确认消息
   const accountIds = multipleSelection.value.map(item => item.id).join("、");
-  const confirmMessage = `确定删除PGF账号 ${accountIds}？`;
+  const confirmMessage = t("merchant.pgfAccount.message.confirmDelete", { ids: accountIds });
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "删除PGF账号", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("merchant.pgfAccount.delete.title"), {
+      confirmButtonText: t("merchant.pgfAccount.buttons.confirm"),
+      cancelButtonText: t("merchant.pgfAccount.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -825,17 +815,17 @@ const handleDelete = async () => {
       const res = await deleteBatchPgfAccount({ ids });
 
       if (res.code === 0) {
-        message("删除成功", { type: "success" });
+        message(t("merchant.pgfAccount.message.deleteSuccess"), { type: "success" });
         // 清空选中数据
         multipleSelection.value = [];
         // 刷新列表
         getList();
       } else {
-        message(res.msg || "删除失败", { type: "error" });
+        message(res.msg || t("merchant.pgfAccount.message.deleteFail"), { type: "error" });
       }
     } catch (error: any) {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("merchant.pgfAccount.message.deleteFail"), { type: "error" });
     } finally {
       deleteLoading.value = false;
     }
@@ -849,14 +839,14 @@ const handleDelete = async () => {
 // 解绑商户
 const handleUnbindMerchant = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要解绑的数据！", { type: "warning" });
+    message(t("merchant.pgfAccount.message.selectToUnbind"), { type: "warning" });
     return;
   }
 
   try {
-    await ElMessageBox.confirm("是否确定解绑商户?", "解绑商户", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(t("merchant.pgfAccount.message.confirmUnbind"), t("merchant.pgfAccount.unbind.title"), {
+      confirmButtonText: t("merchant.pgfAccount.buttons.confirm"),
+      cancelButtonText: t("merchant.pgfAccount.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -868,17 +858,17 @@ const handleUnbindMerchant = async () => {
       const res = await unbindBatchPgfAccount({ ids });
 
       if (res.code === 0) {
-        message("解绑成功", { type: "success" });
+        message(t("merchant.pgfAccount.message.unbindSuccess"), { type: "success" });
         // 清空选中数据
         multipleSelection.value = [];
         // 刷新列表
         getList();
       } else {
-        message(res.msg || "解绑失败", { type: "error" });
+        message(res.msg || t("merchant.pgfAccount.message.unbindFail"), { type: "error" });
       }
     } catch (error: any) {
       console.error("解绑失败:", error);
-      message(error?.message || "解绑失败", { type: "error" });
+      message(error?.message || t("merchant.pgfAccount.message.unbindFail"), { type: "error" });
     } finally {
       unbindLoading.value = false;
     }
@@ -892,7 +882,7 @@ const handleUnbindMerchant = async () => {
 // 导出到excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("merchant.pgfAccount.message.selectToExport"), { type: "warning" });
     return;
   }
 
@@ -902,17 +892,17 @@ const exportExcel = () => {
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status") {
-        return item.status === "1" ? "正常" : "隐藏";
+        return item.status === "1" ? t("merchant.pgfAccount.table.normal") : t("merchant.pgfAccount.table.hidden");
       }
       if (prop === "wallet_type") {
-        return item.wallet_type === 1 ? "单一模式" : item.wallet_type === 2 ? "转账模式" : item.wallet_type;
+        return item.wallet_type === 1 ? t("merchant.pgfAccount.table.single") : item.wallet_type === 2 ? t("merchant.pgfAccount.table.transfer") : item.wallet_type;
       }
       if (prop === "type") {
-        return item.type === 1 ? "正式账号" : item.type === 2 ? "测试账号" : item.type;
+        return item.type === 1 ? t("merchant.pgfAccount.table.formal") : item.type === 2 ? t("merchant.pgfAccount.table.test") : item.type;
       }
       if (prop === "currency_id" || prop === "bound_merchant") {
         // 这些字段不在API响应中，导出时显示占位文本
-        return prop === "currency_id" ? "PHP" : "SB商户";
+        return prop === "currency_id" ? "PHP" : t("merchant.pgfAccount.table.boundMerchantPlaceholder");
       }
       return item[prop as keyof TableRow] ?? "";
     });
@@ -922,16 +912,16 @@ const exportExcel = () => {
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "PGF账号管理";
+  const sheetName = t("merchant.pgfAccount.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `PGF账号管理.xlsx`;
+  const fileName = t("merchant.pgfAccount.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("merchant.pgfAccount.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -939,7 +929,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "PGF账号管理.json";
+  a.download = t("merchant.pgfAccount.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -954,11 +944,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="130"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('merchant.pgfAccount.buttons.search')"
+        :resetText="t('merchant.pgfAccount.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -975,7 +965,7 @@ const exportJson = () => {
         :action-bar="{
           buttons,
           width: '150px',
-          label: '操作'
+          label: t('merchant.pgfAccount.table.action')
         }"
         width="100%"
         height="90%"
@@ -985,7 +975,7 @@ const exportJson = () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">添加</span>
+            <span style="margin-left: 3px;">{{ t('merchant.pgfAccount.buttons.add') }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -994,7 +984,7 @@ const exportJson = () => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t('merchant.pgfAccount.buttons.edit') }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -1004,7 +994,7 @@ const exportJson = () => {
             :loading="deleteLoading"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('merchant.pgfAccount.buttons.delete') }}</span>
           </el-button>
           <el-button 
             type="warning" 
@@ -1013,12 +1003,12 @@ const exportJson = () => {
             :disabled="multipleSelection.length === 0"
             :loading="unbindLoading"
           >
-            <span>解绑商户</span>
+            <span>{{ t('merchant.pgfAccount.buttons.unbind') }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('merchant.pgfAccount.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -1029,7 +1019,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('merchant.pgfAccount.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -1043,7 +1033,7 @@ const exportJson = () => {
           <div>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('merchant.pgfAccount.toolbar.hideSearch') : t('merchant.pgfAccount.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -1063,7 +1053,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('merchant.pgfAccount.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -1107,45 +1097,45 @@ const exportJson = () => {
       />
     </el-card>
 
-    <!-- 新增PGF账号对话框 -->
+    <!-- 新增/编辑PGF账号对话框 -->
     <el-dialog
-      v-model="showAddDialog"
-      title="添加"
+      v-model="showDialog"
+      :title="dialogTitle"
       width="600px"
       :close-on-click-modal="false"
-      @close="handleCloseAddDialog"
+      @close="handleCloseDialog"
     >
       <el-form
-        ref="addFormRef"
-        :model="addFormData"
-        :rules="addFormRules"
-        label-width="100px"
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="120px"
         class="dialog-form"
       >
-        <el-form-item label="钱包模式" prop="wallet_type">
+        <el-form-item :label="t('merchant.pgfAccount.form.wallet_type')" prop="wallet_type">
           <el-select
-            v-model="addFormData.wallet_type"
-            placeholder="请选择"
+            v-model="formData.wallet_type"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
           >
-            <el-option label="单一模式" value="1" />
-            <el-option label="转账模式" value="2" />
+            <el-option :label="t('merchant.pgfAccount.form.single')" value="1" />
+            <el-option :label="t('merchant.pgfAccount.form.transfer')" value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="账号类型" prop="type">
+        <el-form-item :label="t('merchant.pgfAccount.form.type')" prop="type">
           <el-select
-            v-model="addFormData.type"
-            placeholder="请选择"
+            v-model="formData.type"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
           >
-            <el-option label="正式账号" value="1" />
-            <el-option label="测试账号" value="2" />
+            <el-option :label="t('merchant.pgfAccount.form.formal')" value="1" />
+            <el-option :label="t('merchant.pgfAccount.form.test')" value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="选择币种" prop="currency_id">
+        <el-form-item :label="t('merchant.pgfAccount.form.currency_id')" prop="currency_id">
           <el-select
-            v-model="addFormData.currency_id"
-            placeholder="请选择"
+            v-model="formData.currency_id"
+            :placeholder="t('placeholder.select')"
             filterable
             style="width: 100%"
           >
@@ -1157,10 +1147,10 @@ const exportJson = () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="API 地址" prop="api_host">
+        <el-form-item :label="t('merchant.pgfAccount.form.api_host')" prop="api_host">
           <el-select
-            v-model="addFormData.api_host"
-            placeholder="请选择"
+            v-model="formData.api_host"
+            :placeholder="t('placeholder.select')"
             filterable
             allow-create
             default-first-option
@@ -1174,130 +1164,32 @@ const exportJson = () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="Token值" prop="token">
+        <el-form-item :label="t('merchant.pgfAccount.form.token')" prop="token">
           <el-input
-            v-model="addFormData.token"
-            placeholder="请输入"
+            v-model="formData.token"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="API 秘钥" prop="key">
+        <el-form-item :label="t('merchant.pgfAccount.form.key')" prop="key">
           <el-input
-            v-model="addFormData.key"
-            placeholder="请输入"
+            v-model="formData.key"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="addFormData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="-1">关闭</el-radio>
+        <el-form-item :label="t('merchant.pgfAccount.form.status')" prop="status">
+          <el-radio-group v-model="formData.status">
+            <el-radio label="1">{{ t('merchant.pgfAccount.form.open') }}</el-radio>
+            <el-radio label="-1">{{ t('merchant.pgfAccount.form.close') }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseAddDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitAdd">
-            确认
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <!-- 编辑PGF账号对话框 -->
-    <el-dialog
-      v-model="showEditDialog"
-      title="编辑"
-      width="600px"
-      :close-on-click-modal="false"
-      @close="handleCloseEditDialog"
-    >
-      <el-form
-        ref="editFormRef"
-        :model="editFormData"
-        :rules="editFormRules"
-        label-width="100px"
-        class="dialog-form"
-      >
-        <el-form-item label="钱包模式" prop="wallet_type">
-          <el-select
-            v-model="editFormData.wallet_type"
-            placeholder="请选择"
-            style="width: 100%"
-          >
-            <el-option label="单一模式" value="1" />
-            <el-option label="转账模式" value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="账号类型" prop="type">
-          <el-select
-            v-model="editFormData.type"
-            placeholder="请选择"
-            style="width: 100%"
-          >
-            <el-option label="正式账号" value="1" />
-            <el-option label="测试账号" value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="选择币种" prop="currency_id">
-          <el-select
-            v-model="editFormData.currency_id"
-            placeholder="请选择"
-            filterable
-            style="width: 100%"
-          >
-            <el-option
-              v-for="item in currencyOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value.toString()"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="API 地址" prop="api_host">
-          <el-select
-            v-model="editFormData.api_host"
-            placeholder="请选择"
-            filterable
-            allow-create
-            default-first-option
-            style="width: 100%"
-          >
-            <el-option
-              v-for="item in apiHostOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Token值" prop="token">
-          <el-input
-            v-model="editFormData.token"
-            placeholder="请输入"
-            maxlength="200"
-          />
-        </el-form-item>
-        <el-form-item label="API 秘钥" prop="key">
-          <el-input
-            v-model="editFormData.key"
-            placeholder="请输入"
-            maxlength="200"
-          />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="editFormData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="-1">关闭</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseEditDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitEdit">
-            确认
+          <el-button @click="handleCloseDialog">{{ t('merchant.pgfAccount.buttons.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ t('merchant.pgfAccount.buttons.confirm') }}
           </el-button>
         </div>
       </template>

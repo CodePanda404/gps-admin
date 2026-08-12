@@ -6,6 +6,7 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import { ElMessageBox, ElTag } from "element-plus";
@@ -43,75 +44,87 @@ const searchData = ref({
 // 搜索表单显示控制
 const showSearch = ref(true);
 
+// 国际化
+const { t } = useI18n();
+
 // 搜索表单配置
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("game.playType.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "ID"
+      placeholder: t("game.playType.search.id")
     }))
   },
   {
     label: "玩法类型",
+    renderLabel: () => t("game.playType.search.name"),
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "玩法类型"
+      placeholder: t("game.playType.search.name")
     }))
   },
   {
     label: "玩法缩写",
+    renderLabel: () => t("game.playType.search.shortname"),
     prop: "shortname",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "玩法缩写"
+      placeholder: t("game.playType.search.shortname")
     }))
   },
   {
     label: "中文名称",
+    renderLabel: () => t("game.playType.search.name_cn"),
     prop: "name_cn",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "中文名称"
+      placeholder: t("game.playType.search.name_cn")
     }))
   },
   {
     label: "状态",
+    renderLabel: () => t("game.playType.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("placeholder.select")
     })),
     options: [
       {
-        label: "全部",
+        label: t("game.playType.search.all"),
+        renderLabel: () => t("game.playType.search.all"),
         value: ""
       },
       {
-        label: "正常",
+        label: t("game.playType.search.normal"),
+        renderLabel: () => t("game.playType.search.normal"),
         value: "1"
       },
       {
-        label: "隐藏",
+        label: t("game.playType.search.hidden"),
+        renderLabel: () => t("game.playType.search.hidden"),
         value: "-1"
       }
     ]
   },
   {
     label: "更新时间",
+    renderLabel: () => t("game.playType.search.updateTime"),
     prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -121,7 +134,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -131,7 +144,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -142,7 +155,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -153,7 +166,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -163,7 +176,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -210,6 +223,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("game.playType.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -217,6 +231,7 @@ const tableConfig: any = ref([
   },
   {
     label: "玩法类型",
+    renderHeader: () => t("game.playType.table.name"),
     prop: "name",
     tableColumnProps: {
       align: "center"
@@ -225,6 +240,7 @@ const tableConfig: any = ref([
   },
   {
     label: "玩法缩写",
+    renderHeader: () => t("game.playType.table.shortname"),
     prop: "shortname",
     tableColumnProps: {
       align: "center"
@@ -232,6 +248,7 @@ const tableConfig: any = ref([
   },
   {
     label: "中文名称",
+    renderHeader: () => t("game.playType.table.name_cn"),
     prop: "name_cn",
     tableColumnProps: {
       align: "center"
@@ -239,6 +256,7 @@ const tableConfig: any = ref([
   },
   {
     label: "图片",
+    renderHeader: () => t("game.playType.table.pic"),
     prop: "pic",
     valueType: "img",
     fieldProps: {
@@ -250,6 +268,7 @@ const tableConfig: any = ref([
   },
   {
     label: "排序",
+    renderHeader: () => t("game.playType.table.sort_no"),
     prop: "sort_no",
     tableColumnProps: {
       align: "center"
@@ -257,6 +276,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("game.playType.table.createTime"),
     prop: "createtime",
     width: "160",
     tableColumnProps: {
@@ -266,6 +286,7 @@ const tableConfig: any = ref([
   },
   {
     label: "更新时间",
+    renderHeader: () => t("game.playType.table.updateTime"),
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
@@ -275,12 +296,12 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("game.playType.table.status"),
     prop: "status",
-    // valueType: "tag",
     render: (value: string) => {
       return h(ElTag, {
         type: value === '1' ? "success" : "danger"
-      }, () => value === '1' ? '正常' : '停用');
+      }, () => value === '1' ? t("game.playType.table.normal") : t("game.playType.table.disabled"));
     },
     tableColumnProps: {
       sortable: true,
@@ -292,7 +313,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: () => t("game.playType.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -341,11 +362,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("game.playType.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
-    console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    console.error(t("game.playType.message.getListFail"), error);
+    message(error?.message || t("game.playType.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -371,171 +392,12 @@ getList();
 // 操作按钮 loading 状态
 const deleteLoading = ref(false);
 
-// 新增玩法类型对话框相关
-const showAddDialog = ref(false);
-const addFormRef = ref();
-const addFormData = ref({
-  name: "",
-  shortname: "",
-  name_cn: "",
-  pic: "",
-  sort_no: 1,
-  status: "1"
-});
-const addFormRules = {
-  name: [
-    { required: true, message: "请输入玩法类型", trigger: "blur" }
-  ],
-  shortname: [
-    { required: true, message: "请输入玩法缩写", trigger: "blur" }
-  ],
-  name_cn: [
-    { required: true, message: "请输入中文名称", trigger: "blur" }
-  ]
-};
-const addImageUrl = ref("");
-const addUploading = ref(false);
-const addImageUploadRef = ref();
-
-// 新增图片上传前的处理
-const beforeAddUpload = (file: File) => {
-  const isImage = file.type.startsWith("image/");
-  const isLt2M = file.size / 1024 / 1024 < 2;
-
-  if (!isImage) {
-    message("只能上传图片文件！", { type: "error" });
-    return false;
-  }
-  if (!isLt2M) {
-    message("图片大小不能超过 2MB！", { type: "error" });
-    return false;
-  }
-  return true;
-};
-
-// 处理新增图片上传
-const handleAddImageUpload = async (options: any) => {
-  const { file } = options;
-  addUploading.value = true;
-  
-  try {
-    const res = await uploadImage({
-      file: file,
-      type: "1"
-    });
-
-    if (res.code === 0) {
-      addImageUrl.value = res.data;
-      addFormData.value.pic = res.data;
-      message("图片上传成功", { type: "success" });
-    } else {
-      message(res.msg || "图片上传失败", { type: "error" });
-    }
-  } catch (error: any) {
-    console.error("图片上传失败:", error);
-    message(error?.message || "图片上传失败", { type: "error" });
-  } finally {
-    addUploading.value = false;
-  }
-};
-
-// 触发新增图片上传
-const triggerAddImageUpload = () => {
-  triggerAddImageSelect();
-};
-
-// 触发新增图片选择
-const triggerAddImageSelect = () => {
-  const uploadEl = addImageUploadRef.value?.$el?.querySelector('input[type="file"]');
-  if (uploadEl) {
-    uploadEl.click();
-  }
-};
-
-// 移除新增图片
-const handleRemoveAddImage = () => {
-  addImageUrl.value = "";
-  addFormData.value.pic = "";
-};
-
-// 打开新增对话框
-const handleAdd = () => {
-  showAddDialog.value = true;
-  // 重置表单
-  addFormData.value = {
-    name: "",
-    shortname: "",
-    name_cn: "",
-    pic: "",
-    sort_no: 1,
-    status: "1"
-  };
-  addImageUrl.value = "";
-};
-
-// 关闭新增对话框
-const handleCloseAddDialog = () => {
-  showAddDialog.value = false;
-  addFormRef.value?.resetFields();
-  addFormData.value = {
-    name: "",
-    shortname: "",
-    name_cn: "",
-    pic: "",
-    sort_no: 1,
-    status: "1"
-  };
-  addImageUrl.value = "";
-};
-
-// 提交新增表单
-const handleSubmitAdd = async () => {
-  if (!addFormRef.value) return;
-
-  await addFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      try {
-        const params: AddGamePlayTypeParams = {
-          name: addFormData.value.name,
-          shortname: addFormData.value.shortname,
-          name_cn: addFormData.value.name_cn,
-          pic: addFormData.value.pic,
-          sort_no: addFormData.value.sort_no,
-          status: addFormData.value.status
-        };
-
-        const res = await addGamePlayType(params);
-
-        if (res.code === 0) {
-          message("新增玩法类型成功", { type: "success" });
-          handleCloseAddDialog();
-          // 刷新列表
-          getList();
-        } else {
-          message(res.msg || "新增玩法类型失败", { type: "error" });
-        }
-      } catch (error: any) {
-        console.error("新增玩法类型失败:", error);
-        message(error?.message || "新增玩法类型失败", { type: "error" });
-      }
-    }
-  });
-};
-
-// 编辑（批量）- 只有一条选中时才能编辑
-const handleEdit = () => {
-  if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑！", { type: "warning" });
-    return;
-  }
-  // 调用编辑函数，与表格操作列的编辑按钮效果一致
-  handleEditRow(multipleSelection.value[0]);
-};
-
-// 编辑玩法类型对话框相关
-const showEditDialog = ref(false);
-const editFormRef = ref();
-const editFormData = ref({
+// 对话框相关（合并新增和编辑）
+const showDialog = ref(false);
+const isEdit = ref(false);
+const dialogTitle = computed(() => isEdit.value ? t("game.playType.edit.title") : t("game.playType.add.title"));
+const formRef = ref();
+const formData = ref({
   id: 0,
   name: "",
   shortname: "",
@@ -544,41 +406,41 @@ const editFormData = ref({
   sort_no: 1,
   status: "1"
 });
-const editFormRules = {
+const formRules = computed(() => ({
   name: [
-    { required: true, message: "请输入玩法类型", trigger: "blur" }
+    { required: true, message: t("game.playType.form.nameRequired"), trigger: "blur" }
   ],
   shortname: [
-    { required: true, message: "请输入玩法缩写", trigger: "blur" }
+    { required: true, message: t("game.playType.form.shortnameRequired"), trigger: "blur" }
   ],
   name_cn: [
-    { required: true, message: "请输入中文名称", trigger: "blur" }
+    { required: true, message: t("game.playType.form.nameCnRequired"), trigger: "blur" }
   ]
-};
-const editImageUrl = ref("");
-const editUploading = ref(false);
-const editImageUploadRef = ref();
+}));
+const imageUrl = ref("");
+const uploading = ref(false);
+const imageUploadRef = ref();
 
-// 编辑图片上传前的处理
-const beforeEditUpload = (file: File) => {
+// 图片上传前的处理
+const beforeUpload = (file: File) => {
   const isImage = file.type.startsWith("image/");
   const isLt2M = file.size / 1024 / 1024 < 2;
 
   if (!isImage) {
-    message("只能上传图片文件！", { type: "error" });
+    message(t("game.playType.upload.onlyImage"), { type: "error" });
     return false;
   }
   if (!isLt2M) {
-    message("图片大小不能超过 2MB！", { type: "error" });
+    message(t("game.playType.upload.sizeLimit"), { type: "error" });
     return false;
   }
   return true;
 };
 
-// 处理编辑图片上传
-const handleEditImageUpload = async (options: any) => {
+// 处理图片上传
+const handleImageUpload = async (options: any) => {
   const { file } = options;
-  editUploading.value = true;
+  uploading.value = true;
   
   try {
     const res = await uploadImage({
@@ -587,60 +449,45 @@ const handleEditImageUpload = async (options: any) => {
     });
 
     if (res.code === 0) {
-      editImageUrl.value = res.data;
-      editFormData.value.pic = res.data;
-      message("图片上传成功", { type: "success" });
+      imageUrl.value = res.data;
+      formData.value.pic = res.data;
+      message(t("game.playType.upload.success"), { type: "success" });
     } else {
-      message(res.msg || "图片上传失败", { type: "error" });
+      message(res.msg || t("game.playType.upload.fail"), { type: "error" });
     }
   } catch (error: any) {
-    console.error("图片上传失败:", error);
-    message(error?.message || "图片上传失败", { type: "error" });
+    console.error(t("game.playType.upload.fail"), error);
+    message(error?.message || t("game.playType.upload.fail"), { type: "error" });
   } finally {
-    editUploading.value = false;
+    uploading.value = false;
   }
 };
 
-// 触发编辑图片上传
-const triggerEditImageUpload = () => {
-  triggerEditImageSelect();
+// 触发图片上传
+const triggerImageUpload = () => {
+  triggerImageSelect();
 };
 
-// 触发编辑图片选择
-const triggerEditImageSelect = () => {
-  const uploadEl = editImageUploadRef.value?.$el?.querySelector('input[type="file"]');
+// 触发图片选择
+const triggerImageSelect = () => {
+  const uploadEl = imageUploadRef.value?.$el?.querySelector('input[type="file"]');
   if (uploadEl) {
     uploadEl.click();
   }
 };
 
-// 移除编辑图片
-const handleRemoveEditImage = () => {
-  editImageUrl.value = "";
-  editFormData.value.pic = "";
+// 移除图片
+const handleRemoveImage = () => {
+  imageUrl.value = "";
+  formData.value.pic = "";
 };
 
-// 编辑单行数据
-const handleEditRow = (row: TableRow) => {
-  showEditDialog.value = true;
-  // 回填数据
-  editFormData.value = {
-    id: row.id,
-    name: row.name,
-    shortname: row.shortname,
-    name_cn: row.name_cn,
-    pic: row.pic || "",
-    sort_no: row.sort_no || 1,
-    status: row.status || "1"
-  };
-  editImageUrl.value = row.pic || "";
-};
-
-// 关闭编辑对话框
-const handleCloseEditDialog = () => {
-  showEditDialog.value = false;
-  editFormRef.value?.resetFields();
-  editFormData.value = {
+// 打开新增对话框
+const handleAdd = () => {
+  isEdit.value = false;
+  showDialog.value = true;
+  // 重置表单
+  formData.value = {
     id: 0,
     name: "",
     shortname: "",
@@ -649,39 +496,106 @@ const handleCloseEditDialog = () => {
     sort_no: 1,
     status: "1"
   };
-  editImageUrl.value = "";
+  imageUrl.value = "";
 };
 
-// 提交编辑表单
-const handleSubmitEdit = async () => {
-  if (!editFormRef.value) return;
+// 编辑（批量）- 只有一条选中时才能编辑
+const handleEdit = () => {
+  if (multipleSelection.value.length !== 1) {
+    message(t("game.playType.message.selectOneToEdit"), { type: "warning" });
+    return;
+  }
+  // 调用编辑函数，与表格操作列的编辑按钮效果一致
+  handleEditRow(multipleSelection.value[0]);
+};
 
-  await editFormRef.value.validate(async (valid: boolean) => {
+// 编辑单行数据
+const handleEditRow = (row: TableRow) => {
+  isEdit.value = true;
+  showDialog.value = true;
+  // 回填数据
+  formData.value = {
+    id: row.id,
+    name: row.name,
+    shortname: row.shortname,
+    name_cn: row.name_cn,
+    pic: row.pic || "",
+    sort_no: row.sort_no || 1,
+    status: row.status || "1"
+  };
+  imageUrl.value = row.pic || "";
+};
+
+// 关闭对话框
+const handleCloseDialog = () => {
+  showDialog.value = false;
+  formRef.value?.resetFields();
+  formData.value = {
+    id: 0,
+    name: "",
+    shortname: "",
+    name_cn: "",
+    pic: "",
+    sort_no: 1,
+    status: "1"
+  };
+  imageUrl.value = "";
+};
+
+// 提交表单
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+
+  await formRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
-        const params: EditGamePlayTypeParams = {
-          id: editFormData.value.id,
-          name: editFormData.value.name,
-          shortname: editFormData.value.shortname,
-          name_cn: editFormData.value.name_cn,
-          pic: editFormData.value.pic,
-          sort_no: editFormData.value.sort_no,
-          status: editFormData.value.status
-        };
+        if (isEdit.value) {
+          // 编辑
+          const params: EditGamePlayTypeParams = {
+            id: formData.value.id,
+            name: formData.value.name,
+            shortname: formData.value.shortname,
+            name_cn: formData.value.name_cn,
+            pic: formData.value.pic,
+            sort_no: formData.value.sort_no,
+            status: formData.value.status
+          };
 
-        const res = await editGamePlayType(params);
+          const res = await editGamePlayType(params);
 
-        if (res.code === 0) {
-          message("编辑玩法类型成功", { type: "success" });
-          handleCloseEditDialog();
-          // 刷新列表
-          getList();
+          if (res.code === 0) {
+            message(t("game.playType.editSuccess"), { type: "success" });
+            handleCloseDialog();
+            // 刷新列表
+            getList();
+          } else {
+            message(res.msg || t("game.playType.editFail"), { type: "error" });
+          }
         } else {
-          message(res.msg || "编辑玩法类型失败", { type: "error" });
+          // 新增
+          const params: AddGamePlayTypeParams = {
+            name: formData.value.name,
+            shortname: formData.value.shortname,
+            name_cn: formData.value.name_cn,
+            pic: formData.value.pic,
+            sort_no: formData.value.sort_no,
+            status: formData.value.status
+          };
+
+          const res = await addGamePlayType(params);
+
+          if (res.code === 0) {
+            message(t("game.playType.addSuccess"), { type: "success" });
+            handleCloseDialog();
+            // 刷新列表
+            getList();
+          } else {
+            message(res.msg || t("game.playType.addFail"), { type: "error" });
+          }
         }
       } catch (error: any) {
-        console.error("编辑玩法类型失败:", error);
-        message(error?.message || "编辑玩法类型失败", { type: "error" });
+        console.error(isEdit.value ? t("game.playType.editFail") : t("game.playType.addFail"), error);
+        message(error?.message || (isEdit.value ? t("game.playType.editFail") : t("game.playType.addFail")), { type: "error" });
       }
     }
   });
@@ -690,18 +604,18 @@ const handleSubmitEdit = async () => {
 // 删除
 const handleDelete = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
+    message(t("game.playType.message.selectToDelete"), { type: "warning" });
     return;
   }
 
   // 构建删除确认消息
   const typeNames = multipleSelection.value.map(item => item.name_cn).join("、");
-  const confirmMessage = `确定删除玩法类型 ${typeNames}？`;
+  const confirmMessage = `${t("game.playType.delete.tip")} ${typeNames}？`;
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "删除玩法类型", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("game.playType.delete.title"), {
+      confirmButtonText: t("game.playType.buttons.confirm"),
+      cancelButtonText: t("game.playType.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -713,23 +627,23 @@ const handleDelete = async () => {
       const res = await deleteBatchGamePlayType({ ids });
 
       if (res.code === 0) {
-        message("删除成功", { type: "success" });
+        message(t("game.playType.delete.success"), { type: "success" });
         // 清空选中数据
         multipleSelection.value = [];
         // 刷新列表
         getList();
       } else {
-        message(res.msg || "删除失败", { type: "error" });
+        message(res.msg || t("game.playType.delete.fail"), { type: "error" });
       }
     } catch (error: any) {
-      console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      console.error(t("game.playType.delete.fail"), error);
+      message(error?.message || t("game.playType.delete.fail"), { type: "error" });
     } finally {
       deleteLoading.value = false;
     }
   } catch (error: any) {
     if (error !== "cancel") {
-      console.error("删除失败:", error);
+      console.error(t("game.playType.delete.fail"), error);
     }
   }
 };
@@ -737,13 +651,23 @@ const handleDelete = async () => {
 // 导出到excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("game.playType.message.selectToExport"), { type: "warning" });
     return;
   }
 
   const exportTitles = tableConfig.value
     .filter((col: any) => col.prop !== "pic") // 排除图片列
-    .map((col: any) => col.label);
+    .map((col: any) => {
+      if (col.prop === "id") return t("game.playType.table.id");
+      if (col.prop === "name") return t("game.playType.table.name");
+      if (col.prop === "shortname") return t("game.playType.table.shortname");
+      if (col.prop === "name_cn") return t("game.playType.table.name_cn");
+      if (col.prop === "sort_no") return t("game.playType.table.sort_no");
+      if (col.prop === "createtime") return t("game.playType.table.createTime");
+      if (col.prop === "updatetime") return t("game.playType.table.updateTime");
+      if (col.prop === "status") return t("game.playType.table.status");
+      return col.label;
+    });
   const exportProps = tableConfig.value
     .filter((col: any) => col.prop !== "pic") // 排除图片列
     .map((col: any) => col.prop);
@@ -751,7 +675,7 @@ const exportExcel = () => {
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status") {
-        return item.status === "1" ? "正常" : "隐藏";
+        return item.status === "1" ? t("game.playType.table.normal") : t("game.playType.table.hidden");
       }
       return item[prop as keyof TableRow] ?? "";
     });
@@ -761,16 +685,16 @@ const exportExcel = () => {
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "玩法类型";
+  const sheetName = t("game.playType.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `玩法类型.xlsx`;
+  const fileName = `${t("game.playType.export.fileName")}`;
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("game.playType.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -778,7 +702,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "玩法类型.json";
+  a.download = `${t("game.playType.export.sheetName")}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -793,11 +717,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="110"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('game.playType.buttons.search')"
+        :resetText="t('game.playType.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -815,7 +739,7 @@ const exportJson = () => {
         :action-bar="{
           buttons,
           width: '120px',
-          label: '操作'
+          label: t('game.playType.table.action')
         }"
         @selection-change="handleSelectionChange"
         width="100%"
@@ -825,7 +749,7 @@ const exportJson = () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t("game.playType.buttons.add") }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -834,7 +758,7 @@ const exportJson = () => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t("game.playType.buttons.edit") }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -844,12 +768,12 @@ const exportJson = () => {
             :loading="deleteLoading"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t("game.playType.buttons.delete") }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('game.playType.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -860,7 +784,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('game.playType.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -873,7 +797,7 @@ const exportJson = () => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('game.playType.toolbar.hideSearch') : t('game.playType.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -893,7 +817,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('game.playType.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -935,221 +859,111 @@ const exportJson = () => {
       />
     </el-card>
 
-    <!-- 新增玩法类型对话框 -->
+    <!-- 新增/编辑玩法类型对话框 -->
     <el-dialog
-      v-model="showAddDialog"
-      title="新增玩法类型"
+      v-model="showDialog"
+      :title="dialogTitle"
       width="500px"
       :close-on-click-modal="false"
-      @close="handleCloseAddDialog"
+      @close="handleCloseDialog"
     >
       <el-form
-        ref="addFormRef"
-        :model="addFormData"
-        :rules="addFormRules"
-        label-width="80px"
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="100px"
       >
-        <el-form-item label="玩法类型" prop="name">
+        <el-form-item :label="t('game.playType.search.name')" prop="name">
           <el-input
-            v-model="addFormData.name"
-            placeholder="请输入"
+            v-model="formData.name"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="玩法缩写" prop="shortname">
+        <el-form-item :label="t('game.playType.search.shortname')" prop="shortname">
           <el-input
-            v-model="addFormData.shortname"
-            placeholder="请输入"
+            v-model="formData.shortname"
+            :placeholder="t('placeholder.input')"
             maxlength="20"
           />
         </el-form-item>
-        <el-form-item label="中文名称" prop="name_cn">
+        <el-form-item :label="t('game.playType.search.name_cn')" prop="name_cn">
           <el-input
-            v-model="addFormData.name_cn"
-            placeholder="请输入"
+            v-model="formData.name_cn"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="图片">
+        <el-form-item :label="t('game.playType.table.pic')">
           <div class="image-upload-container">
             <div class="image-input-group">
               <el-input
-                v-model="addFormData.pic"
-                placeholder="请输入"
+                v-model="formData.pic"
+                :placeholder="t('placeholder.input')"
                 readonly
               />
-              <el-button type="primary" @click="triggerAddImageUpload" :loading="addUploading">
+              <el-button type="primary" @click="triggerImageUpload" :loading="uploading">
                 <el-icon><Upload /></el-icon>
-                上传
+                {{ t('game.playType.add.upload') }}
               </el-button>
-              <el-button @click="triggerAddImageSelect">
-                选择
+              <el-button @click="triggerImageSelect">
+                {{ t('game.playType.buttons.select') }}
               </el-button>
             </div>
             <div class="image-upload-area">
               <el-upload
-                ref="addImageUploadRef"
+                ref="imageUploadRef"
                 class="avatar-uploader"
                 :action="''"
                 :auto-upload="true"
                 :show-file-list="false"
-                :before-upload="beforeAddUpload"
-                :http-request="handleAddImageUpload"
+                :before-upload="beforeUpload"
+                :http-request="handleImageUpload"
                 style="display: none"
               >
               </el-upload>
               <div
-                v-if="!addImageUrl"
+                v-if="!imageUrl"
                 class="upload-placeholder"
-                @click="triggerAddImageSelect"
+                @click="triggerImageSelect"
               >
                 <el-icon class="upload-icon"><Plus /></el-icon>
-                <div class="upload-text">点击上传图片</div>
+                <div class="upload-text">{{ t('game.playType.add.uploadTip') }}</div>
               </div>
               <div v-else class="image-preview">
-                <img :src="addImageUrl" class="preview-image" />
+                <img :src="imageUrl" class="preview-image" />
                 <el-button
                   type="primary"
                   link
                   class="delete-btn"
-                  @click="handleRemoveAddImage"
+                  @click="handleRemoveImage"
                 >
-                  删除
+                  {{ t('game.playType.buttons.delete') }}
                 </el-button>
               </div>
             </div>
           </div>
         </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item :label="t('game.playType.table.sort_no')">
           <el-input-number
-            v-model="addFormData.sort_no"
+            v-model="formData.sort_no"
             :min="1"
             :max="9999"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="addFormData.status">
-            <el-radio label="1" value="1">开启</el-radio>
-            <el-radio label="-1" value="-1">关闭</el-radio>
+        <el-form-item :label="t('game.playType.search.status')">
+          <el-radio-group v-model="formData.status">
+            <el-radio label="1" value="1">{{ t("game.playType.table.normal") }}</el-radio>
+            <el-radio label="-1" value="-1">{{ t("game.playType.table.hidden") }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseAddDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitAdd" :loading="addUploading">
-            确定
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <!-- 编辑玩法类型对话框 -->
-    <el-dialog
-      v-model="showEditDialog"
-      title="编辑"
-      width="500px"
-      :close-on-click-modal="false"
-      @close="handleCloseEditDialog"
-    >
-      <el-form
-        ref="editFormRef"
-        :model="editFormData"
-        :rules="editFormRules"
-        label-width="80px"
-      >
-        <el-form-item label="玩法类型" prop="name">
-          <el-input
-            v-model="editFormData.name"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="玩法缩写" prop="shortname">
-          <el-input
-            v-model="editFormData.shortname"
-            placeholder="请输入"
-            maxlength="20"
-          />
-        </el-form-item>
-        <el-form-item label="中文名称" prop="name_cn">
-          <el-input
-            v-model="editFormData.name_cn"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="图片">
-          <div class="image-upload-container">
-            <div class="image-input-group">
-              <el-input
-                v-model="editFormData.pic"
-                placeholder="请输入"
-                readonly
-              />
-              <el-button type="primary" @click="triggerEditImageUpload" :loading="editUploading">
-                <el-icon><Upload /></el-icon>
-                上传
-              </el-button>
-              <el-button @click="triggerEditImageSelect">
-                选择
-              </el-button>
-            </div>
-            <div class="image-upload-area">
-              <el-upload
-                ref="editImageUploadRef"
-                class="avatar-uploader"
-                :action="''"
-                :auto-upload="true"
-                :show-file-list="false"
-                :before-upload="beforeEditUpload"
-                :http-request="handleEditImageUpload"
-                style="display: none"
-              >
-              </el-upload>
-              <div
-                v-if="!editImageUrl"
-                class="upload-placeholder"
-                @click="triggerEditImageSelect"
-              >
-                <el-icon class="upload-icon"><Plus /></el-icon>
-                <div class="upload-text">点击上传图片</div>
-              </div>
-              <div v-else class="image-preview">
-                <img :src="editImageUrl" class="preview-image" />
-                <el-button
-                  type="primary"
-                  link
-                  class="delete-btn"
-                  @click="handleRemoveEditImage"
-                >
-                  删除
-                </el-button>
-              </div>
-            </div>
-          </div>
-        </el-form-item>
-        <el-form-item label="排序">
-          <el-input-number
-            v-model="editFormData.sort_no"
-            :min="1"
-            :max="9999"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="editFormData.status">
-            <el-radio label="1" value="1">开启</el-radio>
-            <el-radio label="-1" value="-1">关闭</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseEditDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitEdit" :loading="editUploading">
-            确定
+          <el-button @click="handleCloseDialog">{{ t("game.playType.buttons.cancel") }}</el-button>
+          <el-button type="primary" @click="handleSubmit" :loading="uploading">
+            {{ t("game.playType.buttons.confirm") }}
           </el-button>
         </div>
       </template>

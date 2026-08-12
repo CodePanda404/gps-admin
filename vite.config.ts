@@ -27,7 +27,9 @@ export default ({ mode }: ConfigEnv): UserConfigExport => {
       proxy: {
         "/api": {
           // 这里填写后端地址
-          target: "https://api-test.gamez.plus/mill.php",
+          // 
+          // https://api-test.gamez.plus/mill.php
+          target: "https://api-v2.gamezz.plus/mill.php",
           changeOrigin: true,
           rewrite: path => path.replace(/^\/api/, "")
         }

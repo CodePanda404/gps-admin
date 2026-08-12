@@ -52,63 +52,71 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("player.depositWithdrawal.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "用户ID",
+    renderLabel: () => t("player.depositWithdrawal.search.userId"),
     prop: "user_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入用户ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "用户名",
+    renderLabel: () => t("player.depositWithdrawal.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "类型",
+    renderLabel: () => t("player.depositWithdrawal.search.type"),
     prop: "type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("placeholder.select")
     })),
     options: [
       {
-        label: "全部",
+        label: t("player.depositWithdrawal.search.all"),
+        renderLabel: () => t("player.depositWithdrawal.search.all"),
         value: ""
       },
       {
-        label: "存款",
+        label: t("player.depositWithdrawal.search.deposit"),
+        renderLabel: () => t("player.depositWithdrawal.search.deposit"),
         value: "1"
       },
       {
-        label: "取款",
+        label: t("player.depositWithdrawal.search.withdrawal"),
+        renderLabel: () => t("player.depositWithdrawal.search.withdrawal"),
         value: "2"
       }
     ]
   },
   {
     label: "创建时间",
+    renderLabel: () => t("player.depositWithdrawal.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -118,7 +126,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -128,7 +136,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -139,7 +147,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -150,7 +158,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -160,7 +168,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -217,6 +225,7 @@ const { tableData, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("player.depositWithdrawal.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -224,6 +233,7 @@ const tableConfig: any = ref([
   },
   {
     label: "用户ID",
+    renderHeader: () => t("player.depositWithdrawal.table.userId"),
     prop: "userId",
     tableColumnProps: {
       align: "center"
@@ -231,6 +241,7 @@ const tableConfig: any = ref([
   },
   {
     label: "用户名",
+    renderHeader: () => t("player.depositWithdrawal.table.username"),
     prop: "name",
     width: 220,
     tableColumnProps: {
@@ -239,6 +250,7 @@ const tableConfig: any = ref([
   },
   {
     label: "类型",
+    renderHeader: () => t("player.depositWithdrawal.table.type"),
     prop: "type",
     tableColumnProps: {
       align: "center"
@@ -246,27 +258,34 @@ const tableConfig: any = ref([
   },
   {
     label: "变动游戏币",
+    renderHeader: () => t("player.depositWithdrawal.table.changedAmount"),
     prop: "changedAmount",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 150
   },
   {
     label: "变动前",
+    renderHeader: () => t("player.depositWithdrawal.table.beforeAmount"),
     prop: "beforeAmount",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 130
   },
   {
     label: "变动后",
+    renderHeader: () => t("player.depositWithdrawal.table.afterAmount"),
     prop: "afterAmount",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 130
   },
   {
     label: "创建时间",
+    renderHeader: () => t("player.depositWithdrawal.table.createTime"),
     prop: "createTime",
     width: 160,
     tableColumnProps: {
@@ -275,6 +294,7 @@ const tableConfig: any = ref([
   },
   {
     label: "备注",
+    renderHeader: () => t("player.depositWithdrawal.table.remark"),
     prop: "remark",
     width: 200,
     tableColumnProps: {
@@ -329,11 +349,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("player.depositWithdrawal.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("player.depositWithdrawal.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -379,10 +399,10 @@ watch(
 // 导出到excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("player.depositWithdrawal.message.selectToExport"), { type: "warning" });
     return;
   }
-  const exportTitles = tableConfig.value.map((col: any) => col.label);
+  const exportTitles = tableConfig.value.map((col: any) => col.renderHeader());
   const exportProps = tableConfig.value.map((col: any) => col.prop);
   const res: string[][] = multipleSelection.value.map(
     (item: TableDepositWithdrawalItem) => {
@@ -394,16 +414,16 @@ const exportExcel = () => {
   res.unshift(exportTitles);
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "存取款明细";
+  const sheetName = t("player.depositWithdrawal.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `存取款明细.xlsx`;
+  const fileName = t("player.depositWithdrawal.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("player.depositWithdrawal.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -411,7 +431,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "存取款明细.json";
+  a.download = t("player.depositWithdrawal.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -426,11 +446,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="100"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('player.depositWithdrawal.buttons.search')"
+        :resetText="t('player.depositWithdrawal.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -448,7 +468,7 @@ const exportJson = () => {
         @selection-change="handleSelectionChange"
       >
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('player.depositWithdrawal.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -459,7 +479,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('player.depositWithdrawal.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -473,7 +493,7 @@ const exportJson = () => {
           <div>
             <!-- 筛选：点击切换搜索表单显示/隐藏 -->
             <el-tooltip
-              :content="showSearch ? '隐藏搜索' : '显示搜索'"
+              :content="showSearch ? t('player.depositWithdrawal.toolbar.hideSearch') : t('player.depositWithdrawal.toolbar.showSearch')"
               placement="top"
               :trigger="'hover'"
             >
@@ -493,7 +513,7 @@ const exportJson = () => {
               </span>
             </el-tooltip>
             <!-- 导出下拉菜单 -->
-            <el-tooltip content="导出" placement="top" :trigger="'hover'">
+            <el-tooltip :content="t('player.depositWithdrawal.toolbar.export')" placement="top" :trigger="'hover'">
               <span style="display: inline-block">
                 <el-dropdown
                   trigger="click"
@@ -516,10 +536,10 @@ const exportJson = () => {
                       <el-dropdown-item
                         class="export-active"
                         @click="exportJson"
-                        >Json</el-dropdown-item
+                        >{{ t("player.depositWithdrawal.export.json") }}</el-dropdown-item
                       >
                       <el-dropdown-item @click="exportExcel"
-                        >Excel</el-dropdown-item
+                        >{{ t("player.depositWithdrawal.export.excel") }}</el-dropdown-item
                       >
                     </el-dropdown-menu>
                   </template>

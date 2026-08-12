@@ -6,6 +6,7 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
 import { ElTabs, ElTabPane } from "element-plus";
 import {
@@ -28,6 +29,9 @@ import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
 import Filter from "~icons/ep/filter";
+
+// 国际化
+const { t } = useI18n();
 
 // 当前激活的标签页
 const activeTab = ref("daily");
@@ -85,11 +89,11 @@ const fetchSupplierList = async () => {
 };
 
 // 钱包类型选项
-const walletTypeOptions = [
-  { label: "全部", value: "" },
-  { label: "单一钱包", value: "1" },
-  { label: "转账钱包", value: "2" }
-];
+const walletTypeOptions = computed(() => [
+  { label: t("statistics.gameStatistics.search.all"), value: "" },
+  { label: t("statistics.gameStatistics.search.single"), value: "1" },
+  { label: t("statistics.gameStatistics.search.transfer"), value: "2" }
+]);
 
 /*  -----日报表搜索表单相关-----  */
 // 日报表搜索表单数据
@@ -108,43 +112,47 @@ const dailySearchData = ref({
 const dailySearchColumns: PlusColumn[] = [
   {
     label: "日期",
+    renderLabel: () => t("statistics.gameStatistics.search.date"),
     prop: "date",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD",
       valueFormat: "YYYY-MM-DD",
-      startPlaceholder: "开始日期",
-      endPlaceholder: "结束日期"
+      startPlaceholder: t("statistics.gameStatistics.search.startDate"),
+      endPlaceholder: t("statistics.gameStatistics.search.endDate")
     }))
   },
   {
     label: "游戏ID",
+    renderLabel: () => t("statistics.gameStatistics.search.game_id"),
     prop: "game_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入游戏ID"
+      placeholder: t("statistics.gameStatistics.search.game_id")
     }))
   },
   {
     label: "游戏名称",
+    renderLabel: () => t("statistics.gameStatistics.search.game_name"),
     prop: "game_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入游戏名称"
+      placeholder: t("statistics.gameStatistics.search.game_name")
     }))
   },
   {
     label: "分类",
+    renderLabel: () => t("statistics.gameStatistics.search.type_name"),
     prop: "type_name",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择分类",
+      placeholder: t("placeholder.select"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("statistics.gameStatistics.search.all"),
         value: ""
       },
       ...categoryOptions.value.map(item => ({
@@ -155,34 +163,38 @@ const dailySearchColumns: PlusColumn[] = [
   },
   {
     label: "厂商",
+    renderLabel: () => t("statistics.gameStatistics.search.provider"),
     prop: "provider",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入厂商"
+      placeholder: t("statistics.gameStatistics.search.provider")
     }))
   },
   {
     label: "商户ID",
+    renderLabel: () => t("statistics.gameStatistics.search.admin_id"),
     prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
+      placeholder: t("statistics.gameStatistics.search.admin_id")
     }))
   },
   {
     label: "商户名称",
+    renderLabel: () => t("statistics.gameStatistics.search.admin_name"),
     prop: "admin_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户名称"
+      placeholder: t("statistics.gameStatistics.search.admin_name")
     }))
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("statistics.gameStatistics.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择钱包类型"
+      placeholder: t("placeholder.select")
     })),
     options: walletTypeOptions
   }
@@ -205,43 +217,47 @@ const monthlySearchData = ref({
 const monthlySearchColumns: PlusColumn[] = [
   {
     label: "月份",
+    renderLabel: () => t("statistics.gameStatistics.search.month"),
     prop: "month",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "monthrange",
       format: "YYYY-MM",
       valueFormat: "YYYY-MM",
-      startPlaceholder: "开始月份",
-      endPlaceholder: "结束月份"
+      startPlaceholder: t("statistics.gameStatistics.search.startMonth"),
+      endPlaceholder: t("statistics.gameStatistics.search.endMonth")
     }))
   },
   {
     label: "游戏ID",
+    renderLabel: () => t("statistics.gameStatistics.search.game_id"),
     prop: "game_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入游戏ID"
+      placeholder: t("statistics.gameStatistics.search.game_id")
     }))
   },
   {
     label: "游戏名称",
+    renderLabel: () => t("statistics.gameStatistics.search.game_name"),
     prop: "game_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入游戏名称"
+      placeholder: t("statistics.gameStatistics.search.game_name")
     }))
   },
   {
     label: "分类",
+    renderLabel: () => t("statistics.gameStatistics.search.type_name"),
     prop: "type_name",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择分类",
+      placeholder: t("placeholder.select"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("statistics.gameStatistics.search.all"),
         value: ""
       },
       ...categoryOptions.value.map(item => ({
@@ -252,34 +268,38 @@ const monthlySearchColumns: PlusColumn[] = [
   },
   {
     label: "厂商",
+    renderLabel: () => t("statistics.gameStatistics.search.provider"),
     prop: "provider",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入厂商"
+      placeholder: t("statistics.gameStatistics.search.provider")
     }))
   },
   {
     label: "商户ID",
+    renderLabel: () => t("statistics.gameStatistics.search.admin_id"),
     prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
+      placeholder: t("statistics.gameStatistics.search.admin_id")
     }))
   },
   {
     label: "商户名称",
+    renderLabel: () => t("statistics.gameStatistics.search.admin_name"),
     prop: "admin_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户名称"
+      placeholder: t("statistics.gameStatistics.search.admin_name")
     }))
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("statistics.gameStatistics.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择钱包类型"
+      placeholder: t("placeholder.select")
     })),
     options: walletTypeOptions
   }
@@ -342,6 +362,7 @@ const totalWinLoss = ref<string | number>(0);
 const dailyTableConfig: any = ref([
   {
     label: "日期",
+    renderHeader: () => t("statistics.gameStatistics.table.date"),
     prop: "date",
     tableColumnProps: {
       align: "center"
@@ -350,6 +371,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "游戏ID",
+    renderHeader: () => t("statistics.gameStatistics.table.game_id"),
     prop: "game_id",
     tableColumnProps: {
       align: "center"
@@ -358,6 +380,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "游戏名称",
+    renderHeader: () => t("statistics.gameStatistics.table.game_name"),
     prop: "game_name",
     tableColumnProps: {
       align: "center"
@@ -366,34 +389,43 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "币种",
+    renderHeader: () => t("statistics.gameStatistics.table.currency"),
     prop: "currency",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "分类",
+    renderHeader: () => t("statistics.gameStatistics.table.type_name"),
     prop: "type_name",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "厂商",
+    renderHeader: () => t("statistics.gameStatistics.table.provider"),
     prop: "provider",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "商户ID",
+    renderHeader: () => t("statistics.gameStatistics.table.admin_id"),
     prop: "admin_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "商户名称",
+    renderHeader: () => t("statistics.gameStatistics.table.admin_name"),
     prop: "admin_name",
     tableColumnProps: {
       align: "center"
@@ -402,17 +434,19 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "钱包类型",
+    renderHeader: () => t("statistics.gameStatistics.table.wallet_type"),
     prop: "wallet_type",
     render: (value: number) => {
-      return value === 1 ? "单一钱包" : value === 2 ? "转账钱包" : "-";
+      return value === 1 ? t("statistics.gameStatistics.search.single") : value === 2 ? t("statistics.gameStatistics.search.transfer") : "-";
     },
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 120
   },
   {
     label: "下单总额",
+    renderHeader: () => t("statistics.gameStatistics.table.bet"),
     prop: "bet",
     tableColumnProps: {
       align: "center"
@@ -421,6 +455,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "派彩总额",
+    renderHeader: () => t("statistics.gameStatistics.table.win"),
     prop: "win",
     tableColumnProps: {
       align: "center"
@@ -429,6 +464,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "输赢",
+    renderHeader: () => t("statistics.gameStatistics.table.company_win"),
     prop: "company_win",
     tableColumnProps: {
       align: "center"
@@ -437,6 +473,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "成本价",
+    renderHeader: () => t("statistics.gameStatistics.table.cost_price"),
     prop: "cost_price",
     tableColumnProps: {
       align: "center"
@@ -445,14 +482,16 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "代理点位",
+    renderHeader: () => t("statistics.gameStatistics.table.agent_price"),
     prop: "agent_price",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 120
   },
   {
     label: "成本",
+    renderHeader: () => t("statistics.gameStatistics.table.cost"),
     prop: "cost",
     tableColumnProps: {
       align: "center"
@@ -461,6 +500,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "代理销售",
+    renderHeader: () => t("statistics.gameStatistics.table.agent_sale"),
     prop: "agent_sale",
     tableColumnProps: {
       align: "center"
@@ -469,27 +509,30 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "平台销售",
+    renderHeader: () => t("statistics.gameStatistics.table.sale"),
     prop: "sale",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 120
   },
   {
     label: "代理利润",
+    renderHeader: () => t("statistics.gameStatistics.table.agent_profit"),
     prop: "agent_profit",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 120
   },
   {
     label: "平台利润",
+    renderHeader: () => t("statistics.gameStatistics.table.profit"),
     prop: "profit",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 130
   }
 ]);
 
@@ -497,6 +540,7 @@ const dailyTableConfig: any = ref([
 const monthlyTableConfig: any = ref([
   {
     label: "月份",
+    renderHeader: () => t("statistics.gameStatistics.table.month"),
     prop: "month",
     tableColumnProps: {
       align: "center"
@@ -505,6 +549,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "游戏ID",
+    renderHeader: () => t("statistics.gameStatistics.table.game_id"),
     prop: "game_id",
     tableColumnProps: {
       align: "center"
@@ -513,6 +558,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "游戏名称",
+    renderHeader: () => t("statistics.gameStatistics.table.game_name"),
     prop: "game_name",
     tableColumnProps: {
       align: "center"
@@ -521,34 +567,43 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "币种",
+    renderHeader: () => t("statistics.gameStatistics.table.currency"),
     prop: "currency",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "分类",
+    renderHeader: () => t("statistics.gameStatistics.table.type_name"),
     prop: "type_name",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "厂商",
+    renderHeader: () => t("statistics.gameStatistics.table.provider"),
     prop: "provider",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "商户ID",
+    renderHeader: () => t("statistics.gameStatistics.table.admin_id"),
     prop: "admin_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "商户名称",
+    renderHeader: () => t("statistics.gameStatistics.table.admin_name"),
     prop: "admin_name",
     tableColumnProps: {
       align: "center"
@@ -557,17 +612,19 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "钱包类型",
+    renderHeader: () => t("statistics.gameStatistics.table.wallet_type"),
     prop: "wallet_type",
     render: (value: number) => {
-      return value === 1 ? "单一钱包" : value === 2 ? "转账钱包" : "-";
+      return value === 1 ? t("statistics.gameStatistics.search.single") : value === 2 ? t("statistics.gameStatistics.search.transfer") : "-";
     },
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 120
   },
   {
     label: "下单总额",
+    renderHeader: () => t("statistics.gameStatistics.table.bet"),
     prop: "bet",
     tableColumnProps: {
       align: "center"
@@ -576,6 +633,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "派彩总额",
+    renderHeader: () => t("statistics.gameStatistics.table.win"),
     prop: "win",
     tableColumnProps: {
       align: "center"
@@ -584,6 +642,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "输赢",
+    renderHeader: () => t("statistics.gameStatistics.table.company_win"),
     prop: "company_win",
     tableColumnProps: {
       align: "center"
@@ -592,6 +651,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "成本价",
+    renderHeader: () => t("statistics.gameStatistics.table.cost_price"),
     prop: "cost_price",
     tableColumnProps: {
       align: "center"
@@ -600,14 +660,16 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "代理点位",
+    renderHeader: () => t("statistics.gameStatistics.table.agent_price"),
     prop: "agent_price",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 110
   },
   {
     label: "成本",
+    renderHeader: () => t("statistics.gameStatistics.table.cost"),
     prop: "cost",
     tableColumnProps: {
       align: "center"
@@ -616,6 +678,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "代理销售",
+    renderHeader: () => t("statistics.gameStatistics.table.agent_sale"),
     prop: "agent_sale",
     tableColumnProps: {
       align: "center"
@@ -624,27 +687,30 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "平台销售",
+    renderHeader: () => t("statistics.gameStatistics.table.sale"),
     prop: "sale",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 120
   },
   {
     label: "代理利润",
+    renderHeader: () => t("statistics.gameStatistics.table.agent_profit"),
     prop: "agent_profit",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 120
   },
   {
     label: "平台利润",
+    renderHeader: () => t("statistics.gameStatistics.table.profit"),
     prop: "profit",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 130
   }
 ]);
 
@@ -706,7 +772,7 @@ const getList = async () => {
         totalOrderAmount.value = 0;
         totalPayoutAmount.value = 0;
         totalWinLoss.value = 0;
-        message(res.msg || "获取列表数据失败", { type: "error" });
+        message(res.msg || t("statistics.gameStatistics.message.getListFail"), { type: "error" });
       }
     } else {
       const { month, game_id, game_name, type_name, provider, admin_id, admin_name, wallet_type } = monthlySearchData.value;
@@ -755,12 +821,12 @@ const getList = async () => {
         totalOrderAmount.value = 0;
         totalPayoutAmount.value = 0;
         totalWinLoss.value = 0;
-        message(res.msg || "获取列表数据失败", { type: "error" });
+        message(res.msg || t("statistics.gameStatistics.message.getListFail"), { type: "error" });
       }
     }
   } catch (error: any) {
-    console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    console.error(t("statistics.gameStatistics.message.getListFail"), error);
+    message(error?.message || t("statistics.gameStatistics.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
     totalOrderAmount.value = 0;
@@ -810,8 +876,8 @@ onMounted(() => {
     <!-- 标签页容器 -->
     <el-card class="tabs-card">
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="日报表" name="daily" />
-        <el-tab-pane label="月报表" name="monthly" />
+        <el-tab-pane :label="t('statistics.gameStatistics.tabs.daily')" name="daily" />
+        <el-tab-pane :label="t('statistics.gameStatistics.tabs.monthly')" name="monthly" />
       </el-tabs>
     </el-card>
 
@@ -821,11 +887,11 @@ onMounted(() => {
         v-if="activeTab === 'daily'"
         v-model="dailySearchData"
         :columns="dailySearchColumns"
-        label-width="80"
+        label-width="120"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('statistics.gameStatistics.buttons.search')"
+        :resetText="t('statistics.gameStatistics.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -833,11 +899,11 @@ onMounted(() => {
         v-else
         v-model="monthlySearchData"
         :columns="monthlySearchColumns"
-        label-width="80"
+        label-width="120"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('statistics.gameStatistics.buttons.search')"
+        :resetText="t('statistics.gameStatistics.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -860,7 +926,7 @@ onMounted(() => {
         <template #title>
           <div class="stats-content" style="margin-left: 5px">
             <div class="stat-item">
-              <span class="stat-label">累计下单总额:</span>
+              <span class="stat-label">{{ t('statistics.gameStatistics.stats.totalOrderAmount') }}:</span>
               <el-input
                 v-model="totalOrderAmount"
                 readonly
@@ -869,7 +935,7 @@ onMounted(() => {
               />
             </div>
             <div class="stat-item">
-              <span class="stat-label">累计派彩总额:</span>
+              <span class="stat-label">{{ t('statistics.gameStatistics.stats.totalPayoutAmount') }}:</span>
               <el-input
                 v-model="totalPayoutAmount"
                 readonly
@@ -878,7 +944,7 @@ onMounted(() => {
               />
             </div>
             <div class="stat-item">
-              <span class="stat-label">累计输赢总额:</span>
+              <span class="stat-label">{{ t('statistics.gameStatistics.stats.totalWinLoss') }}:</span>
               <el-input
                 v-model="totalWinLoss"
                 readonly
@@ -890,7 +956,7 @@ onMounted(() => {
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('statistics.gameStatistics.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -901,7 +967,7 @@ onMounted(() => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('statistics.gameStatistics.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -914,7 +980,7 @@ onMounted(() => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('statistics.gameStatistics.toolbar.hideSearch') : t('statistics.gameStatistics.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -934,7 +1000,7 @@ onMounted(() => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('statistics.gameStatistics.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"

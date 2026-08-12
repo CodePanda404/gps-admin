@@ -6,8 +6,12 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import { ElMessageBox, ElTag, ElTooltip, ElButton, ElDropdown, ElDropdownMenu, ElDropdownItem } from "element-plus";
 import {
   getAgentList,
@@ -42,57 +46,63 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "代理账号",
+    renderLabel: () => t("agent.agentList.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入代理账号"
+      placeholder: t("agent.agentList.search.username")
     }))
   },
   {
     label: "昵称",
+    renderLabel: () => t("agent.agentList.search.nickname"),
     prop: "nickname",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入昵称"
+      placeholder: t("agent.agentList.search.nickname")
     }))
   },
   {
     label: "关联邮箱",
+    renderLabel: () => t("agent.agentList.search.email"),
     prop: "email",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入关联邮箱"
+      placeholder: t("agent.agentList.search.email")
     }))
   },
   {
     label: "关联商户",
+    renderLabel: () => t("agent.agentList.search.merchant"),
     prop: "merchant",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入关联商户"
+      placeholder: t("agent.agentList.search.merchant")
     }))
   },
   {
     label: "白名单IP",
+    renderLabel: () => t("agent.agentList.search.whitelist_ip"),
     prop: "whitelist_ip",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入白名单IP"
+      placeholder: t("agent.agentList.search.whitelist_ip")
     }))
   },
   {
     label: "登录时间",
+    renderLabel: () => t("agent.agentList.search.loginTime"),
     prop: "loginTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -102,7 +112,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -112,7 +122,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -123,7 +133,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -134,7 +144,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -144,7 +154,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -158,17 +168,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "创建时间",
+    renderLabel: () => t("agent.agentList.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -178,7 +189,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -188,7 +199,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -199,7 +210,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -210,7 +221,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -220,7 +231,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -234,25 +245,26 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "状态",
+    renderLabel: () => t("agent.agentList.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择状态"
+      placeholder: t("agent.agentList.search.status")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("agent.agentList.search.all"),
         value: ""
       },
       {
-        label: "正常",
+        label: t("agent.agentList.search.normal"),
         value: "normal"
       },
       {
-        label: "隐藏",
+        label: t("agent.agentList.search.hidden"),
         value: "hidden"
       }
-    ]
+    ])
   }
 ];
 
@@ -286,13 +298,13 @@ const handleRest = () => {
 // 新增按钮处理
 const handleAdd = () => {
   // TODO: 实现新增功能
-  message("新增功能待实现", { type: "info" });
+  message(t("agent.agentList.message.addNotImplemented"), { type: "info" });
 };
 
 // 编辑按钮处理
 const handleEdit = (row: TableRow) => {
   // TODO: 实现编辑功能
-  message("编辑功能待实现", { type: "info" });
+  message(t("agent.agentList.message.editNotImplemented"), { type: "info" });
 };
 
 // /  *----表格相关-----  */ */
@@ -308,14 +320,16 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "代理账号",
+    renderHeader: () => t("agent.agentList.table.username"),
     prop: "username",
-    minWidth: 120,
+    minWidth: 140,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "昵称",
+    renderHeader: () => t("agent.agentList.table.nickname"),
     prop: "nickname",
     minWidth: 120,
     tableColumnProps: {
@@ -324,22 +338,25 @@ const tableConfig: any = ref([
   },
   {
     label: "正式商户数",
+    renderHeader: () => t("agent.agentList.table.merchant_pro_num"),
     prop: "merchant_pro_num",
-    minWidth: 120,
+    minWidth: 180,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "测试商户数",
+    renderHeader: () => t("agent.agentList.table.merchant_test_num"),
     prop: "merchant_test_num",
-    minWidth: 120,
+    minWidth: 140,
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "关联邮箱",
+    renderHeader: () => t("agent.agentList.table.email"),
     prop: "email",
     minWidth: 150,
     render: () => "-",
@@ -349,6 +366,7 @@ const tableConfig: any = ref([
   },
   {
     label: "谷歌验证",
+    renderHeader: () => t("agent.agentList.table.google_verify"),
     prop: "google_verify",
     minWidth: 120,
     render: () => "-",
@@ -358,6 +376,7 @@ const tableConfig: any = ref([
   },
   {
     label: "关联商户",
+    renderHeader: () => t("agent.agentList.table.merchant"),
     prop: "merchant",
     minWidth: 150,
     render: () => "-",
@@ -367,6 +386,7 @@ const tableConfig: any = ref([
   },
   {
     label: "白名单IP",
+    renderHeader: () => t("agent.agentList.table.whitelist_ip"),
     prop: "whitelist_ip",
     minWidth: 150,
     render: () => "-",
@@ -376,6 +396,7 @@ const tableConfig: any = ref([
   },
   {
     label: "最近登录时间",
+    renderHeader: () => t("agent.agentList.table.last_login_time"),
     prop: "last_login_time",
     minWidth: 160,
     render: () => "-",
@@ -385,6 +406,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("agent.agentList.table.createTime"),
     prop: "createtime",
     minWidth: 160,
     tableColumnProps: {
@@ -393,6 +415,7 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("agent.agentList.table.status"),
     prop: "status",
     valueType: "switch",
     editable: true,
@@ -408,6 +431,7 @@ const tableConfig: any = ref([
   },
   {
     label: "操作",
+    renderHeader: () => t("agent.agentList.table.action"),
     prop: "action",
     width: 100,
     tableColumnProps: {
@@ -423,7 +447,7 @@ const tableConfig: any = ref([
           link: true,
           onClick: () => handleEdit(row)
         },
-        () => "编辑"
+        () => t("agent.agentList.buttons.edit")
       );
     }
   }
@@ -449,7 +473,7 @@ const handleStatusChange = async (params: {
   // 检查 row 是否存在
   if (!row) {
     console.error("行数据不存在");
-    message("操作失败：无法找到对应的数据", { type: "error" });
+    message(t("agent.agentList.message.dataNotFound"), { type: "error" });
     return;
   }
 
@@ -459,21 +483,21 @@ const handleStatusChange = async (params: {
   // 提示文字
   const confirmMessage =
     value === "normal"
-      ? `是否确定将代理${row.username}设置为正常状态?`
-      : `是否确定将代理${row.username}设置为隐藏状态?`;
+      ? t("agent.agentList.message.confirmSetNormal", { username: row.username })
+      : t("agent.agentList.message.confirmSetHidden", { username: row.username });
 
   // 查找当前行在 tableData 中的索引
   const index = tableData.value.findIndex(item => item.id === row.id);
   if (index === -1) {
-    message("操作失败：无法找到对应的数据", { type: "error" });
+    message(t("agent.agentList.message.dataNotFound"), { type: "error" });
     return;
   }
 
   try {
     // 弹出确认对话框
-    await ElMessageBox.confirm(confirmMessage, "切换状态", {
-      confirmButtonText: "确认",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("agent.agentList.statusSwitch.title"), {
+      confirmButtonText: t("agent.agentList.buttons.confirm"),
+      cancelButtonText: t("agent.agentList.buttons.cancel"),
       draggable: true
     });
 
@@ -483,7 +507,7 @@ const handleStatusChange = async (params: {
     });
 
     if (res.code === 0) {
-      message(value === "normal" ? "代理已设置为正常状态" : "代理已设置为隐藏状态", {
+      message(value === "normal" ? t("agent.agentList.message.setNormalSuccess") : t("agent.agentList.message.setHiddenSuccess"), {
         type: "success"
       });
       // 更新本地数据
@@ -497,7 +521,7 @@ const handleStatusChange = async (params: {
         ...tableData.value[index],
         status: originalStatus
       };
-      message(res.msg || "代理状态切换失败", { type: "error" });
+      message(res.msg || t("agent.agentList.message.statusSwitchFail"), { type: "error" });
     }
   } catch (error: any) {
     // 取消或出错恢复
@@ -507,7 +531,7 @@ const handleStatusChange = async (params: {
     };
     if (error !== "cancel") {
       console.error("状态切换失败:", error);
-      message(error?.message || "状态切换失败", { type: "error" });
+      message(error?.message || t("agent.agentList.message.statusSwitchFail"), { type: "error" });
     }
   }
 };
@@ -547,7 +571,7 @@ const getList = async () => {
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("agent.agentList.message.getListFail"), { type: "error" });
     tableData.value = [];
   } finally {
     loadingStatus.value = false;
@@ -566,17 +590,23 @@ const handlePageChange = (val: any) => {
 // 导出Excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("agent.agentList.message.selectToExport"), { type: "warning" });
     return;
   }
-  const exportTitles = tableConfig.value.map((col: any) => col.label);
+  const exportTitles = tableConfig.value.map((col: any) => {
+    // 使用 renderHeader 获取标题
+    if (col.renderHeader) {
+      return col.renderHeader();
+    }
+    return col.label || "";
+  });
   const exportProps = tableConfig.value.map((col: any) => col.prop);
 
   const res: string[][] = multipleSelection.value.map((item: any) => {
     return exportProps.map(prop => {
       // 处理特殊字段
       if (prop === "status") {
-        return item.status === "normal" ? "正常" : "隐藏";
+        return item.status === "normal" ? t("agent.agentList.table.normal") : t("agent.agentList.table.hidden");
       }
       return item[prop] ?? "";
     });
@@ -585,16 +615,16 @@ const exportExcel = () => {
   res.unshift(exportTitles);
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "数据报表";
+  const sheetName = t("agent.agentList.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `代理列表.xlsx`;
+  const fileName = t("agent.agentList.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("agent.agentList.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -602,7 +632,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "代理列表.json";
+  a.download = t("agent.agentList.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -617,11 +647,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="120"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('agent.agentList.buttons.search')"
+        :resetText="t('agent.agentList.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -643,11 +673,11 @@ const exportJson = () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t('agent.agentList.buttons.add') }}</span>
           </el-button>
         </template>
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('agent.agentList.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style="margin-right: 15px; cursor: pointer; outline: none"
@@ -658,7 +688,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('agent.agentList.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style="margin-right: 5px; cursor: pointer; outline: none"
@@ -671,7 +701,7 @@ const exportJson = () => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('agent.agentList.toolbar.hideSearch') : t('agent.agentList.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -687,7 +717,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('agent.agentList.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"

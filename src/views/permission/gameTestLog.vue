@@ -6,7 +6,11 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import { ElDialog, ElForm, ElFormItem, ElInput, ElTag, ElTooltip } from "element-plus";
 import {
   getCurrencyList,
@@ -42,18 +46,18 @@ const fetchCurrencyList = async () => {
 };
 
 // 钱包类型选项
-const walletTypeOptions = [
-  { label: "全部", value: "" },
-  { label: "单一钱包", value: "1" },
-  { label: "转账钱包", value: "2" }
-];
+const walletTypeOptions = computed(() => [
+  { label: t("permission.gameTestLog.search.all"), value: "" },
+  { label: t("permission.gameTestLog.search.single"), value: "1" },
+  { label: t("permission.gameTestLog.search.transfer"), value: "2" }
+]);
 
 // 状态选项
-const statusOptions = [
-  { label: "全部", value: "" },
-  { label: "正常", value: "1" },
-  { label: "停用", value: "0" }
-];
+const statusOptions = computed(() => [
+  { label: t("permission.gameTestLog.search.all"), value: "" },
+  { label: t("permission.gameTestLog.search.normal"), value: "1" },
+  { label: t("permission.gameTestLog.search.disabled"), value: "0" }
+]);
 
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
@@ -77,82 +81,91 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("permission.gameTestLog.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: t("permission.gameTestLog.search.id")
     }))
   },
   {
     label: "产品缩写",
+    renderLabel: () => t("permission.gameTestLog.search.shortname"),
     prop: "shortname",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入产品缩写"
+      placeholder: t("permission.gameTestLog.search.shortname")
     }))
   },
   {
     label: "产品名称",
+    renderLabel: () => t("permission.gameTestLog.search.type_name"),
     prop: "type_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入产品名称"
+      placeholder: t("permission.gameTestLog.search.type_name")
     }))
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("permission.gameTestLog.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择钱包类型"
+      placeholder: t("permission.gameTestLog.search.wallet_type")
     })),
     options: walletTypeOptions
   },
   {
     label: "币种",
+    renderLabel: () => t("permission.gameTestLog.search.currency"),
     prop: "currency",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入币种"
+      placeholder: t("permission.gameTestLog.search.currency")
     }))
   },
   {
     label: "游戏ID",
+    renderLabel: () => t("permission.gameTestLog.search.game_id"),
     prop: "game_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入游戏ID"
+      placeholder: t("permission.gameTestLog.search.game_id")
     }))
   },
   {
     label: "商户ID",
+    renderLabel: () => t("permission.gameTestLog.search.merchant_id"),
     prop: "merchant_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
+      placeholder: t("permission.gameTestLog.search.merchant_id")
     }))
   },
   {
     label: "用户",
+    renderLabel: () => t("permission.gameTestLog.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入用户"
+      placeholder: t("permission.gameTestLog.search.username")
     }))
   },
   {
     label: "创建时间",
+    renderLabel: () => t("permission.gameTestLog.search.createTime"),
     prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -162,7 +175,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -172,7 +185,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -183,7 +196,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -194,7 +207,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -204,7 +217,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -218,10 +231,11 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "状态",
+    renderLabel: () => t("permission.gameTestLog.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择状态"
+      placeholder: t("permission.gameTestLog.search.status")
     })),
     options: statusOptions
   }
@@ -264,6 +278,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("permission.gameTestLog.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -271,26 +286,30 @@ const tableConfig: any = ref([
   },
   {
     label: "钱包类型",
+    renderHeader: () => t("permission.gameTestLog.table.wallet_type"),
     prop: "wallet_type",
     render: (value: number | string) => {
-      if (value === 1) return "单一钱包";
-      if (value === 2) return "转账钱包";
+      if (value === 1) return t("permission.gameTestLog.table.single");
+      if (value === 2) return t("permission.gameTestLog.table.transfer");
       return value;
     },
     tableColumnProps: {
       align: "center"
     },
-    width: "100"
+    width: 110
   },
   {
     label: "币种",
+    renderHeader: () => t("permission.gameTestLog.table.currency"),
     prop: "currency",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "游戏ID",
+    renderHeader: () => t("permission.gameTestLog.table.game_id"),
     prop: "game_id",
     tableColumnProps: {
       align: "center"
@@ -299,6 +318,7 @@ const tableConfig: any = ref([
   },
   {
     label: "API报错信息",
+    renderHeader: () => t("permission.gameTestLog.table.error_message"),
     prop: "error_message",
     render: (value: string | null, row: TableRow) => {
       const errorMsg = value || row.message || "";
@@ -320,6 +340,7 @@ const tableConfig: any = ref([
   },
   {
     label: "产品分类ID",
+    renderHeader: () => t("permission.gameTestLog.table.type_id"),
     prop: "type_id",
     tableColumnProps: {
       align: "center"
@@ -328,6 +349,7 @@ const tableConfig: any = ref([
   },
   {
     label: "产品名称",
+    renderHeader: () => t("permission.gameTestLog.table.type_name"),
     prop: "type_name",
     tableColumnProps: {
       align: "center"
@@ -336,6 +358,7 @@ const tableConfig: any = ref([
   },
   {
     label: "产品缩写",
+    renderHeader: () => t("permission.gameTestLog.table.shortname"),
     prop: "shortname",
     tableColumnProps: {
       align: "center"
@@ -344,13 +367,16 @@ const tableConfig: any = ref([
   },
   {
     label: "商户ID",
+    renderHeader: () => t("permission.gameTestLog.table.merchant_id"),
     prop: "merchant_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 120
   },
   {
     label: "用户",
+    renderHeader: () => t("permission.gameTestLog.table.username"),
     prop: "username",
     tableColumnProps: {
       align: "center"
@@ -359,6 +385,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("permission.gameTestLog.table.createTime"),
     prop: "createtime",
     tableColumnProps: {
       align: "center"
@@ -367,20 +394,22 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("permission.gameTestLog.table.status"),
     prop: "status",
     render: (value: number | string) => {
       if (value === "1" || value === 1) {
-        return h(ElTag, { type: "success" }, () => "正常");
+        return h(ElTag, { type: "success" }, () => t("permission.gameTestLog.table.normal"));
       }
       if (value === "0" || value === 0) {
-        return h(ElTag, { type: "danger" }, () => "停用");
+        return h(ElTag, { type: "danger" }, () => t("permission.gameTestLog.table.disabled"));
       }
       return value;
     },
     tableColumnProps: {
       align: "center",
       fixed: "right"
-    }
+    },  
+    width: 100
   }
 ]);
 
@@ -421,11 +450,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("permission.gameTestLog.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("permission.gameTestLog.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -530,11 +559,11 @@ const handleViewDetail = async (row: TableRow) => {
       };
       showDetailDialog.value = true;
     } else {
-      message(res.msg || "获取详情失败", { type: "error" });
+      message(res.msg || t("permission.gameTestLog.message.getDetailFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取详情失败:", error);
-    message(error?.message || "获取详情失败", { type: "error" });
+    message(error?.message || t("permission.gameTestLog.message.getDetailFail"), { type: "error" });
   }
 };
 
@@ -557,7 +586,7 @@ const handleCloseDetailDialog = () => {
 // 配置操作列按钮
 buttons.value = [
   {
-    text: "详情",
+    text: () => t("permission.gameTestLog.buttons.detail"),
     code: "detail",
     props: {
       type: "primary",
@@ -584,11 +613,11 @@ onMounted(() => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="110"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('permission.gameTestLog.buttons.search')"
+        :resetText="t('permission.gameTestLog.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -606,7 +635,7 @@ onMounted(() => {
         :action-bar="{
           buttons,
           width: '120px',
-          label: '操作'
+          label: t('permission.gameTestLog.table.action')
         }"
         width="100%"
         height="90%"
@@ -614,7 +643,7 @@ onMounted(() => {
       >
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('permission.gameTestLog.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -625,7 +654,7 @@ onMounted(() => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('permission.gameTestLog.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -638,7 +667,7 @@ onMounted(() => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('permission.gameTestLog.toolbar.hideSearch') : t('permission.gameTestLog.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -658,7 +687,7 @@ onMounted(() => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('permission.gameTestLog.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"
@@ -689,24 +718,24 @@ onMounted(() => {
     <!-- 详情对话框 -->
     <el-dialog
       v-model="showDetailDialog"
-      title="测试日志详情"
+      :title="t('permission.gameTestLog.detail.title')"
       width="800px"
       @close="handleCloseDetailDialog"
     >
       <el-form :model="detailFormData" label-width="120px">
         <!-- 后台请求信息 -->
         <div style="margin-bottom: 30px;">
-          <h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">后台请求信息</h3>
-          <el-form-item label="请求地址:">
+          <h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">{{ t('permission.gameTestLog.detail.backendRequest') }}</h3>
+          <el-form-item :label="t('permission.gameTestLog.detail.requestUrl')">
             <el-input v-model="detailFormData.requestUrl" disabled />
           </el-form-item>
-          <el-form-item label="提示信息:">
+          <el-form-item :label="t('permission.gameTestLog.detail.promptMessage')">
             <el-input v-model="detailFormData.promptMessage" disabled />
           </el-form-item>
-          <el-form-item label="游戏链接:">
+          <el-form-item :label="t('permission.gameTestLog.detail.gameLink')">
             <el-input v-model="detailFormData.gameLink" disabled />
           </el-form-item>
-          <el-form-item label="请求头:">
+          <el-form-item :label="t('permission.gameTestLog.detail.requestHeader')">
             <el-input
               v-model="detailFormData.requestHeader"
               type="textarea"
@@ -714,7 +743,7 @@ onMounted(() => {
               disabled
             />
           </el-form-item>
-          <el-form-item label="请求体:">
+          <el-form-item :label="t('permission.gameTestLog.detail.requestBody')">
             <el-input
               v-model="detailFormData.requestBody"
               type="textarea"
@@ -722,7 +751,7 @@ onMounted(() => {
               disabled
             />
           </el-form-item>
-          <el-form-item label="请求结果:">
+          <el-form-item :label="t('permission.gameTestLog.detail.requestResult')">
             <el-input
               v-model="detailFormData.requestResult"
               type="textarea"
@@ -734,11 +763,11 @@ onMounted(() => {
 
         <!-- API请求信息 -->
         <div>
-          <h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">API请求信息</h3>
-          <el-form-item label="API请求地址:">
+          <h3 style="margin-bottom: 20px; font-size: 16px; font-weight: 600;">{{ t('permission.gameTestLog.detail.apiRequest') }}</h3>
+          <el-form-item :label="t('permission.gameTestLog.detail.apiRequestUrl')">
             <el-input v-model="detailFormData.apiRequestUrl" disabled />
           </el-form-item>
-          <el-form-item label="API请求参数:">
+          <el-form-item :label="t('permission.gameTestLog.detail.apiRequestParams')">
             <el-input
               v-model="detailFormData.apiRequestParams"
               type="textarea"
@@ -746,7 +775,7 @@ onMounted(() => {
               disabled
             />
           </el-form-item>
-          <el-form-item label="API请求结果:">
+          <el-form-item :label="t('permission.gameTestLog.detail.apiRequestResult')">
             <el-input
               v-model="detailFormData.apiRequestResult"
               type="textarea"
@@ -757,7 +786,7 @@ onMounted(() => {
         </div>
       </el-form>
       <template #footer>
-        <el-button @click="handleCloseDetailDialog">关闭</el-button>
+        <el-button @click="handleCloseDetailDialog">{{ t('permission.gameTestLog.buttons.close') }}</el-button>
       </template>
     </el-dialog>
   </div>

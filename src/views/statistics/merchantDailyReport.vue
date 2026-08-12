@@ -6,11 +6,15 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
 import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
 import Filter from "~icons/ep/filter";
+
+// 国际化
+const { t } = useI18n();
 
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
@@ -26,22 +30,24 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "商户ID",
+    renderLabel: () => t("statistics.merchantDailyReport.search.merchant_id"),
     prop: "merchant_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
+      placeholder: t("statistics.merchantDailyReport.search.merchant_id")
     }))
   },
   {
     label: "日期",
+    renderLabel: () => t("statistics.merchantDailyReport.search.date"),
     prop: "date",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD",
       valueFormat: "YYYY-MM-DD",
-      startPlaceholder: "开始日期",
-      endPlaceholder: "结束日期"
+      startPlaceholder: t("statistics.merchantDailyReport.search.startDate"),
+      endPlaceholder: t("statistics.merchantDailyReport.search.endDate")
     }))
   }
 ];
@@ -82,6 +88,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "日期",
+    renderHeader: () => t("statistics.merchantDailyReport.table.date"),
     prop: "date",
     tableColumnProps: {
       align: "center"
@@ -89,6 +96,7 @@ const tableConfig: any = ref([
   },
   {
     label: "商户ID",
+    renderHeader: () => t("statistics.merchantDailyReport.table.merchant_id"),
     prop: "merchant_id",
     tableColumnProps: {
       align: "center"
@@ -96,6 +104,7 @@ const tableConfig: any = ref([
   },
   {
     label: "商户名称",
+    renderHeader: () => t("statistics.merchantDailyReport.table.merchant_name"),
     prop: "merchant_name",
     tableColumnProps: {
       align: "center"
@@ -103,6 +112,7 @@ const tableConfig: any = ref([
   },
   {
     label: "投注金额",
+    renderHeader: () => t("statistics.merchantDailyReport.table.bet_amount"),
     prop: "bet_amount",
     tableColumnProps: {
       align: "center"
@@ -110,6 +120,7 @@ const tableConfig: any = ref([
   },
   {
     label: "中奖金额",
+    renderHeader: () => t("statistics.merchantDailyReport.table.win_amount"),
     prop: "win_amount",
     tableColumnProps: {
       align: "center"
@@ -117,6 +128,7 @@ const tableConfig: any = ref([
   },
   {
     label: "盈亏",
+    renderHeader: () => t("statistics.merchantDailyReport.table.profit_loss"),
     prop: "profit_loss",
     tableColumnProps: {
       align: "center"
@@ -133,8 +145,8 @@ const getList = async () => {
     tableData.value = [];
     total.value = 0;
   } catch (error: any) {
-    console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    console.error(t("statistics.merchantDailyReport.message.getListFail"), error);
+    message(error?.message || t("statistics.merchantDailyReport.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -168,8 +180,8 @@ getList();
         label-width="80"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('statistics.merchantDailyReport.buttons.search')"
+        :resetText="t('statistics.merchantDailyReport.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -188,7 +200,7 @@ getList();
       >
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('statistics.merchantDailyReport.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -199,7 +211,7 @@ getList();
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('statistics.merchantDailyReport.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -212,7 +224,7 @@ getList();
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('statistics.merchantDailyReport.toolbar.hideSearch') : t('statistics.merchantDailyReport.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -232,7 +244,7 @@ getList();
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('statistics.merchantDailyReport.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"

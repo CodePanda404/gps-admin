@@ -6,6 +6,7 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
 import { ElTabs, ElTabPane } from "element-plus";
 import {
@@ -24,6 +25,9 @@ import Upload from "~icons/ep/upload";
 import Monitor from "~icons/ep/monitor";
 import Grid from "~icons/ep/grid";
 import Filter from "~icons/ep/filter";
+
+// 国际化
+const { t } = useI18n();
 
 // 当前激活的标签页
 const activeTab = ref("daily");
@@ -47,11 +51,11 @@ const fetchCurrencyList = async () => {
 };
 
 // 钱包类型选项
-const walletTypeOptions = [
-  { label: "全部", value: "" },
-  { label: "单一钱包", value: "1" },
-  { label: "转账钱包", value: "2" }
-];
+const walletTypeOptions = computed(() => [
+  { label: t("statistics.playerStatistics.search.all"), value: "" },
+  { label: t("statistics.playerStatistics.search.single"), value: "1" },
+  { label: t("statistics.playerStatistics.search.transfer"), value: "2" }
+]);
 
 /*  -----日报表搜索表单相关-----  */
 // 日报表搜索表单数据
@@ -68,55 +72,61 @@ const dailySearchData = ref({
 const dailySearchColumns: PlusColumn[] = [
   {
     label: "日期",
+    renderLabel: () => t("statistics.playerStatistics.search.date"),
     prop: "date",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD",
       valueFormat: "YYYY-MM-DD",
-      startPlaceholder: "开始日期",
-      endPlaceholder: "结束日期"
+      startPlaceholder: t("statistics.playerStatistics.search.startDate"),
+      endPlaceholder: t("statistics.playerStatistics.search.endDate")
     }))
   },
   {
     label: "商户ID",
+    renderLabel: () => t("statistics.playerStatistics.search.admin_id"),
     prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
+      placeholder: t("statistics.playerStatistics.search.admin_id")
     }))
   },
   {
     label: "玩家ID",
+    renderLabel: () => t("statistics.playerStatistics.search.user_id"),
     prop: "user_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入玩家ID"
+      placeholder: t("statistics.playerStatistics.search.user_id")
     }))
   },
   {
     label: "币种",
+    renderLabel: () => t("statistics.playerStatistics.search.currency"),
     prop: "currency",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入币种"
+      placeholder: t("statistics.playerStatistics.search.currency")
     }))
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("statistics.playerStatistics.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择钱包类型"
+      placeholder: t("placeholder.select")
     })),
     options: walletTypeOptions
   },
   {
     label: "游戏名称",
+    renderLabel: () => t("statistics.playerStatistics.search.game_name"),
     prop: "game_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入游戏名称"
+      placeholder: t("statistics.playerStatistics.search.game_name")
     }))
   }
 ];
@@ -135,46 +145,51 @@ const monthlySearchData = ref({
 const monthlySearchColumns: PlusColumn[] = [
   {
     label: "月份",
+    renderLabel: () => t("statistics.playerStatistics.search.month"),
     prop: "month",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "monthrange",
       format: "YYYY-MM",
       valueFormat: "YYYY-MM",
-      startPlaceholder: "开始月份",
-      endPlaceholder: "结束月份"
+      startPlaceholder: t("statistics.playerStatistics.search.startMonth"),
+      endPlaceholder: t("statistics.playerStatistics.search.endMonth")
     }))
   },
   {
     label: "商户ID",
+    renderLabel: () => t("statistics.playerStatistics.search.admin_id"),
     prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
-    }))
+      placeholder: t("statistics.playerStatistics.search.admin_id")
+    })),
   },
   {
     label: "玩家ID",
+    renderLabel: () => t("statistics.playerStatistics.search.user_id"),
     prop: "user_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入玩家ID"
+      placeholder: t("statistics.playerStatistics.search.user_id")
     }))
   },
   {
     label: "币种",
+    renderLabel: () => t("statistics.playerStatistics.search.currency"),
     prop: "currency",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入币种"
+      placeholder: t("statistics.playerStatistics.search.currency")
     }))
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("statistics.playerStatistics.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择钱包类型"
+      placeholder: t("placeholder.select")
     })),
     options: walletTypeOptions
   }
@@ -232,6 +247,7 @@ const totalWinLoss = ref<string | number>(0);
 const dailyTableConfig: any = ref([
   {
     label: "日期",
+    renderHeader: () => t("statistics.playerStatistics.table.date"),
     prop: "date",
     tableColumnProps: {
       align: "center"
@@ -240,22 +256,25 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "商户ID",
+    renderHeader: () => t("statistics.playerStatistics.table.admin_id"),
     prop: "admin_id",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 110
   },
   {
     label: "玩家ID",
+    renderHeader: () => t("statistics.playerStatistics.table.user_id"),
     prop: "user_id",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 130
   },
   {
     label: "币种",
+    renderHeader: () => t("statistics.playerStatistics.table.currency"),
     prop: "currency",
     tableColumnProps: {
       align: "center"
@@ -263,6 +282,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "下单总额",
+    renderHeader: () => t("statistics.playerStatistics.table.bet"),
     prop: "bet",
     tableColumnProps: {
       align: "center"
@@ -271,6 +291,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "派彩总额",
+    renderHeader: () => t("statistics.playerStatistics.table.win"),
     prop: "win",
     tableColumnProps: {
       align: "center"
@@ -279,6 +300,7 @@ const dailyTableConfig: any = ref([
   },
   {
     label: "输赢",
+    renderHeader: () => t("statistics.playerStatistics.table.company_win"),
     prop: "company_win",
     tableColumnProps: {
       align: "center"
@@ -291,6 +313,7 @@ const dailyTableConfig: any = ref([
 const monthlyTableConfig: any = ref([
   {
     label: "月份",
+    renderHeader: () => t("statistics.playerStatistics.table.month"),
     prop: "month",
     tableColumnProps: {
       align: "center"
@@ -299,22 +322,25 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "商户ID",
+    renderHeader: () => t("statistics.playerStatistics.table.admin_id"),
     prop: "admin_id",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 110
   },
   {
     label: "玩家ID",
+    renderHeader: () => t("statistics.playerStatistics.table.user_id"),
     prop: "user_id",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 130
   },
   {
     label: "币种",
+    renderHeader: () => t("statistics.playerStatistics.table.currency"),
     prop: "currency",
     tableColumnProps: {
       align: "center"
@@ -322,6 +348,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "下单总额",
+    renderHeader: () => t("statistics.playerStatistics.table.bet"),
     prop: "bet",
     tableColumnProps: {
       align: "center"
@@ -330,6 +357,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "派彩总额",
+    renderHeader: () => t("statistics.playerStatistics.table.win"),
     prop: "win",
     tableColumnProps: {
       align: "center"
@@ -338,6 +366,7 @@ const monthlyTableConfig: any = ref([
   },
   {
     label: "输赢",
+    renderHeader: () => t("statistics.playerStatistics.table.company_win"),
     prop: "company_win",
     tableColumnProps: {
       align: "center"
@@ -402,7 +431,7 @@ const getList = async () => {
         totalOrderAmount.value = 0;
         totalPayoutAmount.value = 0;
         totalWinLoss.value = 0;
-        message(res.msg || "获取列表数据失败", { type: "error" });
+        message(res.msg || t("statistics.playerStatistics.message.getListFail"), { type: "error" });
       }
     } else {
       const { month, admin_id, user_id, currency, wallet_type } = monthlySearchData.value;
@@ -448,12 +477,12 @@ const getList = async () => {
         totalOrderAmount.value = 0;
         totalPayoutAmount.value = 0;
         totalWinLoss.value = 0;
-        message(res.msg || "获取列表数据失败", { type: "error" });
+        message(res.msg || t("statistics.playerStatistics.message.getListFail"), { type: "error" });
       }
     }
   } catch (error: any) {
-    console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    console.error(t("statistics.playerStatistics.message.getListFail"), error);
+    message(error?.message || t("statistics.playerStatistics.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
     totalOrderAmount.value = 0;
@@ -501,8 +530,8 @@ onMounted(() => {
     <!-- 标签页容器 -->
     <el-card class="tabs-card">
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="日报表" name="daily" />
-        <el-tab-pane label="月报表" name="monthly" />
+        <el-tab-pane :label="t('statistics.playerStatistics.tabs.daily')" name="daily" />
+        <el-tab-pane :label="t('statistics.playerStatistics.tabs.monthly')" name="monthly" />
       </el-tabs>
     </el-card>
 
@@ -512,11 +541,11 @@ onMounted(() => {
         v-if="activeTab === 'daily'"
         v-model="dailySearchData"
         :columns="dailySearchColumns"
-        label-width="80"
+        label-width="100"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('statistics.playerStatistics.buttons.search')"
+        :resetText="t('statistics.playerStatistics.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -524,11 +553,11 @@ onMounted(() => {
         v-else
         v-model="monthlySearchData"
         :columns="monthlySearchColumns"
-        label-width="80"
+        label-width="100"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('statistics.playerStatistics.buttons.search')"
+        :resetText="t('statistics.playerStatistics.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -551,7 +580,7 @@ onMounted(() => {
         <template #title>
           <div class="stats-content" style="margin-left: 5px">
             <div class="stat-item">
-              <span class="stat-label">累计下单总额:</span>
+              <span class="stat-label">{{ t('statistics.playerStatistics.stats.totalOrderAmount') }}:</span>
               <el-input
                 v-model="totalOrderAmount"
                 readonly
@@ -560,7 +589,7 @@ onMounted(() => {
               />
             </div>
             <div class="stat-item">
-              <span class="stat-label">累计派彩总额:</span>
+              <span class="stat-label">{{ t('statistics.playerStatistics.stats.totalPayoutAmount') }}:</span>
               <el-input
                 v-model="totalPayoutAmount"
                 readonly
@@ -569,7 +598,7 @@ onMounted(() => {
               />
             </div>
             <div class="stat-item">
-              <span class="stat-label">累计输赢总额:</span>
+              <span class="stat-label">{{ t('statistics.playerStatistics.stats.totalWinLoss') }}:</span>
               <el-input
                 v-model="totalWinLoss"
                 readonly
@@ -581,7 +610,7 @@ onMounted(() => {
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('statistics.playerStatistics.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -592,7 +621,7 @@ onMounted(() => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('statistics.playerStatistics.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -605,7 +634,7 @@ onMounted(() => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('statistics.playerStatistics.toolbar.hideSearch') : t('statistics.playerStatistics.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -625,7 +654,7 @@ onMounted(() => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('statistics.playerStatistics.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"

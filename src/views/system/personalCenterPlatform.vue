@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
 import { ElCard, ElForm, ElFormItem, ElInput, ElButton, ElDialog, ElMessageBox, ElImage, ElIcon } from "element-plus";
 import { sendEmailCode } from "@/api/user";
@@ -11,6 +12,9 @@ import Plus from "~icons/ep/plus";
 defineOptions({
   name: "PersonalCenterPlatform"
 });
+
+// 国际化
+const { t } = useI18n();
 
 // 个人信息数据
 const userInfo = ref({
@@ -43,7 +47,7 @@ const handleEdit = () => {
 // 点击保存按钮
 const handleSave = async () => {
   if (!personalFormData.value.nickname.trim()) {
-    message("昵称不能为空", { type: "warning" });
+    message(t("systemSettings.personalCenterPlatform.message.nicknameNotEmpty"), { type: "warning" });
     return;
   }
 
@@ -51,11 +55,11 @@ const handleSave = async () => {
     // TODO: 对接实际API
     await new Promise(resolve => setTimeout(resolve, 500));
     userInfo.value.nickname = personalFormData.value.nickname;
-    message("保存成功", { type: "success" });
+    message(t("systemSettings.personalCenterPlatform.message.saveSuccess"), { type: "success" });
     isEditMode.value = false;
   } catch (error: any) {
     console.error("保存失败:", error);
-    message(error?.message || "保存失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterPlatform.message.saveFail"), { type: "error" });
   }
 };
 
@@ -94,7 +98,7 @@ const formattedEmail = computed(() => {
 // 邮箱验证码倒计时
 const emailCountdownText = computed(() => {
   if (emailCountdown.value > 0) {
-    return `${emailCountdown.value}秒后可重新获取验证码`;
+    return t("systemSettings.personalCenterPlatform.message.emailCountdown", { seconds: emailCountdown.value });
   }
   return "";
 });
@@ -121,7 +125,7 @@ const sendChangeEmailCode = async () => {
   if (emailCountdown.value > 0) return;
   
   if (!changeEmailForm.value.email) {
-    message("请输入邮箱", { type: "warning" });
+    message(t("systemSettings.personalCenterPlatform.message.inputEmail"), { type: "warning" });
     return;
   }
 
@@ -129,11 +133,11 @@ const sendChangeEmailCode = async () => {
   try {
     // TODO: 对接实际API
     await new Promise(resolve => setTimeout(resolve, 500));
-    message("验证码已发送", { type: "success" });
+    message(t("systemSettings.personalCenterPlatform.message.emailCodeSent"), { type: "success" });
     startEmailCountdown();
   } catch (error: any) {
     console.error("发送验证码失败:", error);
-    message(error?.message || "发送验证码失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterPlatform.message.sendEmailCodeFail"), { type: "error" });
   } finally {
     emailLoading.value = false;
   }
@@ -168,12 +172,12 @@ const handleCloseChangeEmailDialog = () => {
 // 确认更改邮箱
 const handleConfirmChangeEmail = async () => {
   if (!changeEmailForm.value.emailCode) {
-    message("请输入邮箱验证码", { type: "warning" });
+    message(t("systemSettings.personalCenterPlatform.message.inputEmailCode"), { type: "warning" });
     return;
   }
 
   if (userInfo.value.googleStatus === 1 && !changeEmailForm.value.googleCode) {
-    message("请输入谷歌验证码", { type: "warning" });
+    message(t("systemSettings.personalCenterPlatform.message.inputGoogleCode"), { type: "warning" });
     return;
   }
 
@@ -181,11 +185,11 @@ const handleConfirmChangeEmail = async () => {
     // TODO: 对接实际API
     await new Promise(resolve => setTimeout(resolve, 500));
     userInfo.value.email = changeEmailForm.value.email;
-    message("更改邮箱成功", { type: "success" });
+    message(t("systemSettings.personalCenterPlatform.message.changeEmailSuccess"), { type: "success" });
     handleCloseChangeEmailDialog();
   } catch (error: any) {
     console.error("更改邮箱失败:", error);
-    message(error?.message || "更改邮箱失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterPlatform.message.changeEmailFail"), { type: "error" });
   }
 };
 
@@ -225,14 +229,14 @@ const handleCloseBindGoogleDialog = () => {
 // 复制密钥
 const handleCopySecret = () => {
   navigator.clipboard.writeText(bindGoogleForm.value.secret).then(() => {
-    message("密钥已复制", { type: "success" });
+    message(t("systemSettings.personalCenterPlatform.message.secretCopied"), { type: "success" });
   });
 };
 
 // 确认绑定谷歌验证
 const handleConfirmBindGoogle = async () => {
   if (!bindGoogleForm.value.verifyCode) {
-    message("请输入验证码", { type: "warning" });
+    message(t("systemSettings.personalCenterPlatform.message.inputVerifyCode"), { type: "warning" });
     return;
   }
 
@@ -240,11 +244,11 @@ const handleConfirmBindGoogle = async () => {
     // TODO: 对接实际API
     await new Promise(resolve => setTimeout(resolve, 500));
     userInfo.value.googleStatus = 1;
-    message("绑定谷歌验证成功", { type: "success" });
+    message(t("systemSettings.personalCenterPlatform.message.bindGoogleSuccess"), { type: "success" });
     handleCloseBindGoogleDialog();
   } catch (error: any) {
     console.error("绑定谷歌验证失败:", error);
-    message(error?.message || "绑定谷歌验证失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterPlatform.message.bindGoogleFail"), { type: "error" });
   }
 };
 
@@ -267,17 +271,17 @@ const handleCloseUnbindGoogleDialog = () => {
 // 确认解绑谷歌验证
 const handleConfirmUnbindGoogle = async () => {
   if (!unbindGoogleForm.value.verifyCode) {
-    message("请输入谷歌验证码", { type: "warning" });
+    message(t("systemSettings.personalCenterPlatform.message.inputGoogleCode"), { type: "warning" });
     return;
   }
 
   try {
     await ElMessageBox.confirm(
-      "解绑安全系数将降低,请谨慎解绑。",
-      "解绑确认",
+      t("systemSettings.personalCenterPlatform.message.unbindWarning"),
+      t("systemSettings.personalCenterPlatform.unbind.title"),
       {
-        confirmButtonText: "确认解绑",
-        cancelButtonText: "取消",
+        confirmButtonText: t("systemSettings.personalCenterPlatform.buttons.confirmUnbind"),
+        cancelButtonText: t("systemSettings.personalCenterPlatform.buttons.cancel"),
         type: "warning"
       }
     );
@@ -285,12 +289,12 @@ const handleConfirmUnbindGoogle = async () => {
     // TODO: 对接实际API
     await new Promise(resolve => setTimeout(resolve, 500));
     userInfo.value.googleStatus = 0;
-    message("解绑谷歌验证成功", { type: "success" });
+    message(t("systemSettings.personalCenterPlatform.message.unbindGoogleSuccess"), { type: "success" });
     handleCloseUnbindGoogleDialog();
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("解绑谷歌验证失败:", error);
-      message(error?.message || "解绑谷歌验证失败", { type: "error" });
+      message(error?.message || t("systemSettings.personalCenterPlatform.message.unbindGoogleFail"), { type: "error" });
     }
   }
 };
@@ -337,7 +341,7 @@ onUnmounted(() => {
     <el-card shadow="never" style="margin: 20px">
       <template #header>
         <div class="card-header">
-          <span>个人信息</span>
+          <span>{{ t("systemSettings.personalCenterPlatform.personalInfo.title") }}</span>
         </div>
       </template>
       <el-form
@@ -345,12 +349,12 @@ onUnmounted(() => {
         :model="personalFormData"
         label-width="100px"
       >
-        <el-form-item label="昵称">
+        <el-form-item :label="t('systemSettings.personalCenterPlatform.personalInfo.nickname')">
           <div style="display: flex; align-items: center; width: 62%;">
             <el-input
               v-model="personalFormData.nickname"
               :disabled="!isEditMode"
-              placeholder="请输入昵称"
+              :placeholder="t('systemSettings.personalCenterPlatform.personalInfo.nicknamePlaceholder')"
               style="margin-right: 10px;"
             />
             <el-button
@@ -358,38 +362,38 @@ onUnmounted(() => {
               type="primary"
               @click="handleEdit"
             >
-              修改
+              {{ t("systemSettings.personalCenterPlatform.buttons.edit") }}
             </el-button>
             <template v-else>
               <el-button type="primary" @click="handleSave">
-                保存
+                {{ t("systemSettings.personalCenterPlatform.buttons.save") }}
               </el-button>
               <el-button @click="handleCancel">
-                取消
+                {{ t("systemSettings.personalCenterPlatform.buttons.cancel") }}
               </el-button>
             </template>
           </div>
         </el-form-item>
         <div style="width: 60%;">
-          <el-form-item label="账号">
+          <el-form-item :label="t('systemSettings.personalCenterPlatform.personalInfo.username')">
           <el-input
             :model-value="userInfo.username"
             disabled
-            placeholder="账号"
+            :placeholder="t('systemSettings.personalCenterPlatform.personalInfo.username')"
           />
         </el-form-item>
-        <el-form-item label="部门">
+        <el-form-item :label="t('systemSettings.personalCenterPlatform.personalInfo.department')">
           <el-input
             :model-value="userInfo.department"
             disabled
-            placeholder="部门"
+            :placeholder="t('systemSettings.personalCenterPlatform.personalInfo.department')"
           />
         </el-form-item>
-        <el-form-item label="角色">
+        <el-form-item :label="t('systemSettings.personalCenterPlatform.personalInfo.role')">
           <el-input
             :model-value="userInfo.role"
             disabled
-            placeholder="角色"
+            :placeholder="t('systemSettings.personalCenterPlatform.personalInfo.role')"
           />
         </el-form-item>
         </div>
@@ -401,32 +405,32 @@ onUnmounted(() => {
     <el-card shadow="never" style="margin: 20px">
       <template #header>
         <div class="card-header">
-          <span>安全信息</span>
+          <span>{{ t("systemSettings.personalCenterPlatform.securityInfo.title") }}</span>
         </div>
       </template>
       <el-form
         label-width="100px"
       >
         <div style="width: 60%;">
-          <el-form-item label="邮箱">
+          <el-form-item :label="t('systemSettings.personalCenterPlatform.securityInfo.email')">
             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
               <el-input
-                :model-value="formattedEmail || '未绑定'"
-                placeholder="请输入内容"
+                :model-value="formattedEmail || t('systemSettings.personalCenterPlatform.notBound')"
+                :placeholder="t('placeholder.input')"
                 style="flex: 1"
               />
               <el-button
                 type="primary"
                 @click="handleChangeEmail"
               >
-                更改
+                {{ t("systemSettings.personalCenterPlatform.buttons.change") }}
               </el-button>
             </div>
           </el-form-item>
-          <el-form-item label="谷歌验证">
+          <el-form-item :label="t('systemSettings.personalCenterPlatform.securityInfo.googleVerify')">
             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
               <el-input
-                :model-value="userInfo.googleStatus === 1 ? '已绑定' : '谷歌验证未绑定'"
+                :model-value="userInfo.googleStatus === 1 ? t('systemSettings.personalCenterPlatform.bound') : t('systemSettings.personalCenterPlatform.googleNotBound')"
                 disabled
                 style="flex: 1"
               />
@@ -435,14 +439,14 @@ onUnmounted(() => {
                 type="primary"
                 @click="handleBindGoogle"
               >
-                绑定
+                {{ t("systemSettings.personalCenterPlatform.buttons.bind") }}
               </el-button>
               <el-button
                 v-else
                 type="primary"
                 @click="handleUnbindGoogle"
               >
-                解绑
+                {{ t("systemSettings.personalCenterPlatform.buttons.unbind") }}
               </el-button>
             </div>
           </el-form-item>
@@ -453,26 +457,26 @@ onUnmounted(() => {
     <!-- 更改邮箱对话框 -->
     <el-dialog
       v-model="showChangeEmailDialog"
-      title="输入邮箱验证码"
+      :title="t('systemSettings.personalCenterPlatform.changeEmail.title')"
       width="480px"
       :close-on-click-modal="false"
       @close="handleCloseChangeEmailDialog"
     >
       <div class="email-verify-content">
         <p class="email-verify-tip">
-          验证码已发送至 {{ formattedEmail }}，有效期10分钟
+          {{ t("systemSettings.personalCenterPlatform.changeEmail.tip", { email: formattedEmail }) }}
         </p>
         <p class="email-verify-warning">
-          邮箱已停用?请联系管理员
+          {{ t("systemSettings.personalCenterPlatform.changeEmail.warning") }}
         </p>
         <el-form
           ref="changeEmailFormRef"
           :model="changeEmailForm"
         >
-          <el-form-item label="验证码">
+          <el-form-item :label="t('systemSettings.personalCenterPlatform.changeEmail.verifyCode')">
             <el-input
               v-model="changeEmailForm.emailCode"
-              placeholder="请输入验证码"
+              :placeholder="t('systemSettings.personalCenterPlatform.changeEmail.verifyCodePlaceholder')"
               clearable
             />
             <div v-if="emailCountdownText" class="countdown-text">
@@ -486,14 +490,14 @@ onUnmounted(() => {
                 @click="sendChangeEmailCode"
                 :loading="emailLoading"
               >
-                重新获取验证码
+                {{ t("systemSettings.personalCenterPlatform.changeEmail.resendCode") }}
               </el-button>
             </div>
           </el-form-item>
-          <el-form-item v-if="userInfo.googleStatus === 1" label="验证码">
+          <el-form-item v-if="userInfo.googleStatus === 1" :label="t('systemSettings.personalCenterPlatform.changeEmail.googleCode')">
             <el-input
               v-model="changeEmailForm.googleCode"
-              placeholder="请输入谷歌验证码"
+              :placeholder="t('systemSettings.personalCenterPlatform.changeEmail.googleCodePlaceholder')"
               clearable
             />
           </el-form-item>
@@ -501,9 +505,9 @@ onUnmounted(() => {
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseChangeEmailDialog">返回</el-button>
+          <el-button @click="handleCloseChangeEmailDialog">{{ t("systemSettings.personalCenterPlatform.buttons.back") }}</el-button>
           <el-button type="primary" @click="handleConfirmChangeEmail">
-            下一步
+            {{ t("systemSettings.personalCenterPlatform.buttons.next") }}
           </el-button>
         </div>
       </template>
@@ -512,27 +516,27 @@ onUnmounted(() => {
     <!-- 绑定谷歌验证对话框 -->
     <el-dialog
       v-model="showBindGoogleDialog"
-      title="设置谷歌验证器"
+      :title="t('systemSettings.personalCenterPlatform.bindGoogle.title')"
       width="600px"
       :close-on-click-modal="false"
       @close="handleCloseBindGoogleDialog"
     >
       <div class="bind-google-content">
         <div class="step-section">
-          <h3>第一步: 下载Google Authenticator应用</h3>
+          <h3>{{ t("systemSettings.personalCenterPlatform.bindGoogle.step1") }}</h3>
           <div class="download-buttons">
             <el-button type="success">
               <el-icon><component :is="Plus" /></el-icon>
-              <span style="margin-left: 5px;">Android 下载</span>
+              <span style="margin-left: 5px;">{{ t("systemSettings.personalCenterPlatform.bindGoogle.androidDownload") }}</span>
             </el-button>
             <el-button type="primary">
               <el-icon><component :is="Plus" /></el-icon>
-              <span style="margin-left: 5px;">iOS 下载</span>
+              <span style="margin-left: 5px;">{{ t("systemSettings.personalCenterPlatform.bindGoogle.iosDownload") }}</span>
             </el-button>
           </div>
         </div>
         <div class="step-section">
-          <h3>第二步: 扫描二维码或手动输入密钥</h3>
+          <h3>{{ t("systemSettings.personalCenterPlatform.bindGoogle.step2") }}</h3>
           <div class="qr-section">
             <div class="qr-code-wrapper">
               <el-image
@@ -543,7 +547,7 @@ onUnmounted(() => {
               />
             </div>
             <div class="secret-section">
-              <div class="secret-label">手动输入密钥:</div>
+              <div class="secret-label">{{ t("systemSettings.personalCenterPlatform.bindGoogle.manualInput") }}</div>
               <div class="secret-input-wrapper">
                 <el-input
                   :model-value="bindGoogleForm.secret"
@@ -553,17 +557,19 @@ onUnmounted(() => {
                 <el-button
                   type="primary"
                   @click="handleCopySecret"
-                />
+                >
+                  {{ t("systemSettings.personalCenterPlatform.buttons.copy") }}
+                </el-button>
               </div>
             </div>
           </div>
         </div>
         <div class="step-section">
-          <h3>第三步: 输入验证码</h3>
-          <el-form-item label="验证码">
+          <h3>{{ t("systemSettings.personalCenterPlatform.bindGoogle.step3") }}</h3>
+          <el-form-item :label="t('systemSettings.personalCenterPlatform.bindGoogle.verifyCode')">
             <el-input
               v-model="bindGoogleForm.verifyCode"
-              placeholder="请输入验证码"
+              :placeholder="t('systemSettings.personalCenterPlatform.bindGoogle.verifyCodePlaceholder')"
               clearable
             />
           </el-form-item>
@@ -571,9 +577,9 @@ onUnmounted(() => {
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseBindGoogleDialog">返回</el-button>
+          <el-button @click="handleCloseBindGoogleDialog">{{ t("systemSettings.personalCenterPlatform.buttons.back") }}</el-button>
           <el-button type="primary" @click="handleConfirmBindGoogle">
-            确认绑定
+            {{ t("systemSettings.personalCenterPlatform.buttons.confirmBind") }}
           </el-button>
         </div>
       </template>
@@ -582,28 +588,28 @@ onUnmounted(() => {
     <!-- 解绑谷歌验证对话框 -->
     <el-dialog
       v-model="showUnbindGoogleDialog"
-      title="解绑谷歌验证"
+      :title="t('systemSettings.personalCenterPlatform.unbind.title')"
       width="480px"
       :close-on-click-modal="false"
       @close="handleCloseUnbindGoogleDialog"
     >
       <div class="unbind-google-content">
         <p class="unbind-warning">
-          解绑安全系数将降低,请谨慎解绑。
+          {{ t("systemSettings.personalCenterPlatform.unbind.warning") }}
         </p>
-        <el-form-item label="验证码">
+        <el-form-item :label="t('systemSettings.personalCenterPlatform.unbind.verifyCode')">
           <el-input
             v-model="unbindGoogleForm.verifyCode"
-            placeholder="请输入谷歌验证码"
+            :placeholder="t('systemSettings.personalCenterPlatform.unbind.verifyCodePlaceholder')"
             clearable
           />
         </el-form-item>
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseUnbindGoogleDialog">取消</el-button>
+          <el-button @click="handleCloseUnbindGoogleDialog">{{ t("systemSettings.personalCenterPlatform.buttons.cancel") }}</el-button>
           <el-button type="primary" @click="handleConfirmUnbindGoogle">
-            确认解绑
+            {{ t("systemSettings.personalCenterPlatform.buttons.confirmUnbind") }}
           </el-button>
         </div>
       </template>

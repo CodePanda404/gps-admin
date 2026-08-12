@@ -6,7 +6,11 @@ defineOptions({
 });
 import { type PlusColumn, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import {
   getRoleManagementList,
   getRoleTree,
@@ -51,6 +55,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("permission.roleManagement.table.id"),
     prop: "id",
     width: 80,
     tableColumnProps: {
@@ -59,20 +64,21 @@ const tableConfig: any = ref([
   },
   {
     label: "父级",
+    renderHeader: () => t("permission.roleManagement.table.parent"),
     prop: "parent",
     minWidth: 120,
     render: (value: string, row: TableRow) => {
       // 根据pid查找父级名称
       if (row.pid === 0) {
-        return "无";
+        return t("permission.roleManagement.table.none");
       }
       const parentItem = tableData.value.find(item => item.id === row.pid);
       if (parentItem) {
         // 去除HTML实体和spacer，只显示纯名称
         const parentName = parentItem.name.replace(/&nbsp;|├|│|└/g, "").trim();
-        return parentName || "无";
+        return parentName || t("permission.roleManagement.table.none");
       }
-      return value || "无";
+      return value || t("permission.roleManagement.table.none");
     },
     tableColumnProps: {
       align: "center"
@@ -80,6 +86,7 @@ const tableConfig: any = ref([
   },
   {
     label: "名称",
+    renderHeader: () => t("permission.roleManagement.table.name"),
     prop: "name",
     minWidth: 200,
     render: (value: string) => {
@@ -96,13 +103,14 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("permission.roleManagement.table.status"),
     prop: "status",
     width: 100,
     render: (value: string) => {
       const isNormal = value === "normal" || value === "1";
       return h(ElTag, {
         type: isNormal ? "success" : "danger"
-      }, () => isNormal ? "正常" : "停用");
+      }, () => isNormal ? t("permission.roleManagement.table.normal") : t("permission.roleManagement.table.disabled"));
     },
     tableColumnProps: {
       align: "center"
@@ -113,7 +121,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: () => t("permission.roleManagement.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -124,7 +132,7 @@ buttons.value = [
     }
   },
   {
-    text: "删除",
+    text: () => t("permission.roleManagement.buttons.delete"),
     code: "delete",
     props: {
       type: "danger"
@@ -146,7 +154,7 @@ const getList = async () => {
       // 转换数据以匹配表格显示
       tableData.value = res.data.rows.map((item: RoleManagementItem) => {
         // 查找父级名称
-        let parentName = "无";
+        let parentName = t("permission.roleManagement.table.none");
         if (item.pid !== 0) {
           const parentItem = res.data.rows.find((p: RoleManagementItem) => p.id === item.pid);
           if (parentItem) {
@@ -164,11 +172,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("permission.roleManagement.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("permission.roleManagement.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -193,7 +201,9 @@ getList();
 
 // 对话框相关
 const showDialog = ref(false);
-const dialogTitle = ref("新增");
+const dialogTitle = computed(() => {
+  return isEdit.value ? t("permission.roleManagement.edit.title") : t("permission.roleManagement.add.title");
+});
 const isEdit = ref(false);
 const formRef = ref<FormInstance>();
 const formData = ref({
@@ -205,7 +215,7 @@ const formData = ref({
 
 // 父级选项（从API数据动态生成）
 const parentOptions = computed(() => {
-  const options = [{ label: "无", value: "" }];
+  const options = [{ label: t("permission.roleManagement.form.none"), value: "" }];
   // 从tableData中获取所有角色作为父级选项
   tableData.value.forEach(item => {
     const displayName = item.name.replace(/&nbsp;|├|│|└/g, "").trim();
@@ -220,7 +230,7 @@ const parentOptions = computed(() => {
 // 表单验证规则
 const formRules = {
   name: [
-    { required: true, message: "请输入名称", trigger: "blur" }
+    { required: true, message: t("permission.roleManagement.form.nameRequired"), trigger: "blur" }
   ]
 };
 
@@ -403,7 +413,6 @@ const updatePermission = (nodeId: string | number, permission: string, checked: 
 // 打开新增对话框
 const handleAdd = async () => {
   isEdit.value = false;
-  dialogTitle.value = "添加";
   formData.value = {
     id: 0,
     parent: "",
@@ -419,7 +428,7 @@ const handleAdd = async () => {
   try {
     const menuRes = await getMenuList();
     if (menuRes.code !== 0 || !menuRes.data || !menuRes.data.rows) {
-      message(menuRes.msg || "获取菜单列表失败", { type: "error" });
+      message(menuRes.msg || t("permission.roleManagement.message.getMenuListFail"), { type: "error" });
       showDialog.value = true;
       return;
     }
@@ -432,7 +441,7 @@ const handleAdd = async () => {
     expandedKeys.value = getAllNodeKeys(permissionTreeData.value);
   } catch (error: any) {
     console.error("获取权限树数据失败:", error);
-    message(error?.message || "获取权限树数据失败", { type: "error" });
+    message(error?.message || t("permission.roleManagement.message.getPermissionTreeFail"), { type: "error" });
   }
   
   showDialog.value = true;
@@ -441,7 +450,7 @@ const handleAdd = async () => {
 // 打开编辑对话框
 const handleEdit = () => {
   if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑", { type: "warning" });
+    message(t("permission.roleManagement.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   handleEditRow(multipleSelection.value[0]);
@@ -450,7 +459,6 @@ const handleEdit = () => {
 // 编辑单行数据
 const handleEditRow = async (row: TableRow) => {
   isEdit.value = true;
-  dialogTitle.value = "编辑";
   
   // 处理名称，去除HTML实体和spacer
   const displayName = row.name.replace(/&nbsp;|├|│|└/g, "").trim();
@@ -474,7 +482,7 @@ const handleEditRow = async (row: TableRow) => {
     // 1. 获取所有菜单列表
     const menuRes = await getMenuList();
     if (menuRes.code !== 0 || !menuRes.data || !menuRes.data.rows) {
-      message(menuRes.msg || "获取菜单列表失败", { type: "error" });
+      message(menuRes.msg || t("permission.roleManagement.message.getMenuListFail"), { type: "error" });
       showDialog.value = true;
       return;
     }
@@ -513,7 +521,7 @@ const handleEditRow = async (row: TableRow) => {
     expandedKeys.value = getAllNodeKeys(permissionTreeData.value);
   } catch (error: any) {
     console.error("获取权限树数据失败:", error);
-    message(error?.message || "获取权限树数据失败", { type: "error" });
+    message(error?.message || t("permission.roleManagement.message.getPermissionTreeFail"), { type: "error" });
   }
   
   showDialog.value = true;
@@ -569,12 +577,12 @@ const handleSubmit = async () => {
           });
           
           if (res.code === 0) {
-            message("编辑成功", { type: "success" });
+            message(t("permission.roleManagement.message.editSuccess"), { type: "success" });
             handleCloseDialog();
             // 重新获取列表数据
             await getList();
           } else {
-            message(res.msg || "编辑失败", { type: "error" });
+            message(res.msg || t("permission.roleManagement.message.editFail"), { type: "error" });
           }
         } else {
           // 新增角色
@@ -586,17 +594,17 @@ const handleSubmit = async () => {
           });
           
           if (res.code === 0) {
-            message("新增成功", { type: "success" });
+            message(t("permission.roleManagement.message.addSuccess"), { type: "success" });
             handleCloseDialog();
             // 重新获取列表数据
             await getList();
           } else {
-            message(res.msg || "新增失败", { type: "error" });
+            message(res.msg || t("permission.roleManagement.message.addFail"), { type: "error" });
           }
         }
       } catch (error: any) {
         console.error("提交失败:", error);
-        message(error?.message || "提交失败", { type: "error" });
+        message(error?.message || t("permission.roleManagement.message.submitFail"), { type: "error" });
       }
     }
   });
@@ -605,12 +613,14 @@ const handleSubmit = async () => {
 // 删除单条数据
 const handleDelete = async (row: TableRow) => {
   try {
+    // 处理名称，去除HTML实体和spacer
+    const displayName = row.name.replace(/&nbsp;|├|│|└/g, "").trim();
     await ElMessageBox.confirm(
-      `确定删除角色"${row.name}"吗？`,
-      "删除确认",
+      t("permission.roleManagement.message.confirmDelete", { name: displayName }),
+      t("permission.roleManagement.delete.title"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("permission.roleManagement.buttons.confirm"),
+        cancelButtonText: t("permission.roleManagement.buttons.cancel"),
         type: "warning"
       }
     );
@@ -622,12 +632,12 @@ const handleDelete = async (row: TableRow) => {
     if (index !== -1) {
       tableData.value.splice(index, 1);
       total.value -= 1;
-      message("删除成功", { type: "success" });
+      message(t("permission.roleManagement.message.deleteSuccess"), { type: "success" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("permission.roleManagement.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -635,17 +645,17 @@ const handleDelete = async (row: TableRow) => {
 // 批量删除
 const handleBatchDelete = async () => {
   if (multipleSelection.value.length === 0) {
-    message("请选择要删除的数据", { type: "warning" });
+    message(t("permission.roleManagement.message.selectToDelete"), { type: "warning" });
     return;
   }
   
   try {
     await ElMessageBox.confirm(
-      `确定删除选中的 ${multipleSelection.value.length} 条数据吗？`,
-      "批量删除确认",
+      t("permission.roleManagement.message.confirmBatchDelete", { count: multipleSelection.value.length }),
+      t("permission.roleManagement.delete.batchTitle"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("permission.roleManagement.buttons.confirm"),
+        cancelButtonText: t("permission.roleManagement.buttons.cancel"),
         type: "warning"
       }
     );
@@ -657,11 +667,11 @@ const handleBatchDelete = async () => {
     tableData.value = tableData.value.filter(item => !ids.includes(item.id));
     total.value -= multipleSelection.value.length;
     multipleSelection.value = [];
-    message("删除成功", { type: "success" });
+    message(t("permission.roleManagement.message.deleteSuccess"), { type: "success" });
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("permission.roleManagement.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -680,7 +690,7 @@ const handleBatchDelete = async () => {
         :action-bar="{
           buttons,
           width: '150px',
-          label: '操作'
+          label: t('permission.roleManagement.table.action')
         }"
         width="100%"
         height="90%"
@@ -690,7 +700,7 @@ const handleBatchDelete = async () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t('permission.roleManagement.buttons.add') }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -699,7 +709,7 @@ const handleBatchDelete = async () => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t('permission.roleManagement.buttons.edit') }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -708,12 +718,12 @@ const handleBatchDelete = async () => {
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('permission.roleManagement.buttons.delete') }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('permission.roleManagement.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -724,7 +734,7 @@ const handleBatchDelete = async () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('permission.roleManagement.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -736,7 +746,7 @@ const handleBatchDelete = async () => {
         </template>
         <template #toolbar>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('permission.roleManagement.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"
@@ -779,10 +789,10 @@ const handleBatchDelete = async () => {
         label-width="100px"
         class="dialog-form"
       >
-        <el-form-item label="父级">
+        <el-form-item :label="t('permission.roleManagement.form.parent')">
           <el-select
             v-model="formData.parent"
-            placeholder="请选择"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
             filterable
             :disabled="isEdit"
@@ -795,17 +805,17 @@ const handleBatchDelete = async () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="名称" prop="name">
+        <el-form-item :label="t('permission.roleManagement.form.name')" prop="name">
           <el-input
             v-model="formData.name"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="权限">
+        <el-form-item :label="t('permission.roleManagement.form.permissions')">
           <div class="permission-controls">
-            <el-checkbox v-model="checkAll" @change="handleCheckAll">选中全部</el-checkbox>
-            <el-checkbox v-model="expandAll" @change="handleExpandAll" style="margin-left: 20px">展开全部</el-checkbox>
+            <el-checkbox v-model="checkAll" @change="handleCheckAll">{{ t('permission.roleManagement.form.checkAll') }}</el-checkbox>
+            <el-checkbox v-model="expandAll" @change="handleExpandAll" style="margin-left: 20px">{{ t('permission.roleManagement.form.expandAll') }}</el-checkbox>
           </div>
           <div class="permission-tree-container">
             <el-tree
@@ -825,25 +835,25 @@ const handleBatchDelete = async () => {
                       :model-value="isPermissionChecked(data.id, 'view')"
                       @update:model-value="(val: boolean) => updatePermission(data.id, 'view', val)"
                     >
-                      查看
+                      {{ t('permission.roleManagement.form.view') }}
                     </el-checkbox>
                     <el-checkbox
                       :model-value="isPermissionChecked(data.id, 'add')"
                       @update:model-value="(val: boolean) => updatePermission(data.id, 'add', val)"
                     >
-                      添加
+                      {{ t('permission.roleManagement.form.add') }}
                     </el-checkbox>
                     <el-checkbox
                       :model-value="isPermissionChecked(data.id, 'edit')"
                       @update:model-value="(val: boolean) => updatePermission(data.id, 'edit', val)"
                     >
-                      编辑
+                      {{ t('permission.roleManagement.form.edit') }}
                     </el-checkbox>
                     <el-checkbox
                       :model-value="isPermissionChecked(data.id, 'delete')"
                       @update:model-value="(val: boolean) => updatePermission(data.id, 'delete', val)"
                     >
-                      删除xxxxxxxx
+                      {{ t('permission.roleManagement.form.delete') }}
                     </el-checkbox>
                   </div>
                 </div>
@@ -854,8 +864,8 @@ const handleBatchDelete = async () => {
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确认</el-button>
+          <el-button @click="handleCloseDialog">{{ t('permission.roleManagement.buttons.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ t('permission.roleManagement.buttons.confirm') }}</el-button>
         </div>
       </template>
     </el-dialog>

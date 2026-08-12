@@ -7,8 +7,12 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import {
   getWlgAccountList,
   getCurrencyList,
@@ -86,67 +90,71 @@ const searchColumns: PlusColumn[] = [
   // Row 1
   {
     label: "ID",
+    renderLabel: () => t("merchant.wlgAccount.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "ID"
+      placeholder: t("merchant.wlgAccount.search.id")
     }))
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("merchant.wlgAccount.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "选择"
+      placeholder: t("merchant.wlgAccount.search.wallet_type")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.wlgAccount.search.all"),
         value: ""
       },
       {
-        label: "单一模式",
+        label: t("merchant.wlgAccount.search.single"),
         value: "1"
       },
       {
-        label: "转账模式",
+        label: t("merchant.wlgAccount.search.transfer"),
         value: "2"
       }
-    ]
+    ])
   },
   {
     label: "账号类型",
+    renderLabel: () => t("merchant.wlgAccount.search.type"),
     prop: "type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "选择"
+      placeholder: t("merchant.wlgAccount.search.type")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.wlgAccount.search.all"),
         value: ""
       },
       {
-        label: "正式账号",
+        label: t("merchant.wlgAccount.search.formal"),
         value: "1"
       },
       {
-        label: "测试账号",
+        label: t("merchant.wlgAccount.search.test"),
         value: "2"
       }
-    ]
+    ])
   },
     {
     label: "币种",
+    renderLabel: () => t("merchant.wlgAccount.search.currency_id"),
     prop: "currency_id",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择币种",
+      placeholder: t("merchant.wlgAccount.search.currency_id"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.wlgAccount.search.all"),
         value: ""
       },
       ...currencyOptions.value.map(item => ({
@@ -157,146 +165,161 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "总社名称",
+    renderLabel: () => t("merchant.wlgAccount.search.dealer_name"),
     prop: "dealer_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "总社名称"
+      placeholder: t("merchant.wlgAccount.search.dealer_name")
     }))
   },
   // Row 2
   {
     label: "绑定商户",
+    renderLabel: () => t("merchant.wlgAccount.search.bound_merchant"),
     prop: "bound_merchant",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "绑定商户"
+      placeholder: t("merchant.wlgAccount.search.bound_merchant")
     }))
   },
   {
     label: "总社ID",
+    renderLabel: () => t("merchant.wlgAccount.search.dealer_id"),
     prop: "dealer_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "总社ID"
+      placeholder: t("merchant.wlgAccount.search.dealer_id")
     }))
   },
   {
     label: "代理ID",
+    renderLabel: () => t("merchant.wlgAccount.search.agent_id"),
     prop: "agent_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "代理ID"
+      placeholder: t("merchant.wlgAccount.search.agent_id")
     }))
   },
   {
     label: "API密钥",
+    renderLabel: () => t("merchant.wlgAccount.search.key"),
     prop: "key",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "API密钥"
+      placeholder: t("merchant.wlgAccount.search.key")
     }))
   },
   // Row 3
   {
     label: "API地址",
+    renderLabel: () => t("merchant.wlgAccount.search.api_host"),
     prop: "api_host",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "API地址"
+      placeholder: t("merchant.wlgAccount.search.api_host")
     }))
   },
   {
     label: "总社账号",
+    renderLabel: () => t("merchant.wlgAccount.search.dealer_account"),
     prop: "dealer_account",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "总社账号"
+      placeholder: t("merchant.wlgAccount.search.dealer_account")
     }))
   },
   {
     label: "总社密码",
+    renderLabel: () => t("merchant.wlgAccount.search.dealer_pwd"),
     prop: "dealer_pwd",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "总社密码"
+      placeholder: t("merchant.wlgAccount.search.dealer_pwd")
     }))
   },
   {
     label: "代理账号",
+    renderLabel: () => t("merchant.wlgAccount.search.agent_account"),
     prop: "agent_account",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "代理账号"
+      placeholder: t("merchant.wlgAccount.search.agent_account")
     }))
   },
   // Row 4
   {
     label: "代理密码",
+    renderLabel: () => t("merchant.wlgAccount.search.agent_pwd"),
     prop: "agent_pwd",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "代理密码"
+      placeholder: t("merchant.wlgAccount.search.agent_pwd")
     }))
   },
   {
     label: "总社后台",
+    renderLabel: () => t("merchant.wlgAccount.search.sn_url"),
     prop: "sn_url",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "总社后台"
+      placeholder: t("merchant.wlgAccount.search.sn_url")
     }))
   },
   {
     label: "代理后台",
+    renderLabel: () => t("merchant.wlgAccount.search.agent_url"),
     prop: "agent_url",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "代理后台"
+      placeholder: t("merchant.wlgAccount.search.agent_url")
     }))
   },
   {
     label: "备注",
+    renderLabel: () => t("merchant.wlgAccount.search.remark"),
     prop: "remark",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "备注"
+      placeholder: t("merchant.wlgAccount.search.remark")
     }))
   },
   {
     label: "状态",
+    renderLabel: () => t("merchant.wlgAccount.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "选择"
+      placeholder: t("merchant.wlgAccount.search.status")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.wlgAccount.search.all"),
         value: ""
       },
       {
-        label: "正常",
+        label: t("merchant.wlgAccount.search.normal"),
         value: "1"
       },
       {
-        label: "隐藏",
+        label: t("merchant.wlgAccount.search.hidden"),
         value: "-1"
       }
-    ]
+    ])
   },
   {
     label: "创建时间",
+    renderLabel: () => t("merchant.wlgAccount.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -306,7 +329,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -316,7 +339,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -327,7 +350,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -338,7 +361,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -348,7 +371,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -362,17 +385,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "更新时间",
+    renderLabel: () => t("merchant.wlgAccount.search.updateTime"),
     prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -382,7 +406,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -392,7 +416,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -403,7 +427,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -414,7 +438,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -424,7 +448,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -485,6 +509,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("merchant.wlgAccount.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -492,32 +517,35 @@ const tableConfig: any = ref([
   },
   {
     label: "钱包类型",
+    renderHeader: () => t("merchant.wlgAccount.table.wallet_type"),
     prop: "wallet_type",
     render: (value: number) => {
       return h(ElTag, {
         type: value === 1 ? "success" : "warning"
-      }, () => value === 1 ? "单一模式" : value === 2 ? "转账模式" : value);
+      }, () => value === 1 ? t("merchant.wlgAccount.table.single") : value === 2 ? t("merchant.wlgAccount.table.transfer") : value);
     },
-    width: 100,
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 130,
   },
   {
     label: "账户类型",
+    renderHeader: () => t("merchant.wlgAccount.table.type"),
     prop: "type",
     render: (value: number) => {
       return h(ElTag, {
         type: value === 1 ? "success" : "warning"
-      }, () => value === 1 ? "正式账号" : value === 2 ? "测试账号" : value);
+      }, () => value === 1 ? t("merchant.wlgAccount.table.formal") : value === 2 ? t("merchant.wlgAccount.table.test") : value);
     },
-    width: 100,
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 130,
   },
   {
     label: "币种",
+    renderHeader: () => t("merchant.wlgAccount.table.currency_id"),
     prop: "currency_id",
     render: (value: number) => {
       const currency = currencyOptions.value.find(item => item.value === value);
@@ -525,10 +553,12 @@ const tableConfig: any = ref([
     },
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100,
   },
   {
     label: "总社名称",
+    renderHeader: () => t("merchant.wlgAccount.table.dealer_name"),
     prop: "dealer_name",
     width: 160,
     tableColumnProps: {
@@ -537,10 +567,11 @@ const tableConfig: any = ref([
   },
   {
     label: "绑定商户",
+    renderHeader: () => t("merchant.wlgAccount.table.bound_merchant"),
     prop: "bound_merchant",
     render: () => {
       // TODO: 绑定商户字段需要从其他接口获取，暂时显示空
-      return h("span", "SB商户");
+      return h("span", t("merchant.wlgAccount.table.boundMerchantPlaceholder"));
     },
     width: 140,
     tableColumnProps: {
@@ -549,20 +580,25 @@ const tableConfig: any = ref([
   },
   {
     label: "总社ID",
+    renderHeader: () => t("merchant.wlgAccount.table.dealer_id"),
     prop: "dealer_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "代理ID",
+    renderHeader: () => t("merchant.wlgAccount.table.agent_id"),
     prop: "agent_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "API密钥",
+    renderHeader: () => t("merchant.wlgAccount.table.key"),
     prop: "key",
     width: 280,
     tableColumnProps: {
@@ -571,6 +607,7 @@ const tableConfig: any = ref([
   },
   {
     label: "API地址",
+    renderHeader: () => t("merchant.wlgAccount.table.api_host"),
     prop: "api_host",
     width: 220,
     tableColumnProps: {
@@ -579,6 +616,7 @@ const tableConfig: any = ref([
   },
   {
     label: "总社账号",
+    renderHeader: () => t("merchant.wlgAccount.table.dealer_account"),
     prop: "dealer_account",
     width: 140,
     tableColumnProps: {
@@ -587,6 +625,7 @@ const tableConfig: any = ref([
   },
   {
     label: "总社密码",
+    renderHeader: () => t("merchant.wlgAccount.table.dealer_pwd"),
     prop: "dealer_pwd",
     width: 160,
     tableColumnProps: {
@@ -595,6 +634,7 @@ const tableConfig: any = ref([
   },
   {
     label: "代理账号",
+    renderHeader: () => t("merchant.wlgAccount.table.agent_account"),
     prop: "agent_account",
     width: 140,
     tableColumnProps: {
@@ -603,6 +643,7 @@ const tableConfig: any = ref([
   },
   {
     label: "代理密码",
+    renderHeader: () => t("merchant.wlgAccount.table.agent_pwd"),
     prop: "agent_pwd",
     width: 160,
     tableColumnProps: {
@@ -611,6 +652,7 @@ const tableConfig: any = ref([
   },
   {
     label: "总社后台",
+    renderHeader: () => t("merchant.wlgAccount.table.sn_url"),
     prop: "sn_url",
     width: 220,
     tableColumnProps: {
@@ -619,6 +661,7 @@ const tableConfig: any = ref([
   },
   {
     label: "代理后台",
+    renderHeader: () => t("merchant.wlgAccount.table.agent_url"),
     prop: "agent_url",
     width: 220,
     tableColumnProps: {
@@ -627,6 +670,7 @@ const tableConfig: any = ref([
   },
   {
     label: "备注",
+    renderHeader: () => t("merchant.wlgAccount.table.remark"),
     prop: "remark",
     width: 160,
     tableColumnProps: {
@@ -635,6 +679,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("merchant.wlgAccount.table.createtime"),
     prop: "createtime",
     width: "160",
     tableColumnProps: {
@@ -644,6 +689,7 @@ const tableConfig: any = ref([
   },
   {
     label: "更新时间",
+    renderHeader: () => t("merchant.wlgAccount.table.updatetime"),
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
@@ -653,24 +699,26 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("merchant.wlgAccount.table.status"),
     prop: "status",
     render: (value: string) => {
       return h(ElTag, {
         type: value === "1" ? "success" : "danger"
-      }, () => value === "1" ? "正常" : "隐藏");
+      }, () => value === "1" ? t("merchant.wlgAccount.table.normal") : t("merchant.wlgAccount.table.hidden"));
     },
     tableColumnProps: {
        sortable: true,
        fixed: "right",
        align: "center"
-    }
+    },
+    width: 100
   }
 ]);
 
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: () => t("merchant.wlgAccount.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -745,11 +793,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("merchant.wlgAccount.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("merchant.wlgAccount.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -776,10 +824,12 @@ getList();
 const deleteLoading = ref(false);
 const unbindLoading = ref(false);
 
-// 新增WLG账号对话框相关
-const showAddDialog = ref(false);
-const addFormRef = ref();
-const addFormData = ref({
+// 对话框相关（统一新增和编辑）
+const showDialog = ref(false);
+const isEdit = ref(false);
+const formRef = ref();
+const formData = ref({
+  id: 0,
   wallet_type: "",
   type: "",
   currency_id: "",
@@ -796,14 +846,19 @@ const addFormData = ref({
   agent_pwd: "",
   status: "1"
 });
-const addFormRules = {
+const formRules = {
   wallet_type: [
-    { required: true, message: "请选择钱包模式", trigger: "change" }
+    { required: true, message: t("merchant.wlgAccount.form.walletTypeRequired"), trigger: "change" }
   ],
   dealer_name: [
-    { required: true, message: "请输入总社名称", trigger: "blur" }
+    { required: true, message: t("merchant.wlgAccount.form.dealerNameRequired"), trigger: "blur" }
   ]
 };
+
+// 对话框标题
+const dialogTitle = computed(() => {
+  return isEdit.value ? t("merchant.wlgAccount.edit.title") : t("merchant.wlgAccount.add.title");
+});
 
 // API地址选项（根据实际需求调整）
 const apiHostOptions = ref([
@@ -828,9 +883,9 @@ const agentUrlOptions = ref([
 
 // 打开新增对话框
 const handleAdd = () => {
-  showAddDialog.value = true;
-  // 重置表单
-  addFormData.value = {
+  isEdit.value = false;
+  formData.value = {
+    id: 0,
     wallet_type: "",
     type: "",
     currency_id: "",
@@ -847,118 +902,22 @@ const handleAdd = () => {
     agent_pwd: "",
     status: "1"
   };
-};
-
-// 关闭新增对话框
-const handleCloseAddDialog = () => {
-  showAddDialog.value = false;
-  addFormRef.value?.resetFields();
-  addFormData.value = {
-    wallet_type: "",
-    type: "",
-    currency_id: "",
-    dealer_name: "",
-    dealer_id: "",
-    agent_id: "",
-    key: "",
-    api_host: "",
-    sn_url: "",
-    dealer_account: "",
-    dealer_pwd: "",
-    agent_url: "",
-    agent_account: "",
-    agent_pwd: "",
-    status: "1"
-  };
-};
-
-// 提交新增表单
-const handleSubmitAdd = async () => {
-  if (!addFormRef.value) return;
-
-  await addFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      try {
-        const params: AddWlgAccountParams = {
-          wallet_type: addFormData.value.wallet_type,
-          type: addFormData.value.type || undefined,
-          currency_id: addFormData.value.currency_id || undefined,
-          dealer_name: addFormData.value.dealer_name,
-          dealer_id: addFormData.value.dealer_id || undefined,
-          agent_id: addFormData.value.agent_id || undefined,
-          key: addFormData.value.key || undefined,
-          api_host: addFormData.value.api_host || undefined,
-          sn_url: addFormData.value.sn_url || undefined,
-          dealer_account: addFormData.value.dealer_account || undefined,
-          dealer_pwd: addFormData.value.dealer_pwd || undefined,
-          agent_url: addFormData.value.agent_url || undefined,
-          agent_account: addFormData.value.agent_account || undefined,
-          agent_pwd: addFormData.value.agent_pwd || undefined,
-          status: addFormData.value.status
-        };
-
-        const res = await addWlgAccount(params);
-
-        if (res.code === 0) {
-          message("新增WLG账号成功", { type: "success" });
-          handleCloseAddDialog();
-          // 刷新列表
-          getList();
-        } else {
-          message(res.msg || "新增WLG账号失败", { type: "error" });
-        }
-      } catch (error: any) {
-        console.error("新增WLG账号失败:", error);
-        message(error?.message || "新增WLG账号失败", { type: "error" });
-      }
-    }
-  });
+  showDialog.value = true;
 };
 
 // 编辑（批量）- 只有一条选中时才能编辑
 const handleEdit = () => {
   if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑！", { type: "warning" });
+    message(t("merchant.wlgAccount.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   handleEditRow(multipleSelection.value[0]);
 };
 
-// 编辑WLG账号对话框相关
-const showEditDialog = ref(false);
-const editFormRef = ref();
-const editFormData = ref({
-  id: 0,
-  wallet_type: "",
-  type: "",
-  currency_id: "",
-  dealer_name: "",
-  dealer_id: "",
-  agent_id: "",
-  key: "",
-  api_host: "",
-  sn_url: "",
-  dealer_account: "",
-  dealer_pwd: "",
-  agent_url: "",
-  agent_account: "",
-  agent_pwd: "",
-  status: "1"
-});
-const editFormRules = {
-  wallet_type: [
-    { required: true, message: "请选择钱包模式", trigger: "change" }
-  ],
-  dealer_name: [
-    { required: true, message: "请输入总社名称", trigger: "blur" }
-  ]
-};
-
 // 编辑单行数据
 const handleEditRow = (row: TableRow) => {
-  showEditDialog.value = true;
-  // 回填数据
-  editFormData.value = {
+  isEdit.value = true;
+  formData.value = {
     id: row.id,
     wallet_type: row.wallet_type.toString(),
     type: row.type.toString(),
@@ -976,13 +935,14 @@ const handleEditRow = (row: TableRow) => {
     agent_pwd: row.agent_pwd || "",
     status: row.status || "1"
   };
+  showDialog.value = true;
 };
 
-// 关闭编辑对话框
-const handleCloseEditDialog = () => {
-  showEditDialog.value = false;
-  editFormRef.value?.resetFields();
-  editFormData.value = {
+// 关闭对话框
+const handleCloseDialog = () => {
+  showDialog.value = false;
+  formRef.value?.resetFields();
+  formData.value = {
     id: 0,
     wallet_type: "",
     type: "",
@@ -1002,45 +962,76 @@ const handleCloseEditDialog = () => {
   };
 };
 
-// 提交编辑表单
-const handleSubmitEdit = async () => {
-  if (!editFormRef.value) return;
+// 提交表单
+const handleSubmit = async () => {
+  if (!formRef.value) return;
 
-  await editFormRef.value.validate(async (valid: boolean) => {
+  await formRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
-        const params: EditWlgAccountParams = {
-          id: editFormData.value.id,
-          wallet_type: editFormData.value.wallet_type || undefined,
-          type: editFormData.value.type || undefined,
-          currency_id: editFormData.value.currency_id || undefined,
-          dealer_name: editFormData.value.dealer_name || undefined,
-          dealer_id: editFormData.value.dealer_id || undefined,
-          agent_id: editFormData.value.agent_id || undefined,
-          key: editFormData.value.key || undefined,
-          api_host: editFormData.value.api_host || undefined,
-          sn_url: editFormData.value.sn_url || undefined,
-          dealer_account: editFormData.value.dealer_account || undefined,
-          dealer_pwd: editFormData.value.dealer_pwd || undefined,
-          agent_url: editFormData.value.agent_url || undefined,
-          agent_account: editFormData.value.agent_account || undefined,
-          agent_pwd: editFormData.value.agent_pwd || undefined,
-          status: editFormData.value.status || undefined
-        };
+        if (isEdit.value) {
+          // 编辑
+          const params: EditWlgAccountParams = {
+            id: formData.value.id,
+            wallet_type: formData.value.wallet_type || undefined,
+            type: formData.value.type || undefined,
+            currency_id: formData.value.currency_id || undefined,
+            dealer_name: formData.value.dealer_name || undefined,
+            dealer_id: formData.value.dealer_id || undefined,
+            agent_id: formData.value.agent_id || undefined,
+            key: formData.value.key || undefined,
+            api_host: formData.value.api_host || undefined,
+            sn_url: formData.value.sn_url || undefined,
+            dealer_account: formData.value.dealer_account || undefined,
+            dealer_pwd: formData.value.dealer_pwd || undefined,
+            agent_url: formData.value.agent_url || undefined,
+            agent_account: formData.value.agent_account || undefined,
+            agent_pwd: formData.value.agent_pwd || undefined,
+            status: formData.value.status || undefined
+          };
 
-        const res = await editWlgAccount(params);
+          const res = await editWlgAccount(params);
 
-        if (res.code === 0) {
-          message("编辑WLG账号成功", { type: "success" });
-          handleCloseEditDialog();
-          // 刷新列表
-          getList();
+          if (res.code === 0) {
+            message(t("merchant.wlgAccount.message.editSuccess"), { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || t("merchant.wlgAccount.message.editFail"), { type: "error" });
+          }
         } else {
-          message(res.msg || "编辑WLG账号失败", { type: "error" });
+          // 新增
+          const params: AddWlgAccountParams = {
+            wallet_type: formData.value.wallet_type,
+            type: formData.value.type || undefined,
+            currency_id: formData.value.currency_id || undefined,
+            dealer_name: formData.value.dealer_name,
+            dealer_id: formData.value.dealer_id || undefined,
+            agent_id: formData.value.agent_id || undefined,
+            key: formData.value.key || undefined,
+            api_host: formData.value.api_host || undefined,
+            sn_url: formData.value.sn_url || undefined,
+            dealer_account: formData.value.dealer_account || undefined,
+            dealer_pwd: formData.value.dealer_pwd || undefined,
+            agent_url: formData.value.agent_url || undefined,
+            agent_account: formData.value.agent_account || undefined,
+            agent_pwd: formData.value.agent_pwd || undefined,
+            status: formData.value.status
+          };
+
+          const res = await addWlgAccount(params);
+
+          if (res.code === 0) {
+            message(t("merchant.wlgAccount.message.addSuccess"), { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || t("merchant.wlgAccount.message.addFail"), { type: "error" });
+          }
         }
       } catch (error: any) {
-        console.error("编辑WLG账号失败:", error);
-        message(error?.message || "编辑WLG账号失败", { type: "error" });
+        console.error(isEdit.value ? "编辑WLG账号失败:" : "新增WLG账号失败:", error);
+        message(error?.message || (isEdit.value ? t("merchant.wlgAccount.message.editFail") : t("merchant.wlgAccount.message.addFail")), { type: "error" });
       }
     }
   });
@@ -1049,18 +1040,18 @@ const handleSubmitEdit = async () => {
 // 删除
 const handleDelete = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
+    message(t("merchant.wlgAccount.message.selectToDelete"), { type: "warning" });
     return;
   }
 
   // 构建删除确认消息
   const accountNames = multipleSelection.value.map(item => item.dealer_name).join("、");
-  const confirmMessage = `确定删除WLG账号 ${accountNames}？`;
+  const confirmMessage = t("merchant.wlgAccount.message.confirmDelete", { names: accountNames });
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "删除WLG账号", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("merchant.wlgAccount.delete.title"), {
+      confirmButtonText: t("merchant.wlgAccount.buttons.confirm"),
+      cancelButtonText: t("merchant.wlgAccount.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -1072,17 +1063,17 @@ const handleDelete = async () => {
       const res = await deleteBatchWlgAccount({ ids });
 
       if (res.code === 0) {
-        message("删除成功", { type: "success" });
+        message(t("merchant.wlgAccount.message.deleteSuccess"), { type: "success" });
         // 清空选中数据
         multipleSelection.value = [];
         // 刷新列表
         getList();
       } else {
-        message(res.msg || "删除失败", { type: "error" });
+        message(res.msg || t("merchant.wlgAccount.message.deleteFail"), { type: "error" });
       }
     } catch (error: any) {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("merchant.wlgAccount.message.deleteFail"), { type: "error" });
     } finally {
       deleteLoading.value = false;
     }
@@ -1096,14 +1087,14 @@ const handleDelete = async () => {
 // 解绑商户
 const handleUnbindMerchant = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要解绑的数据！", { type: "warning" });
+    message(t("merchant.wlgAccount.message.selectToUnbind"), { type: "warning" });
     return;
   }
 
   try {
-    await ElMessageBox.confirm("是否确定解绑商户?", "解绑商户", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(t("merchant.wlgAccount.message.confirmUnbind"), t("merchant.wlgAccount.unbind.title"), {
+      confirmButtonText: t("merchant.wlgAccount.buttons.confirm"),
+      cancelButtonText: t("merchant.wlgAccount.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -1115,17 +1106,17 @@ const handleUnbindMerchant = async () => {
       const res = await unbindBatchWlgAccount({ ids });
 
       if (res.code === 0) {
-        message("解绑成功", { type: "success" });
+        message(t("merchant.wlgAccount.message.unbindSuccess"), { type: "success" });
         // 清空选中数据
         multipleSelection.value = [];
         // 刷新列表
         getList();
       } else {
-        message(res.msg || "解绑失败", { type: "error" });
+        message(res.msg || t("merchant.wlgAccount.message.unbindFail"), { type: "error" });
       }
     } catch (error: any) {
       console.error("解绑失败:", error);
-      message(error?.message || "解绑失败", { type: "error" });
+      message(error?.message || t("merchant.wlgAccount.message.unbindFail"), { type: "error" });
     } finally {
       unbindLoading.value = false;
     }
@@ -1149,13 +1140,13 @@ const exportExcel = () => {
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status") {
-        return item.status === "1" ? "正常" : "隐藏";
+        return item.status === "1" ? t("merchant.wlgAccount.table.normal") : t("merchant.wlgAccount.table.hidden");
       }
       if (prop === "wallet_type") {
-        return item.wallet_type === 1 ? "单一模式" : item.wallet_type === 2 ? "转账模式" : item.wallet_type;
+        return item.wallet_type === 1 ? t("merchant.wlgAccount.table.single") : item.wallet_type === 2 ? t("merchant.wlgAccount.table.transfer") : item.wallet_type;
       }
       if (prop === "type") {
-        return item.type === 1 ? "正式账号" : item.type === 2 ? "测试账号" : item.type;
+        return item.type === 1 ? t("merchant.wlgAccount.table.formal") : item.type === 2 ? t("merchant.wlgAccount.table.test") : item.type;
       }
       if (prop === "currency_id") {
         const currency = currencyOptions.value.find(opt => opt.value === item.currency_id);
@@ -1169,16 +1160,16 @@ const exportExcel = () => {
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "WLG账号管理";
+  const sheetName = t("merchant.wlgAccount.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `WLG账号管理.xlsx`;
+  const fileName = t("merchant.wlgAccount.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("merchant.wlgAccount.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -1186,7 +1177,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "WLG账号管理.json";
+  a.download = t("merchant.wlgAccount.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -1201,11 +1192,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="130"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('merchant.wlgAccount.buttons.search')"
+        :resetText="t('merchant.wlgAccount.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -1222,7 +1213,7 @@ const exportJson = () => {
         :action-bar="{
           buttons,
           width: '150px',
-          label: '操作'
+          label: t('merchant.wlgAccount.table.action')
         }"
         width="100%"
         height="90%"
@@ -1232,7 +1223,7 @@ const exportJson = () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">添加</span>
+            <span style="margin-left: 3px;">{{ t('merchant.wlgAccount.buttons.add') }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -1241,7 +1232,7 @@ const exportJson = () => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t('merchant.wlgAccount.buttons.edit') }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -1251,7 +1242,7 @@ const exportJson = () => {
             :loading="deleteLoading"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('merchant.wlgAccount.buttons.delete') }}</span>
           </el-button>
           <el-button 
             type="warning" 
@@ -1260,12 +1251,12 @@ const exportJson = () => {
             :disabled="multipleSelection.length === 0"
             :loading="unbindLoading"
           >
-            <span>解绑商户</span>
+            <span>{{ t('merchant.wlgAccount.buttons.unbind') }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('merchant.wlgAccount.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -1276,7 +1267,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('merchant.wlgAccount.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -1290,7 +1281,7 @@ const exportJson = () => {
           <div>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('merchant.wlgAccount.toolbar.hideSearch') : t('merchant.wlgAccount.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -1310,7 +1301,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('merchant.wlgAccount.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -1354,45 +1345,45 @@ const exportJson = () => {
       />
     </el-card>
 
-    <!-- 新增WLG账号对话框 -->
+    <!-- 新增/编辑WLG账号对话框 -->
     <el-dialog
-      v-model="showAddDialog"
-      title="添加"
+      v-model="showDialog"
+      :title="dialogTitle"
       width="600px"
       :close-on-click-modal="false"
-      @close="handleCloseAddDialog"
+      @close="handleCloseDialog"
     >
       <el-form
-        ref="addFormRef"
-        :model="addFormData"
-        :rules="addFormRules"
-        label-width="100px"
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="130px"
         class="dialog-form"
       >
-        <el-form-item label="钱包模式" prop="wallet_type">
+        <el-form-item :label="t('merchant.wlgAccount.form.wallet_type')" prop="wallet_type">
           <el-select
-            v-model="addFormData.wallet_type"
-            placeholder="请选择"
+            v-model="formData.wallet_type"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
           >
-            <el-option label="单一模式" value="1" />
-            <el-option label="转账模式" value="2" />
+            <el-option :label="t('merchant.wlgAccount.form.single')" value="1" />
+            <el-option :label="t('merchant.wlgAccount.form.transfer')" value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="账号类型" prop="type">
+        <el-form-item :label="t('merchant.wlgAccount.form.type')" prop="type">
           <el-select
-            v-model="addFormData.type"
-            placeholder="请选择"
+            v-model="formData.type"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
           >
-            <el-option label="正式账号" value="1" />
-            <el-option label="测试账号" value="2" />
+            <el-option :label="t('merchant.wlgAccount.form.formal')" value="1" />
+            <el-option :label="t('merchant.wlgAccount.form.test')" value="2" />
           </el-select>
         </el-form-item>
-        <el-form-item label="选择币种" prop="currency_id">
+        <el-form-item :label="t('merchant.wlgAccount.form.currency_id')" prop="currency_id">
           <el-select
-            v-model="addFormData.currency_id"
-            placeholder="请选择"
+            v-model="formData.currency_id"
+            :placeholder="t('placeholder.select')"
             filterable
             style="width: 100%"
           >
@@ -1404,38 +1395,38 @@ const exportJson = () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="总社名称" prop="dealer_name">
+        <el-form-item :label="t('merchant.wlgAccount.form.dealer_name')" prop="dealer_name">
           <el-input
-            v-model="addFormData.dealer_name"
-            placeholder="请输入"
+            v-model="formData.dealer_name"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
           />
         </el-form-item>
-        <el-form-item label="总社ID" prop="dealer_id">
+        <el-form-item :label="t('merchant.wlgAccount.form.dealer_id')" prop="dealer_id">
           <el-input
-            v-model="addFormData.dealer_id"
-            placeholder="请输入"
+            v-model="formData.dealer_id"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="代理ID" prop="agent_id">
+        <el-form-item :label="t('merchant.wlgAccount.form.agent_id')" prop="agent_id">
           <el-input
-            v-model="addFormData.agent_id"
-            placeholder="请输入"
+            v-model="formData.agent_id"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="API 秘钥" prop="key">
+        <el-form-item :label="t('merchant.wlgAccount.form.key')" prop="key">
           <el-input
-            v-model="addFormData.key"
-            placeholder="请输入"
+            v-model="formData.key"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="API 地址" prop="api_host">
+        <el-form-item :label="t('merchant.wlgAccount.form.api_host')" prop="api_host">
           <el-select
-            v-model="addFormData.api_host"
-            placeholder="请选择"
+            v-model="formData.api_host"
+            :placeholder="t('placeholder.select')"
             filterable
             allow-create
             default-first-option
@@ -1449,10 +1440,10 @@ const exportJson = () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="总社后台" prop="sn_url">
+        <el-form-item :label="t('merchant.wlgAccount.form.sn_url')" prop="sn_url">
           <el-select
-            v-model="addFormData.sn_url"
-            placeholder="请选择"
+            v-model="formData.sn_url"
+            :placeholder="t('placeholder.select')"
             filterable
             allow-create
             default-first-option
@@ -1466,25 +1457,25 @@ const exportJson = () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="总社账号" prop="dealer_account">
+        <el-form-item :label="t('merchant.wlgAccount.form.dealer_account')" prop="dealer_account">
           <el-input
-            v-model="addFormData.dealer_account"
-            placeholder="请输入"
+            v-model="formData.dealer_account"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
           />
         </el-form-item>
-        <el-form-item label="总社密码" prop="dealer_pwd">
+        <el-form-item :label="t('merchant.wlgAccount.form.dealer_pwd')" prop="dealer_pwd">
           <el-input
-            v-model="addFormData.dealer_pwd"
-            placeholder="请输入"
+            v-model="formData.dealer_pwd"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
             show-password
           />
         </el-form-item>
-        <el-form-item label="代理后台" prop="agent_url">
+        <el-form-item :label="t('merchant.wlgAccount.form.agent_url')" prop="agent_url">
           <el-select
-            v-model="addFormData.agent_url"
-            placeholder="请选择"
+            v-model="formData.agent_url"
+            :placeholder="t('placeholder.select')"
             filterable
             allow-create
             default-first-option
@@ -1498,209 +1489,33 @@ const exportJson = () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="代理账号" prop="agent_account">
+        <el-form-item :label="t('merchant.wlgAccount.form.agent_account')" prop="agent_account">
           <el-input
-            v-model="addFormData.agent_account"
-            placeholder="请输入"
+            v-model="formData.agent_account"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
           />
         </el-form-item>
-        <el-form-item label="代理密码" prop="agent_pwd">
+        <el-form-item :label="t('merchant.wlgAccount.form.agent_pwd')" prop="agent_pwd">
           <el-input
-            v-model="addFormData.agent_pwd"
-            placeholder="请输入"
+            v-model="formData.agent_pwd"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
             show-password
           />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="addFormData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="-1">关闭</el-radio>
+        <el-form-item :label="t('merchant.wlgAccount.form.status')" prop="status">
+          <el-radio-group v-model="formData.status">
+            <el-radio label="1">{{ t('merchant.wlgAccount.form.open') }}</el-radio>
+            <el-radio label="-1">{{ t('merchant.wlgAccount.form.close') }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseAddDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitAdd">
-            确认
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <!-- 编辑WLG账号对话框 -->
-    <el-dialog
-      v-model="showEditDialog"
-      title="编辑"
-      width="600px"
-      :close-on-click-modal="false"
-      @close="handleCloseEditDialog"
-    >
-      <el-form
-        ref="editFormRef"
-        :model="editFormData"
-        :rules="editFormRules"
-        label-width="100px"
-        class="dialog-form"
-      >
-        <el-form-item label="钱包模式" prop="wallet_type">
-          <el-select
-            v-model="editFormData.wallet_type"
-            placeholder="请选择"
-            style="width: 100%"
-          >
-            <el-option label="单一模式" value="1" />
-            <el-option label="转账模式" value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="账号类型" prop="type">
-          <el-select
-            v-model="editFormData.type"
-            placeholder="请选择"
-            style="width: 100%"
-          >
-            <el-option label="正式账号" value="1" />
-            <el-option label="测试账号" value="2" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="选择币种" prop="currency_id">
-          <el-select
-            v-model="editFormData.currency_id"
-            placeholder="请选择"
-            filterable
-            style="width: 100%"
-          >
-            <el-option
-              v-for="item in currencyOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value.toString()"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="总社名称" prop="dealer_name">
-          <el-input
-            v-model="editFormData.dealer_name"
-            placeholder="请输入"
-            maxlength="100"
-          />
-        </el-form-item>
-        <el-form-item label="总社ID" prop="dealer_id">
-          <el-input
-            v-model="editFormData.dealer_id"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="代理ID" prop="agent_id">
-          <el-input
-            v-model="editFormData.agent_id"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="API 秘钥" prop="key">
-          <el-input
-            v-model="editFormData.key"
-            placeholder="请输入"
-            maxlength="200"
-          />
-        </el-form-item>
-        <el-form-item label="API 地址" prop="api_host">
-          <el-select
-            v-model="editFormData.api_host"
-            placeholder="请选择"
-            filterable
-            allow-create
-            default-first-option
-            style="width: 100%"
-          >
-            <el-option
-              v-for="item in apiHostOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="总社后台" prop="sn_url">
-          <el-select
-            v-model="editFormData.sn_url"
-            placeholder="请选择"
-            filterable
-            allow-create
-            default-first-option
-            style="width: 100%"
-          >
-            <el-option
-              v-for="item in snUrlOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="总社账号" prop="dealer_account">
-          <el-input
-            v-model="editFormData.dealer_account"
-            placeholder="请输入"
-            maxlength="100"
-          />
-        </el-form-item>
-        <el-form-item label="总社密码" prop="dealer_pwd">
-          <el-input
-            v-model="editFormData.dealer_pwd"
-            placeholder="请输入"
-            maxlength="100"
-            show-password
-          />
-        </el-form-item>
-        <el-form-item label="代理后台" prop="agent_url">
-          <el-select
-            v-model="editFormData.agent_url"
-            placeholder="请选择"
-            filterable
-            allow-create
-            default-first-option
-            style="width: 100%"
-          >
-            <el-option
-              v-for="item in agentUrlOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="代理账号" prop="agent_account">
-          <el-input
-            v-model="editFormData.agent_account"
-            placeholder="请输入"
-            maxlength="100"
-          />
-        </el-form-item>
-        <el-form-item label="代理密码" prop="agent_pwd">
-          <el-input
-            v-model="editFormData.agent_pwd"
-            placeholder="请输入"
-            maxlength="100"
-            show-password
-          />
-        </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-radio-group v-model="editFormData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="-1">关闭</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseEditDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitEdit">
-            确认
+          <el-button @click="handleCloseDialog">{{ t('merchant.wlgAccount.buttons.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ t('merchant.wlgAccount.buttons.confirm') }}
           </el-button>
         </div>
       </template>

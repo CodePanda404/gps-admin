@@ -6,7 +6,11 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import { ElMessageBox, ElTag, ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElButton, ElRadioGroup, ElRadio, ElSelect, ElOption, type FormInstance } from "element-plus";
 import {
   getAccountManagementList,
@@ -59,38 +63,42 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("permission.accountManagement.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: t("permission.accountManagement.search.id")
     }))
   },
   {
     label: "用户名",
+    renderLabel: () => t("permission.accountManagement.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入用户名"
+      placeholder: t("permission.accountManagement.search.username")
     }))
   },
    {
     label: "商户ID",
+    renderLabel: () => t("permission.accountManagement.search.merchant_id"),
     prop: "merchant_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
+      placeholder: t("permission.accountManagement.search.merchant_id")
     }))
   },
   {
     label: "角色组",
+    renderLabel: () => t("permission.accountManagement.search.role_group"),
     prop: "role_group",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择角色组",
+      placeholder: t("permission.accountManagement.search.role_group"),
       filterable: true
     })),
     options: computed(() => [
-      { label: "全部", value: "" },
+      { label: t("permission.accountManagement.search.all"), value: "" },
       ...roleGroupOptions.value.map(item => ({
         label: item.label,
         value: item.value.toString()
@@ -99,14 +107,15 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "上级",
+    renderLabel: () => t("permission.accountManagement.search.superior"),
     prop: "superior",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择上级",
+      placeholder: t("permission.accountManagement.search.superior"),
       filterable: true
     })),
     options: computed(() => [
-      { label: "全部", value: "" },
+      { label: t("permission.accountManagement.search.all"), value: "" },
       ...superiorOptions.value.map(item => ({
         label: item.label,
         value: item.value.toString()
@@ -115,17 +124,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "登录时间",
+    renderLabel: () => t("permission.accountManagement.search.loginTime"),
     prop: "loginTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -135,7 +145,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -145,7 +155,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -156,7 +166,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -167,7 +177,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -177,7 +187,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -191,17 +201,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "创建时间",
+    renderLabel: () => t("permission.accountManagement.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -211,7 +222,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -221,7 +232,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -232,7 +243,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -243,7 +254,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -253,7 +264,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -267,16 +278,17 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "状态",
+    renderLabel: () => t("permission.accountManagement.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("permission.accountManagement.search.status")
     })),
-    options: [
-      { label: "全部", value: "" },
-      { label: "正常", value: "1" },
-      { label: "停用", value: "0" }
-    ]
+    options: computed(() => [
+      { label: t("permission.accountManagement.search.all"), value: "" },
+      { label: t("permission.accountManagement.search.normal"), value: "1" },
+      { label: t("permission.accountManagement.search.disabled"), value: "0" }
+    ])
   }
 ];
 
@@ -305,7 +317,7 @@ const getRoleGroupList = async () => {
 
 // 上级选项（从API获取）
 const superiorOptions = ref<Array<{ label: string; value: number }>>([
-  { label: "无", value: 0 }
+  { label: t("permission.accountManagement.search.none"), value: 0 }
 ]);
 
 // 币种选项（从API获取）
@@ -324,7 +336,7 @@ const getSuperiorList = async () => {
     
     if (res.code === 0 && res.data && res.data.rows) {
       superiorOptions.value = [
-        { label: "无", value: 0 },
+        { label: t("permission.accountManagement.search.none"), value: 0 },
         ...res.data.rows.map((item: ParentAdminItem) => ({
           label: item.username,
           value: item.id
@@ -420,6 +432,7 @@ const { tableData, pageInfo, total, buttons: buttonsRef, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("permission.accountManagement.table.id"),
     prop: "id",
     width: 100,
     tableColumnProps: {
@@ -428,6 +441,7 @@ const tableConfig: any = ref([
   },
   {
     label: "用户名",
+    renderHeader: () => t("permission.accountManagement.table.username"),
     prop: "username",
     minWidth: 160,
     tableColumnProps: {
@@ -436,6 +450,7 @@ const tableConfig: any = ref([
   },
   {
     label: "商户ID",
+    renderHeader: () => t("permission.accountManagement.table.merchant_id"),
     prop: "merchant_id",
     width: 120,
     render: (value: number | string) => {
@@ -447,6 +462,7 @@ const tableConfig: any = ref([
   },
   {
     label: "角色组",
+    renderHeader: () => t("permission.accountManagement.table.role_group"),
     prop: "groups_text",
     render: (value: string) => {
       return value || "-";
@@ -458,9 +474,10 @@ const tableConfig: any = ref([
   },
   {
     label: "上级",
+    renderHeader: () => t("permission.accountManagement.table.superior"),
     prop: "agentname",
     render: (value: string) => {
-      return value && value !== "-" ? value : "无";
+      return value && value !== "-" ? value : t("permission.accountManagement.table.none");
     },
     minWidth: 120,
     tableColumnProps: {
@@ -469,6 +486,7 @@ const tableConfig: any = ref([
   },
   {
     label: "关联邮箱",
+    renderHeader: () => t("permission.accountManagement.table.email"),
     prop: "email",
     minWidth: 240,
     tableColumnProps: {
@@ -477,10 +495,11 @@ const tableConfig: any = ref([
   },
   {
     label: "谷歌验证",
+    renderHeader: () => t("permission.accountManagement.table.google_verify"),
     prop: "google_status",
-    minWidth: 100,
+    minWidth: 120,
     render: (value: number) => {
-      return value === 1 ? "启用" : "未启用";
+      return value === 1 ? t("permission.accountManagement.table.enabled") : t("permission.accountManagement.table.disabled");
     },
     tableColumnProps: {
       align: "center"
@@ -488,6 +507,7 @@ const tableConfig: any = ref([
   },
   {
     label: "白名单IP",
+    renderHeader: () => t("permission.accountManagement.table.whitelist_ip"),
     prop: "whitelist_ip",
     render: () => {
       // API响应中没有此字段，显示"-"
@@ -500,6 +520,7 @@ const tableConfig: any = ref([
   },
   {
     label: "备注",
+    renderHeader: () => t("permission.accountManagement.table.remark"),
     prop: "remark",
     render: () => {
       // API响应中没有此字段，显示"-"
@@ -512,6 +533,7 @@ const tableConfig: any = ref([
   },
   {
     label: "登录时间",
+    renderHeader: () => t("permission.accountManagement.table.loginTime"),
     prop: "logintime",
     width: 160,
     render: (value: number) => {
@@ -525,6 +547,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("permission.accountManagement.table.createTime"),
     prop: "createtime",
     width: 160,
     tableColumnProps: {
@@ -533,13 +556,14 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("permission.accountManagement.table.status"),
     prop: "status",
     width: 100,
     render: (value: string) => {
       const isNormal = value === "normal" || value === "1";
       return h(ElTag, {
         type: isNormal ? "success" : "danger"
-      }, () => isNormal ? "正常" : "停用");
+      }, () => isNormal ? t("permission.accountManagement.table.normal") : t("permission.accountManagement.table.disabled"));
     },
     tableColumnProps: {
        sortable: true,
@@ -553,7 +577,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttonsRef.value = [
   {
-    text: "编辑",
+    text: () => t("permission.accountManagement.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -564,7 +588,7 @@ buttonsRef.value = [
     }
   },
   {
-    text: "删除",
+    text: () => t("permission.accountManagement.buttons.delete"),
     code: "delete",
     props: {
       type: "danger"
@@ -623,7 +647,7 @@ const getList = async () => {
         merchant_id: (item as any).merchant_id || item.id, // 如果有merchant_id使用它，否则使用id
         nickname: item.username, // 如果没有nickname，使用username
         role_group: item.groups_text || "",
-        superior: item.agentname || "无",
+        superior: item.agentname || t("permission.accountManagement.table.none"),
         google_verify: item.google_status === 1 ? "1" : "0",
         whitelist_ip: "", // API响应中没有此字段
         remark: "", // API响应中没有此字段
@@ -635,11 +659,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("permission.accountManagement.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("permission.accountManagement.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -668,7 +692,9 @@ getList();
 
 // 对话框相关
 const showDialog = ref(false);
-const dialogTitle = ref("新增");
+const dialogTitle = computed(() => {
+  return isEdit.value ? t("permission.accountManagement.edit.title") : t("permission.accountManagement.add.title");
+});
 const isEdit = ref(false);
 const formRef = ref<FormInstance>();
 const formData = ref({
@@ -694,27 +720,26 @@ const formData = ref({
 // 表单验证规则
 const formRules = {
   role_group: [
-    { required: true, message: "请选择角色组", trigger: "change" }
+    { required: true, message: t("permission.accountManagement.form.roleGroupRequired"), trigger: "change" }
   ],
   username: [
-    { required: true, message: "请输入用户名", trigger: "blur" }
+    { required: true, message: t("permission.accountManagement.form.usernameRequired"), trigger: "blur" }
   ],
   nickname: [
-    { required: true, message: "请输入昵称", trigger: "blur" }
+    { required: true, message: t("permission.accountManagement.form.nicknameRequired"), trigger: "blur" }
   ],
   email: [
-    { type: "email" as const, message: "请输入正确的邮箱格式", trigger: "blur" }
+    { type: "email" as const, message: t("permission.accountManagement.form.emailFormat"), trigger: "blur" }
   ],
   password: [
-    { required: true, message: "请输入密码", trigger: "blur" },
-    { min: 6, max: 30, message: "密码长度必须在6-30位之间", trigger: "blur" }
+    { required: true, message: t("permission.accountManagement.form.passwordRequired"), trigger: "blur" },
+    { min: 6, max: 30, message: t("permission.accountManagement.form.passwordLength"), trigger: "blur" }
   ]
 };
 
 // 打开新增对话框
 const handleAdd = () => {
   isEdit.value = false;
-  dialogTitle.value = "添加";
   formData.value = {
     id: 0,
     role_group: "",
@@ -740,7 +765,7 @@ const handleAdd = () => {
 // 打开编辑对话框
 const handleEdit = () => {
   if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑", { type: "warning" });
+    message(t("permission.accountManagement.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   handleEditRow(multipleSelection.value[0]);
@@ -749,7 +774,6 @@ const handleEdit = () => {
 // 编辑单行数据
 const handleEditRow = (row: TableRow) => {
   isEdit.value = true;
-  dialogTitle.value = "编辑";
   // 查找上级ID（根据pid查找）
   let superiorId = "0";
   if (row.pid && row.pid !== 0) {
@@ -801,13 +825,13 @@ const handleCloseDialog = () => {
 const handleRefreshGoogleSecret = () => {
   // TODO: 调用API生成新的密钥
   formData.value.google_secret = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15).toUpperCase();
-  message("密钥已刷新", { type: "success" });
+  message(t("permission.accountManagement.message.secretRefreshed"), { type: "success" });
 };
 
 // 显示二维码
 const handleShowQrCode = () => {
   // TODO: 显示二维码弹窗
-  message("二维码功能待实现", { type: "info" });
+  message(t("permission.accountManagement.message.qrCodeNotImplemented"), { type: "info" });
 };
 
 // 提交表单
@@ -839,12 +863,12 @@ const handleSubmit = async () => {
           const res = await editAccount(params);
           
           if (res.code === 0) {
-            message("编辑成功", { type: "success" });
+            message(t("permission.accountManagement.message.editSuccess"), { type: "success" });
             handleCloseDialog();
             // 刷新列表
             getList();
           } else {
-            message(res.msg || "编辑失败", { type: "error" });
+            message(res.msg || t("permission.accountManagement.message.editFail"), { type: "error" });
           }
         } else {
           // 新增：调用API
@@ -874,12 +898,12 @@ const handleSubmit = async () => {
           const res = await addAccount(params);
           
           if (res.code === 0) {
-            message("新增成功", { type: "success" });
+            message(t("permission.accountManagement.message.addSuccess"), { type: "success" });
             handleCloseDialog();
             // 刷新列表
             getList();
           } else {
-            message(res.msg || "新增失败", { type: "error" });
+            message(res.msg || t("permission.accountManagement.message.addFail"), { type: "error" });
           }
         }
         
@@ -889,7 +913,7 @@ const handleSubmit = async () => {
         }
       } catch (error: any) {
         console.error("提交失败:", error);
-        message(error?.message || "提交失败", { type: "error" });
+        message(error?.message || t("permission.accountManagement.message.submitFail"), { type: "error" });
       }
     }
   });
@@ -898,7 +922,7 @@ const handleSubmit = async () => {
 // 批量删除
 const handleBatchDelete = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
+    message(t("permission.accountManagement.message.selectToDelete"), { type: "warning" });
     return;
   }
 
@@ -907,17 +931,20 @@ const handleBatchDelete = async () => {
     row => row.status === "normal" || row.status === "1"
   );
   if (normalAccounts.length > 0) {
-    message("只能删除停用状态的账号", { type: "warning" });
+    message(t("permission.accountManagement.message.onlyDeleteDisabled"), { type: "warning" });
     return;
   }
 
   const usernames = multipleSelection.value.map(item => item.username).join("、");
-  const confirmMessage = `确定删除选中的 ${multipleSelection.value.length} 条账号数据？\n账号：${usernames}`;
+  const confirmMessage = t("permission.accountManagement.message.confirmBatchDelete", { 
+    count: multipleSelection.value.length, 
+    usernames 
+  });
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("permission.accountManagement.delete.batchTitle"), {
+      confirmButtonText: t("permission.accountManagement.buttons.confirm"),
+      cancelButtonText: t("permission.accountManagement.buttons.cancel"),
       type: "warning"
     });
 
@@ -926,15 +953,15 @@ const handleBatchDelete = async () => {
     const res = await deleteBatchAccount(params);
 
     if (res.code === 0) {
-      message("删除成功", { type: "success" });
+      message(t("permission.accountManagement.message.deleteSuccess"), { type: "success" });
       getList();
     } else {
-      message(res.msg || "删除失败", { type: "error" });
+      message(res.msg || t("permission.accountManagement.message.deleteFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("permission.accountManagement.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -943,17 +970,17 @@ const handleBatchDelete = async () => {
 const handleDelete = async (row: TableRow) => {
   const isNormal = row.status === "normal" || row.status === "1";
   if (isNormal) {
-    message("只能删除停用状态的账号", { type: "warning" });
+    message(t("permission.accountManagement.message.onlyDeleteDisabled"), { type: "warning" });
     return;
   }
   
   try {
     await ElMessageBox.confirm(
-      `确定删除账号"${row.username}"吗？`,
-      "删除确认",
+      t("permission.accountManagement.message.confirmDelete", { username: row.username }),
+      t("permission.accountManagement.delete.title"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("permission.accountManagement.buttons.confirm"),
+        cancelButtonText: t("permission.accountManagement.buttons.cancel"),
         type: "warning"
       }
     );
@@ -962,15 +989,15 @@ const handleDelete = async (row: TableRow) => {
     const res = await deleteBatchAccount(params);
     
     if (res.code === 0) {
-      message("删除成功", { type: "success" });
+      message(t("permission.accountManagement.message.deleteSuccess"), { type: "success" });
       getList();
     } else {
-      message(res.msg || "删除失败", { type: "error" });
+      message(res.msg || t("permission.accountManagement.message.deleteFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("permission.accountManagement.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -983,11 +1010,11 @@ const handleDelete = async (row: TableRow) => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="110"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('permission.accountManagement.buttons.search')"
+        :resetText="t('permission.accountManagement.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -1004,7 +1031,7 @@ const handleDelete = async (row: TableRow) => {
         :action-bar="{
           buttons: buttonsRef,
           width: '150px',
-          label: '操作'
+          label: t('permission.accountManagement.table.action')
         }"
         width="100%"
         height="90%"
@@ -1014,7 +1041,7 @@ const handleDelete = async (row: TableRow) => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">添加</span>
+            <span style="margin-left: 3px;">{{ t('permission.accountManagement.buttons.add') }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -1023,7 +1050,7 @@ const handleDelete = async (row: TableRow) => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t('permission.accountManagement.buttons.edit') }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -1032,12 +1059,12 @@ const handleDelete = async (row: TableRow) => {
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('permission.accountManagement.buttons.delete') }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('permission.accountManagement.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -1048,7 +1075,7 @@ const handleDelete = async (row: TableRow) => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('permission.accountManagement.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -1061,7 +1088,7 @@ const handleDelete = async (row: TableRow) => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('permission.accountManagement.toolbar.hideSearch') : t('permission.accountManagement.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -1081,7 +1108,7 @@ const handleDelete = async (row: TableRow) => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('permission.accountManagement.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"
@@ -1121,13 +1148,13 @@ const handleDelete = async (row: TableRow) => {
         ref="formRef"
         :model="formData"
         :rules="formRules"
-        label-width="100px"
+        label-width="120px"
         class="dialog-form"
       >
-        <el-form-item label="角色组" prop="role_group">
+        <el-form-item :label="t('permission.accountManagement.form.role_group')" prop="role_group">
           <el-select
             v-model="formData.role_group"
-            placeholder="请选择"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
             filterable
           >
@@ -1139,10 +1166,10 @@ const handleDelete = async (row: TableRow) => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="上级">
+        <el-form-item :label="t('permission.accountManagement.form.superior')">
           <el-select
             v-model="formData.superior"
-            placeholder="请选择"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
             filterable
           >
@@ -1154,62 +1181,62 @@ const handleDelete = async (row: TableRow) => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="用户名" prop="username">
+        <el-form-item :label="t('permission.accountManagement.form.username')" prop="username">
           <el-input
             v-model="formData.username"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="昵称" prop="nickname">
+        <el-form-item :label="t('permission.accountManagement.form.nickname')" prop="nickname">
           <el-input
             v-model="formData.nickname"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="关联邮箱" prop="email">
+        <el-form-item :label="t('permission.accountManagement.form.email')" prop="email">
           <el-input
             v-model="formData.email"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
           />
         </el-form-item>
-        <el-form-item label="密码" prop="password">
+        <el-form-item :label="t('permission.accountManagement.form.password')" prop="password">
           <el-input
             v-model="formData.password"
             type="password"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             show-password
             maxlength="30"
           />
         </el-form-item>
-        <el-form-item label="账号类型" prop="type">
+        <el-form-item :label="t('permission.accountManagement.form.type')" prop="type">
           <el-radio-group v-model="formData.type">
-            <el-radio label="1">正式账号</el-radio>
-            <el-radio label="2">测试账号</el-radio>
+            <el-radio label="1">{{ t('permission.accountManagement.form.formal') }}</el-radio>
+            <el-radio label="2">{{ t('permission.accountManagement.form.test') }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="钱包类型" prop="wallet_type">
+        <el-form-item :label="t('permission.accountManagement.form.wallet_type')" prop="wallet_type">
           <el-radio-group v-model="formData.wallet_type">
-            <el-radio label="1">单一</el-radio>
-            <el-radio label="2">转账</el-radio>
+            <el-radio label="1">{{ t('permission.accountManagement.form.single') }}</el-radio>
+            <el-radio label="2">{{ t('permission.accountManagement.form.transfer') }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="API版本" prop="version">
+        <el-form-item :label="t('permission.accountManagement.form.version')" prop="version">
           <el-select
             v-model="formData.version"
-            placeholder="请选择"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
           >
             <el-option label="1.0" value="1.0" />
             <el-option label="2.0" value="2.0" />
           </el-select>
         </el-form-item>
-        <el-form-item label="币种" prop="currency">
+        <el-form-item :label="t('permission.accountManagement.form.currency')" prop="currency">
           <el-select
             v-model="formData.currency"
-            placeholder="请选择"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
             filterable
           >
@@ -1221,10 +1248,10 @@ const handleDelete = async (row: TableRow) => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="开通游戏">
+        <el-form-item :label="t('permission.accountManagement.form.type_ids')">
           <el-select
             v-model="formData.type_ids"
-            placeholder="请选择游戏品牌"
+            :placeholder="t('permission.accountManagement.form.type_idsPlaceholder')"
             style="width: 100%"
             multiple
             filterable
@@ -1239,57 +1266,57 @@ const handleDelete = async (row: TableRow) => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="谷歌验证">
+        <el-form-item :label="t('permission.accountManagement.form.google_verify')">
          <el-radio-group v-model="formData.google_verify">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="0">关闭</el-radio>
+            <el-radio label="1">{{ t('permission.accountManagement.form.enabled') }}</el-radio>
+            <el-radio label="0">{{ t('permission.accountManagement.form.disabled') }}</el-radio>
          </el-radio-group>
         </el-form-item>
         <el-form-item>                    
           <div v-if="formData.google_verify === '1'" style="width: 100%">
             <el-input
               v-model="formData.google_secret"
-              placeholder="密钥"
+              :placeholder="t('permission.accountManagement.form.secret')"
               readonly
               disabled
               style="width: 80%"
             />
             <el-button type="primary" @click="handleRefreshGoogleSecret" style="margin-left: 10px;">
                <el-icon><component :is="Refresh" /></el-icon>
-               <span style="margin-left: 3px;">刷新</span>
+               <span style="margin-left: 3px;">{{ t('permission.accountManagement.buttons.refresh') }}</span>
             </el-button>
           </div>
         </el-form-item>
-        <el-form-item label="API 白名单">
+        <el-form-item :label="t('permission.accountManagement.form.whitelist_ip')">
           <el-input
             v-model="formData.whitelist_ip"
             type="textarea"
             :rows="4"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="500"
           />
           <div style="color: #909399; font-size: 12px; margin-top: 5px">
-            多个白名单以英文逗号隔开
+            {{ t('permission.accountManagement.form.whitelistTip') }}
           </div>
         </el-form-item>
-        <el-form-item label="备注">
+        <el-form-item :label="t('permission.accountManagement.form.remark')">
           <el-input
             v-model="formData.remark"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
+        <el-form-item :label="t('permission.accountManagement.form.status')" prop="status">
           <el-radio-group v-model="formData.status">
-            <el-radio label="1">正常</el-radio>
-            <el-radio label="-1">停用</el-radio>
+            <el-radio label="1">{{ t('permission.accountManagement.form.normal') }}</el-radio>
+            <el-radio label="-1">{{ t('permission.accountManagement.form.disabled') }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确认</el-button>
+          <el-button @click="handleCloseDialog">{{ t('permission.accountManagement.buttons.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ t('permission.accountManagement.buttons.confirm') }}</el-button>
         </div>
       </template>
     </el-dialog>

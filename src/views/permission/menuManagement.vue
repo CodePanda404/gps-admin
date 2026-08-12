@@ -6,7 +6,11 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import { ElMessageBox, ElTag, ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElButton, ElRadioGroup, ElRadio, ElSelect, ElOption, type FormInstance } from "element-plus";
 import {
   getMenuList,
@@ -46,53 +50,58 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("permission.menuManagement.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: t("permission.menuManagement.search.id")
     }))
   },
   {
     label: "标题",
+    renderLabel: () => t("permission.menuManagement.search.title"),
     prop: "title",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入标题"
+      placeholder: t("permission.menuManagement.search.title")
     }))
   },
   {
     label: "名称",
+    renderLabel: () => t("permission.menuManagement.search.name"),
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入名称"
+      placeholder: t("permission.menuManagement.search.name")
     }))
   },
   {
     label: "状态",
+    renderLabel: () => t("permission.menuManagement.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("permission.menuManagement.search.status")
     })),
-    options: [
-      { label: "全部", value: "" },
-      { label: "正常", value: "normal" },
-      { label: "隐藏", value: "hidden" }
-    ]
+    options: computed(() => [
+      { label: t("permission.menuManagement.search.all"), value: "" },
+      { label: t("permission.menuManagement.search.normal"), value: "normal" },
+      { label: t("permission.menuManagement.search.hidden"), value: "hidden" }
+    ])
   },
   {
     label: "菜单开关",
+    renderLabel: () => t("permission.menuManagement.search.ismenu"),
     prop: "ismenu",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("permission.menuManagement.search.ismenu")
     })),
-    options: [
-      { label: "全部", value: "" },
-      { label: "开启", value: "1" },
-      { label: "关闭", value: "0" }
-    ]
+    options: computed(() => [
+      { label: t("permission.menuManagement.search.all"), value: "" },
+      { label: t("permission.menuManagement.search.enabled"), value: "1" },
+      { label: t("permission.menuManagement.search.disabled"), value: "0" }
+    ])
   }
 ];
 
@@ -128,6 +137,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("permission.menuManagement.table.id"),
     prop: "id",
     width: 80,
     tableColumnProps: {
@@ -136,6 +146,7 @@ const tableConfig: any = ref([
   },
   {
     label: "标题",
+    renderHeader: () => t("permission.menuManagement.table.title"),
     prop: "title",
     minWidth: 120,
     tableColumnProps: {
@@ -143,7 +154,8 @@ const tableConfig: any = ref([
     }
   },
   {
-    label: "ICON",
+    label: "Icon",
+    renderHeader: () => t("permission.menuManagement.table.icon"),
     prop: "icon",
     width: 150,
     render: (value: string) => {
@@ -155,6 +167,7 @@ const tableConfig: any = ref([
   },
   {
     label: "名称",
+    renderHeader: () => t("permission.menuManagement.table.name"),
     prop: "name",
     minWidth: 120,
     tableColumnProps: {
@@ -163,6 +176,7 @@ const tableConfig: any = ref([
   },
   {
     label: "排序",
+    renderHeader: () => t("permission.menuManagement.table.weigh"),
     prop: "weigh",
     width: 100,
     tableColumnProps: {
@@ -171,13 +185,14 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("permission.menuManagement.table.status"),
     prop: "status",
     width: 100,
     render: (value: string) => {
       const isNormal = value === "normal";
       return h(ElTag, {
         type: isNormal ? "success" : "danger"
-      }, () => isNormal ? "正常" : "隐藏");
+      }, () => isNormal ? t("permission.menuManagement.table.normal") : t("permission.menuManagement.table.hidden"));
     },
     tableColumnProps: {
       align: "center"
@@ -185,21 +200,24 @@ const tableConfig: any = ref([
   },
   {
     label: "菜单开关",
+    renderHeader: () => t("permission.menuManagement.table.ismenu"),
     prop: "ismenu",
-    width: 100,
     render: (value: number) => {
-      return value === 1 ? "开启" : "关闭";
+      return h(ElTag, {
+        type: value === 1 ? "success" : "danger"
+      }, () => value === 1 ? t("permission.menuManagement.table.enabled") : t("permission.menuManagement.table.disabled"));
     },
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 120
   }
 ]);
 
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "详情",
+    text: () => t("permission.menuManagement.buttons.detail"),
     code: "detail",
     props: {
       type: "primary",
@@ -211,7 +229,7 @@ buttons.value = [
     }
   },
   {
-    text: "删除",
+    text: () => t("permission.menuManagement.buttons.delete"),
     code: "delete",
     props: {
       type: "danger",
@@ -254,11 +272,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("permission.menuManagement.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("permission.menuManagement.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -284,7 +302,9 @@ getList();
 // 对话框相关
 const showDialog = ref(false);
 const showDetailDialog = ref(false);
-const dialogTitle = ref("新增");
+const dialogTitle = computed(() => {
+  return isEdit.value ? t("permission.menuManagement.edit.title") : t("permission.menuManagement.add.title");
+});
 const isEdit = ref(false);
 const formRef = ref<FormInstance>();
 const formData = ref({
@@ -308,7 +328,7 @@ const detailData = ref<MenuItem | null>(null);
 
 // 父级菜单选项（从列表数据中获取）
 const parentMenuOptions = computed(() => {
-  const options = [{ label: "无", value: 0 }];
+  const options = [{ label: t("permission.menuManagement.form.none"), value: 0 }];
   tableData.value.forEach((item: MenuItem) => {
     if (item.id !== formData.value.id) {
       options.push({
@@ -323,20 +343,19 @@ const parentMenuOptions = computed(() => {
 // 表单验证规则
 const formRules = {
   name: [
-    { required: true, message: "请输入名称", trigger: "blur" }
+    { required: true, message: t("permission.menuManagement.form.nameRequired"), trigger: "blur" }
   ],
   title: [
-    { required: true, message: "请输入标题", trigger: "blur" }
+    { required: true, message: t("permission.menuManagement.form.titleRequired"), trigger: "blur" }
   ],
   weigh: [
-    { required: true, message: "请输入排序", trigger: "blur" }
+    { required: true, message: t("permission.menuManagement.form.weighRequired"), trigger: "blur" }
   ]
 };
 
 // 打开新增对话框
 const handleAdd = () => {
   isEdit.value = false;
-  dialogTitle.value = "新增";
   formData.value = {
     id: 0,
     ismenu: "1",
@@ -358,7 +377,7 @@ const handleAdd = () => {
 // 打开编辑对话框
 const handleEdit = () => {
   if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑", { type: "warning" });
+    message(t("permission.menuManagement.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   handleEditRow(multipleSelection.value[0]);
@@ -367,7 +386,6 @@ const handleEdit = () => {
 // 编辑单行数据
 const handleEditRow = (row: TableRow) => {
   isEdit.value = true;
-  dialogTitle.value = "编辑";
   formData.value = {
     id: row.id,
     ismenu: row.ismenu.toString(),
@@ -431,11 +449,11 @@ const handleSubmit = async () => {
           const res = await editMenu(params);
           
           if (res.code === 0) {
-            message("编辑成功", { type: "success" });
+            message(t("permission.menuManagement.message.editSuccess"), { type: "success" });
             handleCloseDialog();
             getList();
           } else {
-            message(res.msg || "编辑失败", { type: "error" });
+            message(res.msg || t("permission.menuManagement.message.editFail"), { type: "error" });
           }
         } else {
           // 新增
@@ -457,16 +475,16 @@ const handleSubmit = async () => {
           const res = await addMenu(params);
           
           if (res.code === 0) {
-            message("新增成功", { type: "success" });
+            message(t("permission.menuManagement.message.addSuccess"), { type: "success" });
             handleCloseDialog();
             getList();
           } else {
-            message(res.msg || "新增失败", { type: "error" });
+            message(res.msg || t("permission.menuManagement.message.addFail"), { type: "error" });
           }
         }
       } catch (error: any) {
         console.error("提交失败:", error);
-        message(error?.message || "提交失败", { type: "error" });
+        message(error?.message || t("permission.menuManagement.message.submitFail"), { type: "error" });
       }
     }
   });
@@ -475,17 +493,20 @@ const handleSubmit = async () => {
 // 批量删除
 const handleBatchDelete = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
+    message(t("permission.menuManagement.message.selectToDelete"), { type: "warning" });
     return;
   }
 
   const titles = multipleSelection.value.map(item => item.title).join("、");
-  const confirmMessage = `确定删除选中的 ${multipleSelection.value.length} 条菜单数据？\n菜单：${titles}`;
+  const confirmMessage = t("permission.menuManagement.message.confirmBatchDelete", { 
+    count: multipleSelection.value.length, 
+    titles 
+  });
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("permission.menuManagement.delete.batchTitle"), {
+      confirmButtonText: t("permission.menuManagement.buttons.confirm"),
+      cancelButtonText: t("permission.menuManagement.buttons.cancel"),
       type: "warning"
     });
 
@@ -494,15 +515,15 @@ const handleBatchDelete = async () => {
     const res = await deleteBatchMenu(params);
 
     if (res.code === 0) {
-      message("删除成功", { type: "success" });
+      message(t("permission.menuManagement.message.deleteSuccess"), { type: "success" });
       getList();
     } else {
-      message(res.msg || "删除失败", { type: "error" });
+      message(res.msg || t("permission.menuManagement.message.deleteFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("permission.menuManagement.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -511,11 +532,11 @@ const handleBatchDelete = async () => {
 const handleDelete = async (row: TableRow) => {
   try {
     await ElMessageBox.confirm(
-      `确定删除菜单"${row.title}"吗？`,
-      "删除确认",
+      t("permission.menuManagement.message.confirmDelete", { title: row.title }),
+      t("permission.menuManagement.delete.title"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("permission.menuManagement.buttons.confirm"),
+        cancelButtonText: t("permission.menuManagement.buttons.cancel"),
         type: "warning"
       }
     );
@@ -524,15 +545,15 @@ const handleDelete = async (row: TableRow) => {
     const res = await deleteBatchMenu(params);
     
     if (res.code === 0) {
-      message("删除成功", { type: "success" });
+      message(t("permission.menuManagement.message.deleteSuccess"), { type: "success" });
       getList();
     } else {
-      message(res.msg || "删除失败", { type: "error" });
+      message(res.msg || t("permission.menuManagement.message.deleteFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("permission.menuManagement.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -546,7 +567,7 @@ const statusSwitchForm = ref({
 // 打开状态切换对话框
 const handleStatusSwitch = () => {
   if (multipleSelection.value.length === 0) {
-    message("请选择要切换状态的数据", { type: "warning" });
+    message(t("permission.menuManagement.message.selectToSwitchStatus"), { type: "warning" });
     return;
   }
   showStatusSwitchDialog.value = true;
@@ -565,7 +586,7 @@ const handleCloseStatusSwitchDialog = () => {
 // 提交状态切换
 const handleSubmitStatusSwitch = async () => {
   if (multipleSelection.value.length === 0) {
-    message("请选择要切换状态的数据", { type: "warning" });
+    message(t("permission.menuManagement.message.selectToSwitchStatus"), { type: "warning" });
     return;
   }
 
@@ -579,17 +600,17 @@ const handleSubmitStatusSwitch = async () => {
     const res = await statusBatchMenu(params);
 
     if (res.code === 0) {
-      message("状态切换成功", { type: "success" });
+      message(t("permission.menuManagement.message.statusSwitchSuccess"), { type: "success" });
       handleCloseStatusSwitchDialog();
       multipleSelection.value = [];
       // 刷新列表
       getList();
     } else {
-      message(res.msg || "状态切换失败", { type: "error" });
+      message(res.msg || t("permission.menuManagement.message.statusSwitchFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("状态切换失败:", error);
-    message(error?.message || "状态切换失败", { type: "error" });
+    message(error?.message || t("permission.menuManagement.message.statusSwitchFail"), { type: "error" });
   }
 };
 </script>
@@ -601,11 +622,11 @@ const handleSubmitStatusSwitch = async () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="100"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('permission.menuManagement.buttons.search')"
+        :resetText="t('permission.menuManagement.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -623,7 +644,7 @@ const handleSubmitStatusSwitch = async () => {
         :action-bar="{
           buttons,
           width: '120px',
-          label: '操作'
+          label: t('permission.menuManagement.table.action')
         }"
         width="100%"
         height="90%"
@@ -633,7 +654,7 @@ const handleSubmitStatusSwitch = async () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t('permission.menuManagement.buttons.add') }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -642,7 +663,7 @@ const handleSubmitStatusSwitch = async () => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t('permission.menuManagement.buttons.edit') }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -651,7 +672,7 @@ const handleSubmitStatusSwitch = async () => {
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('permission.menuManagement.buttons.delete') }}</span>
           </el-button>
           <el-button 
             type="warning" 
@@ -660,12 +681,12 @@ const handleSubmitStatusSwitch = async () => {
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">状态切换</span>
+            <span style="margin-left: 3px;">{{ t('permission.menuManagement.buttons.statusSwitch') }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('permission.menuManagement.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -676,7 +697,7 @@ const handleSubmitStatusSwitch = async () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('permission.menuManagement.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -689,7 +710,7 @@ const handleSubmitStatusSwitch = async () => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('permission.menuManagement.toolbar.hideSearch') : t('permission.menuManagement.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -709,7 +730,7 @@ const handleSubmitStatusSwitch = async () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('permission.menuManagement.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"
@@ -752,23 +773,23 @@ const handleSubmitStatusSwitch = async () => {
         label-width="100px"
         class="dialog-form"
       >
-        <el-form-item label="菜单开关">
+        <el-form-item :label="t('permission.menuManagement.form.ismenu')">
           <el-radio-group v-model="formData.ismenu">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="0">关闭</el-radio>
+            <el-radio label="1">{{ t('permission.menuManagement.form.enabled') }}</el-radio>
+            <el-radio label="0">{{ t('permission.menuManagement.form.disabled') }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="备注">
+        <el-form-item :label="t('permission.menuManagement.form.remark')">
           <el-input
             v-model="formData.remark"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="父级">
+        <el-form-item :label="t('permission.menuManagement.form.parent')">
           <el-select
             v-model="formData.pid"
-            placeholder="请选择"
+            :placeholder="t('placeholder.select')"
             style="width: 100%"
             filterable
           >
@@ -780,81 +801,81 @@ const handleSubmitStatusSwitch = async () => {
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="名称" prop="name">
+        <el-form-item :label="t('permission.menuManagement.form.name')" prop="name">
           <el-input
             v-model="formData.name"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
           />
         </el-form-item>
-        <el-form-item label="标题" prop="title">
+        <el-form-item :label="t('permission.menuManagement.form.title')" prop="title">
           <el-input
             v-model="formData.title"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
           />
         </el-form-item>
-        <el-form-item label="URL">
+        <el-form-item :label="t('permission.menuManagement.form.url')">
           <el-input
             v-model="formData.url"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="图标">
+        <el-form-item :label="t('permission.menuManagement.form.icon')">
           <el-input
             v-model="formData.icon"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="100"
           >
             <template #append>
-              <el-button>选择</el-button>
+              <el-button>{{ t('permission.menuManagement.form.select') }}</el-button>
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item label="Condition">
+        <el-form-item :label="t('permission.menuManagement.form.condition')">
           <el-input
             v-model="formData.condition"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="菜单类型">
+        <el-form-item :label="t('permission.menuManagement.form.menutype')">
           <el-radio-group v-model="formData.menutype">
-            <el-radio label="addtabs">Add tabs</el-radio>
-            <el-radio label="dialog">Dialog</el-radio>
-            <el-radio label="ajax">Ajax</el-radio>
-            <el-radio label="blank">Blank</el-radio>
+            <el-radio label="addtabs">{{ t('permission.menuManagement.form.addtabs') }}</el-radio>
+            <el-radio label="dialog">{{ t('permission.menuManagement.form.dialog') }}</el-radio>
+            <el-radio label="ajax">{{ t('permission.menuManagement.form.ajax') }}</el-radio>
+            <el-radio label="blank">{{ t('permission.menuManagement.form.blank') }}</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item label="Extend">
+        <el-form-item :label="t('permission.menuManagement.form.extend')">
           <el-input
             v-model="formData.extend"
             type="textarea"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             :rows="3"
             maxlength="500"
           />
         </el-form-item>
-        <el-form-item label="排序" prop="weigh">
+        <el-form-item :label="t('permission.menuManagement.form.weigh')" prop="weigh">
           <el-input-number
             v-model="formData.weigh"
             :min="0"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item :label="t('permission.menuManagement.form.status')">
           <el-radio-group v-model="formData.status">
-            <el-radio label="normal">正常</el-radio>
-            <el-radio label="hidden">隐藏</el-radio>
+            <el-radio label="normal">{{ t('permission.menuManagement.form.normal') }}</el-radio>
+            <el-radio label="hidden">{{ t('permission.menuManagement.form.hidden') }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确认</el-button>
+          <el-button @click="handleCloseDialog">{{ t('permission.menuManagement.buttons.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ t('permission.menuManagement.buttons.confirm') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -862,7 +883,7 @@ const handleSubmitStatusSwitch = async () => {
     <!-- 详情对话框 -->
     <el-dialog
       v-model="showDetailDialog"
-      title="菜单详情"
+      :title="t('permission.menuManagement.detail.title')"
       width="600px"
       :close-on-click-modal="false"
       @close="handleCloseDetailDialog"
@@ -873,34 +894,34 @@ const handleSubmitStatusSwitch = async () => {
         label-width="100px"
         class="dialog-form"
       >
-        <el-form-item label="ID">
+        <el-form-item :label="t('permission.menuManagement.detail.id')">
           <el-input v-model="detailData.id" disabled />
         </el-form-item>
-        <el-form-item label="标题">
+        <el-form-item :label="t('permission.menuManagement.detail.title')">
           <el-input v-model="detailData.title" disabled />
         </el-form-item>
-        <el-form-item label="名称">
+        <el-form-item :label="t('permission.menuManagement.detail.name')">
           <el-input v-model="detailData.name" disabled />
         </el-form-item>
-        <el-form-item label="图标">
+        <el-form-item :label="t('permission.menuManagement.detail.icon')">
           <el-input v-model="detailData.icon" disabled />
         </el-form-item>
-        <el-form-item label="URL">
+        <el-form-item :label="t('permission.menuManagement.detail.url')">
           <el-input v-model="detailData.url" disabled />
         </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item :label="t('permission.menuManagement.detail.weigh')">
           <el-input v-model="detailData.weigh" disabled />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item :label="t('permission.menuManagement.detail.status')">
           <el-input v-model="detailData.status" disabled />
         </el-form-item>
-        <el-form-item label="菜单开关">
-          <el-input :value="detailData.ismenu === 1 ? '开启' : '关闭'" disabled />
+        <el-form-item :label="t('permission.menuManagement.detail.ismenu')">
+          <el-input :value="detailData.ismenu === 1 ? t('permission.menuManagement.detail.enabled') : t('permission.menuManagement.detail.disabled')" disabled />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDetailDialog">关闭</el-button>
+          <el-button @click="handleCloseDetailDialog">{{ t('permission.menuManagement.buttons.close') }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -908,24 +929,24 @@ const handleSubmitStatusSwitch = async () => {
     <!-- 状态切换对话框 -->
     <el-dialog
       v-model="showStatusSwitchDialog"
-      title="状态切换"
+      :title="t('permission.menuManagement.statusSwitch.title')"
       width="500px"
       :close-on-click-modal="false"
       @close="handleCloseStatusSwitchDialog"
     >
       <el-form :model="statusSwitchForm" label-width="100px">
-        <el-form-item label="状态" required>
+        <el-form-item :label="t('permission.menuManagement.statusSwitch.status')" required>
           <el-select
             v-model="statusSwitchForm.status"
-            placeholder="请选择状态"
+            :placeholder="t('permission.menuManagement.statusSwitch.status')"
             style="width: 100%"
           >
             <el-option
-              label="正常"
+              :label="t('permission.menuManagement.statusSwitch.normal')"
               value="normal"
             />
             <el-option
-              label="隐藏"
+              :label="t('permission.menuManagement.statusSwitch.hidden')"
               value="hidden"
             />
           </el-select>
@@ -933,8 +954,8 @@ const handleSubmitStatusSwitch = async () => {
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseStatusSwitchDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitStatusSwitch">确认</el-button>
+          <el-button @click="handleCloseStatusSwitchDialog">{{ t('permission.menuManagement.buttons.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmitStatusSwitch">{{ t('permission.menuManagement.buttons.confirm') }}</el-button>
         </div>
       </template>
     </el-dialog>

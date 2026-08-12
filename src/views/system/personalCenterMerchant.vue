@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
 import { ElCard, ElForm, ElFormItem, ElInput, ElButton, ElDialog, ElMessageBox, ElImage, ElIcon, ElLink } from "element-plus";
 import {
@@ -20,6 +21,9 @@ import Plus from "~icons/ep/plus";
 defineOptions({
   name: "PersonalCenterMerchant"
 });
+
+// 国际化
+const { t } = useI18n();
 
 // 商户信息数据
 const merchantInfo = ref<MerchantProfileData>({
@@ -84,7 +88,7 @@ const handleCloseGoogleVerifyDialog = () => {
 // 确认谷歌验证码
 const handleConfirmGoogleVerify = async () => {
   if (!googleVerifyCode.value.trim()) {
-    googleVerifyError.value = "请输入谷歌验证码";
+    googleVerifyError.value = t("systemSettings.personalCenterMerchant.message.inputGoogleCode");
     return;
   }
 
@@ -104,11 +108,11 @@ const handleConfirmGoogleVerify = async () => {
         googleVerifyCallback.value = null;
       }
     } else {
-      googleVerifyError.value = res.msg || "验证码错误";
+      googleVerifyError.value = res.msg || t("systemSettings.personalCenterMerchant.message.googleCodeError");
     }
   } catch (error: any) {
     console.error("验证失败:", error);
-    googleVerifyError.value = error?.message || "验证失败";
+    googleVerifyError.value = error?.message || t("systemSettings.personalCenterMerchant.message.verifyFail");
   }
 };
 
@@ -119,8 +123,8 @@ const handleViewApiSecret = () => {
     // 从商户信息中获取API密钥数据
     apiSecretData.value = {
       apiGateway: merchantInfo.value.open_api_host || "",
-      apiKey: merchantInfo.value.api_key || "未设置",
-      apiSecret: merchantInfo.value.api_secret || "未设置"
+      apiKey: merchantInfo.value.api_key || t("systemSettings.personalCenterMerchant.notSet"),
+      apiSecret: merchantInfo.value.api_secret || t("systemSettings.personalCenterMerchant.notSet")
     };
   });
 };
@@ -152,12 +156,12 @@ const handleCloseWhitelistEditDialog = () => {
 // 保存API白名单
 const handleSaveWhitelist = async () => {
   if (!whitelistEditForm.value.whitelist.trim()) {
-    message("请输入API白名单", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.inputWhitelist"), { type: "warning" });
     return;
   }
 
   if (!savedGoogleCode.value) {
-    message("请先进行谷歌验证", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.verifyGoogleFirst"), { type: "warning" });
     return;
   }
 
@@ -168,18 +172,18 @@ const handleSaveWhitelist = async () => {
     });
 
     if (res.code === 0) {
-      message("保存成功", { type: "success" });
+      message(t("systemSettings.personalCenterMerchant.message.saveSuccess"), { type: "success" });
       merchantInfo.value.white_ip = whitelistEditForm.value.whitelist;
       savedGoogleCode.value = "";
       handleCloseWhitelistEditDialog();
       // 重新获取商户信息
       await getMerchantInfo();
     } else {
-      message(res.msg || "保存失败", { type: "error" });
+      message(res.msg || t("systemSettings.personalCenterMerchant.message.saveFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("保存失败:", error);
-    message(error?.message || "保存失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterMerchant.message.saveFail"), { type: "error" });
   }
 };
 
@@ -212,12 +216,12 @@ const handleCloseCallbackAddressDialog = () => {
 // 保存回调地址
 const handleSaveCallbackAddress = async () => {
   if (!callbackAddressForm.value.address.trim()) {
-    message("请输入回调地址", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.inputCallbackAddress"), { type: "warning" });
     return;
   }
 
   if (!savedCallbackGoogleCode.value) {
-    message("请先进行谷歌验证", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.verifyGoogleFirst"), { type: "warning" });
     return;
   }
 
@@ -228,18 +232,18 @@ const handleSaveCallbackAddress = async () => {
     });
 
     if (res.code === 0) {
-      message("保存成功", { type: "success" });
+      message(t("systemSettings.personalCenterMerchant.message.saveSuccess"), { type: "success" });
       merchantInfo.value.callback_url = callbackAddressForm.value.address;
       savedCallbackGoogleCode.value = "";
       handleCloseCallbackAddressDialog();
       // 重新获取商户信息
       await getMerchantInfo();
     } else {
-      message(res.msg || "保存失败", { type: "error" });
+      message(res.msg || t("systemSettings.personalCenterMerchant.message.saveFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("保存失败:", error);
-    message(error?.message || "保存失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterMerchant.message.saveFail"), { type: "error" });
   }
 };
 
@@ -253,11 +257,11 @@ const getMerchantInfo = async () => {
     if (res.code === 0) {
       merchantInfo.value = res.data;
     } else {
-      message(res.msg || "获取商户信息失败", { type: "error" });
+      message(res.msg || t("systemSettings.personalCenterMerchant.message.getInfoFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取商户信息失败:", error);
-    message(error?.message || "获取商户信息失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterMerchant.message.getInfoFail"), { type: "error" });
   }
 };
 
@@ -278,7 +282,7 @@ const handleEditPersonalInfo = () => {
 // 点击保存按钮
 const handleSavePersonalInfo = async () => {
   if (!personalFormData.value.nickname.trim()) {
-    message("昵称不能为空", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.nicknameNotEmpty"), { type: "warning" });
     return;
   }
 
@@ -298,18 +302,18 @@ const doSavePersonalInfo = async () => {
     });
 
     if (res.code === 0) {
-      message("保存成功", { type: "success" });
+      message(t("systemSettings.personalCenterMerchant.message.saveSuccess"), { type: "success" });
       merchantInfo.value.nickname = personalFormData.value.nickname;
       savedNicknameGoogleCode.value = "";
       isEditMode.value = false;
       // 重新获取商户信息
       await getMerchantInfo();
     } else {
-      message(res.msg || "保存失败", { type: "error" });
+      message(res.msg || t("systemSettings.personalCenterMerchant.message.saveFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("保存失败:", error);
-    message(error?.message || "保存失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterMerchant.message.saveFail"), { type: "error" });
   }
 };
 
@@ -348,7 +352,7 @@ const formattedEmail = computed(() => {
 // 邮箱验证码倒计时
 const emailCountdownText = computed(() => {
   if (emailCountdown.value > 0) {
-    return `${emailCountdown.value}秒后可重新获取验证码`;
+    return t("systemSettings.personalCenterMerchant.message.emailCountdown", { seconds: emailCountdown.value });
   }
   return "";
 });
@@ -375,7 +379,7 @@ const sendChangeEmailCode = async () => {
   if (emailCountdown.value > 0) return;
   
   if (!changeEmailForm.value.email) {
-    message("请输入邮箱", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.inputEmail"), { type: "warning" });
     return;
   }
 
@@ -387,14 +391,14 @@ const sendChangeEmailCode = async () => {
     });
 
     if (res.code === 0) {
-      message("验证码已发送", { type: "success" });
+      message(t("systemSettings.personalCenterMerchant.message.emailCodeSent"), { type: "success" });
       startEmailCountdown();
     } else {
-      message(res.msg || "发送验证码失败", { type: "error" });
+      message(res.msg || t("systemSettings.personalCenterMerchant.message.sendEmailCodeFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("发送验证码失败:", error);
-    message(error?.message || "发送验证码失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterMerchant.message.sendEmailCodeFail"), { type: "error" });
   } finally {
     emailLoading.value = false;
   }
@@ -429,12 +433,12 @@ const handleCloseChangeEmailDialog = () => {
 // 确认更改邮箱
 const handleConfirmChangeEmail = async () => {
   if (!changeEmailForm.value.emailCode) {
-    message("请输入邮箱验证码", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.inputEmailCode"), { type: "warning" });
     return;
   }
 
   if (merchantInfo.value.google_status === 1 && !changeEmailForm.value.googleCode) {
-    message("请输入谷歌验证码", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.inputGoogleCode"), { type: "warning" });
     return;
   }
 
@@ -447,16 +451,16 @@ const handleConfirmChangeEmail = async () => {
     });
 
     if (res.code === 0) {
-      message("更改邮箱成功", { type: "success" });
+      message(t("systemSettings.personalCenterMerchant.message.changeEmailSuccess"), { type: "success" });
       handleCloseChangeEmailDialog();
       // 重新获取商户信息
       await getMerchantInfo();
     } else {
-      message(res.msg || "更改邮箱失败", { type: "error" });
+      message(res.msg || t("systemSettings.personalCenterMerchant.message.changeEmailFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("更改邮箱失败:", error);
-    message(error?.message || "更改邮箱失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterMerchant.message.changeEmailFail"), { type: "error" });
   }
 };
 
@@ -496,14 +500,14 @@ const handleCloseBindGoogleDialog = () => {
 // 复制密钥
 const handleCopySecret = () => {
   navigator.clipboard.writeText(bindGoogleForm.value.secret).then(() => {
-    message("密钥已复制", { type: "success" });
+    message(t("systemSettings.personalCenterMerchant.message.secretCopied"), { type: "success" });
   });
 };
 
 // 确认绑定谷歌验证
 const handleConfirmBindGoogle = async () => {
   if (!bindGoogleForm.value.verifyCode) {
-    message("请输入验证码", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.inputVerifyCode"), { type: "warning" });
     return;
   }
 
@@ -511,13 +515,13 @@ const handleConfirmBindGoogle = async () => {
     // TODO: 对接实际API
     await new Promise(resolve => setTimeout(resolve, 500));
     merchantInfo.value.google_status = 1;
-    message("绑定谷歌验证成功", { type: "success" });
+    message(t("systemSettings.personalCenterMerchant.message.bindGoogleSuccess"), { type: "success" });
     handleCloseBindGoogleDialog();
     // 重新获取商户信息
     await getMerchantInfo();
   } catch (error: any) {
     console.error("绑定谷歌验证失败:", error);
-    message(error?.message || "绑定谷歌验证失败", { type: "error" });
+    message(error?.message || t("systemSettings.personalCenterMerchant.message.bindGoogleFail"), { type: "error" });
   }
 };
 
@@ -540,17 +544,17 @@ const handleCloseUnbindGoogleDialog = () => {
 // 确认解绑谷歌验证
 const handleConfirmUnbindGoogle = async () => {
   if (!unbindGoogleForm.value.verifyCode) {
-    message("请输入谷歌验证码", { type: "warning" });
+    message(t("systemSettings.personalCenterMerchant.message.inputGoogleCode"), { type: "warning" });
     return;
   }
 
   try {
     await ElMessageBox.confirm(
-      "解绑安全系数将降低,请谨慎解绑。",
-      "解绑确认",
+      t("systemSettings.personalCenterMerchant.message.unbindWarning"),
+      t("systemSettings.personalCenterMerchant.unbind.title"),
       {
-        confirmButtonText: "确认解绑",
-        cancelButtonText: "取消",
+        confirmButtonText: t("systemSettings.personalCenterMerchant.buttons.confirmUnbind"),
+        cancelButtonText: t("systemSettings.personalCenterMerchant.buttons.cancel"),
         type: "warning"
       }
     );
@@ -560,17 +564,17 @@ const handleConfirmUnbindGoogle = async () => {
     });
 
     if (res.code === 0) {
-      message("解绑谷歌验证成功", { type: "success" });
+      message(t("systemSettings.personalCenterMerchant.message.unbindGoogleSuccess"), { type: "success" });
       handleCloseUnbindGoogleDialog();
       // 重新获取商户信息
       await getMerchantInfo();
     } else {
-      message(res.msg || "解绑谷歌验证失败", { type: "error" });
+      message(res.msg || t("systemSettings.personalCenterMerchant.message.unbindGoogleFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("解绑谷歌验证失败:", error);
-      message(error?.message || "解绑谷歌验证失败", { type: "error" });
+      message(error?.message || t("systemSettings.personalCenterMerchant.message.unbindGoogleFail"), { type: "error" });
     }
   }
 };
@@ -605,19 +609,19 @@ onUnmounted(() => {
     <el-card shadow="never" style="margin: 20px">
       <template #header>
         <div class="card-header">
-          <span>个人信息</span>
+          <span>{{ t("systemSettings.personalCenterMerchant.personalInfo.title") }}</span>
         </div>
       </template>
       <el-form
         :model="personalFormData"
         label-width="100px"
       >
-        <el-form-item label="昵称">
+        <el-form-item :label="t('systemSettings.personalCenterMerchant.personalInfo.nickname')">
           <div style="display: flex; align-items: center; width: 62%;">
             <el-input
               v-model="personalFormData.nickname"
               :disabled="!isEditMode"
-              placeholder="请输入昵称"
+              :placeholder="t('systemSettings.personalCenterMerchant.personalInfo.nicknamePlaceholder')"
               style="margin-right: 10px;"
             />
             <el-button
@@ -625,31 +629,31 @@ onUnmounted(() => {
               type="primary"
               @click="handleEditPersonalInfo"
             >
-              修改
+              {{ t("systemSettings.personalCenterMerchant.buttons.edit") }}
             </el-button>
             <template v-else>
               <el-button type="primary" @click="handleSavePersonalInfo">
-                保存
+                {{ t("systemSettings.personalCenterMerchant.buttons.save") }}
               </el-button>
               <el-button @click="handleCancelPersonalInfo">
-                取消
+                {{ t("systemSettings.personalCenterMerchant.buttons.cancel") }}
               </el-button>
             </template>
           </div>
         </el-form-item>
         <div style="width: 60%;">
-          <el-form-item label="账号">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.personalInfo.username')">
             <el-input
               :model-value="merchantInfo.username"
               disabled
-              placeholder="账号"
+              :placeholder="t('systemSettings.personalCenterMerchant.personalInfo.username')"
             />
           </el-form-item>
-          <el-form-item label="角色组">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.personalInfo.roleGroup')">
             <el-input
               :model-value="merchantInfo.gruop_name"
               disabled
-              placeholder="角色组"
+              :placeholder="t('systemSettings.personalCenterMerchant.personalInfo.roleGroup')"
             />
           </el-form-item>
         </div>
@@ -660,17 +664,17 @@ onUnmounted(() => {
     <el-card shadow="never" style="margin: 20px">
       <template #header>
         <div class="card-header">
-          <span>安全信息</span>
+          <span>{{ t("systemSettings.personalCenterMerchant.securityInfo.title") }}</span>
         </div>
       </template>
       <el-form
         label-width="100px"
       >
         <div style="width: 60%;">
-          <el-form-item label="邮箱">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.securityInfo.email')">
             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
               <el-input
-                :model-value="formattedEmail || '未绑定'"
+                :model-value="formattedEmail || t('systemSettings.personalCenterMerchant.notBound')"
                 disabled
                 style="flex: 1"
               />
@@ -678,14 +682,14 @@ onUnmounted(() => {
                 type="primary"
                 @click="handleChangeEmail"
               >
-                更改
+                {{ t("systemSettings.personalCenterMerchant.buttons.change") }}
               </el-button>
             </div>
           </el-form-item>
-          <el-form-item label="谷歌验证">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.securityInfo.googleVerify')">
             <div style="display: flex; align-items: center; gap: 10px; width: 100%;">
               <el-input
-                :model-value="merchantInfo.google_status === 1 ? '已绑定' : '谷歌验证未绑定'"
+                :model-value="merchantInfo.google_status === 1 ? t('systemSettings.personalCenterMerchant.bound') : t('systemSettings.personalCenterMerchant.googleNotBound')"
                 disabled
                 style="flex: 1"
               />
@@ -694,14 +698,14 @@ onUnmounted(() => {
                 type="primary"
                 @click="handleBindGoogle"
               >
-                绑定
+                {{ t("systemSettings.personalCenterMerchant.buttons.bind") }}
               </el-button>
               <el-button
                 v-else
                 type="primary"
                 @click="handleUnbindGoogle"
               >
-                解绑
+                {{ t("systemSettings.personalCenterMerchant.buttons.unbind") }}
               </el-button>
             </div>
           </el-form-item>
@@ -713,12 +717,12 @@ onUnmounted(() => {
     <el-card shadow="never" style="margin: 20px">
       <template #header>
         <div class="card-header">
-          <span>商户信息</span>
+          <span>{{ t("systemSettings.personalCenterMerchant.merchantInfo.title") }}</span>
         </div>
       </template>
       <el-form label-width="150px">
         <div style="width: 60%;">
-          <el-form-item label="单一钱包API文档链接">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.merchantInfo.apiDocUrl')">
             <el-link
               type="primary"
               :href="merchantInfo.api_doc_url"
@@ -729,21 +733,21 @@ onUnmounted(() => {
               {{ merchantInfo.api_doc_url }}
             </el-link>
           </el-form-item>
-          <el-form-item label="币种">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.merchantInfo.currency')">
             <el-input
-              :model-value="merchantInfo.currency || '未设置'"
+              :model-value="merchantInfo.currency || t('systemSettings.personalCenterMerchant.notSet')"
               disabled
-              placeholder="币种"
+              :placeholder="t('systemSettings.personalCenterMerchant.merchantInfo.currency')"
             />
           </el-form-item>
-          <el-form-item label="开通游戏">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.merchantInfo.gameCategory')">
             <el-input
-              :model-value="merchantInfo.category || '未设置'"
+              :model-value="merchantInfo.category || t('systemSettings.personalCenterMerchant.notSet')"
               disabled
-              placeholder="开通游戏"
+              :placeholder="t('systemSettings.personalCenterMerchant.merchantInfo.gameCategory')"
             />
           </el-form-item>
-          <el-form-item label="API网关">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.merchantInfo.apiGateway')">
             <div style="display: flex; align-items: center; width: 100%;">
               <el-input
                 :model-value="merchantInfo.open_api_host"
@@ -754,32 +758,32 @@ onUnmounted(() => {
                 type="primary"
                 @click="handleViewApiSecret"
               >
-                查看API 秘钥
+                {{ t("systemSettings.personalCenterMerchant.merchantInfo.viewApiSecret") }}
               </el-button>
             </div>
           </el-form-item>
-          <el-form-item label="API白名单">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.merchantInfo.apiWhitelist')">
             <div style="display: flex; align-items: flex-start; width: 100%;">
               <el-input
-                :model-value="merchantInfo.white_ip || '未设置'"
+                :model-value="merchantInfo.white_ip || t('systemSettings.personalCenterMerchant.notSet')"
                 type="textarea"
                 :rows="4"
                 disabled
-                placeholder="请输入"
+                :placeholder="t('placeholder.input')"
                 style="margin-right: 10px; flex: 1"
               />
               <el-button
                 type="primary"
                 @click="handleEditWhitelist"
               >
-                更改
+                {{ t("systemSettings.personalCenterMerchant.buttons.change") }}
               </el-button>
             </div>
           </el-form-item>
-          <el-form-item label="回调地址">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.merchantInfo.callbackAddress')">
             <div style="display: flex; align-items: center; width: 100%;">
               <el-input
-                :model-value="merchantInfo.callback_url || '未设置'"
+                :model-value="merchantInfo.callback_url || t('systemSettings.personalCenterMerchant.notSet')"
                 disabled
                 style="margin-right: 10px;"
               />
@@ -787,7 +791,7 @@ onUnmounted(() => {
                 type="primary"
                 @click="handleEditCallbackAddress"
               >
-                更改
+                {{ t("systemSettings.personalCenterMerchant.buttons.change") }}
               </el-button>
             </div>
           </el-form-item>
@@ -798,16 +802,16 @@ onUnmounted(() => {
     <!-- 谷歌验证码对话框 -->
     <el-dialog
       v-model="showGoogleVerifyDialog"
-      title="谷歌验证"
+      :title="t('systemSettings.personalCenterMerchant.googleVerify.title')"
       width="500px"
       :close-on-click-modal="false"
       @close="handleCloseGoogleVerifyDialog"
     >
       <el-form :model="{ code: googleVerifyCode }" label-width="80">
-        <el-form-item label="验证码">
+        <el-form-item :label="t('systemSettings.personalCenterMerchant.googleVerify.verifyCode')">
           <el-input
             v-model="googleVerifyCode"
-            placeholder="请输入谷歌验证码"
+            :placeholder="t('systemSettings.personalCenterMerchant.googleVerify.verifyCodePlaceholder')"
             clearable
             @keyup.enter="handleConfirmGoogleVerify"
           />
@@ -818,9 +822,9 @@ onUnmounted(() => {
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseGoogleVerifyDialog">取消</el-button>
+          <el-button @click="handleCloseGoogleVerifyDialog">{{ t("systemSettings.personalCenterMerchant.buttons.cancel") }}</el-button>
           <el-button type="primary" @click="handleConfirmGoogleVerify">
-            确定
+            {{ t("systemSettings.personalCenterMerchant.buttons.confirm") }}
           </el-button>
         </div>
       </template>
@@ -829,27 +833,27 @@ onUnmounted(() => {
     <!-- 查看API密钥对话框 -->
     <el-dialog
       v-model="showApiSecretDialog"
-      title="API 秘钥"
+      :title="t('systemSettings.personalCenterMerchant.apiSecret.title')"
       width="500px"
       :close-on-click-modal="false"
       @close="handleCloseApiSecretDialog"
     >
       <el-form :model="apiSecretData" label-width="200px" label-position="top">
-        <el-form-item label="API网关">
+        <el-form-item :label="t('systemSettings.personalCenterMerchant.apiSecret.apiGateway')">
           <el-input
             :model-value="apiSecretData.apiGateway"
             disabled
             readonly
           />
         </el-form-item>
-        <el-form-item label="API Key/operatorcode">
+        <el-form-item :label="t('systemSettings.personalCenterMerchant.apiSecret.apiKey')">
           <el-input
             :model-value="apiSecretData.apiKey"
             disabled
             readonly
           />
         </el-form-item>
-        <el-form-item label="API Secret">
+        <el-form-item :label="t('systemSettings.personalCenterMerchant.apiSecret.apiSecret')">
           <el-input
             :model-value="apiSecretData.apiSecret"
             disabled
@@ -859,9 +863,9 @@ onUnmounted(() => {
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseApiSecretDialog">取消</el-button>
+          <el-button @click="handleCloseApiSecretDialog">{{ t("systemSettings.personalCenterMerchant.buttons.cancel") }}</el-button>
           <el-button type="primary" @click="handleCloseApiSecretDialog">
-            确定
+            {{ t("systemSettings.personalCenterMerchant.buttons.confirm") }}
           </el-button>
         </div>
       </template>
@@ -870,27 +874,27 @@ onUnmounted(() => {
     <!-- 编辑API白名单对话框 -->
     <el-dialog
       v-model="showWhitelistEditDialog"
-      title="修改API白名单"
+      :title="t('systemSettings.personalCenterMerchant.whitelist.title')"
       width="500px"
       :close-on-click-modal="false"
       @close="handleCloseWhitelistEditDialog"
     >
       <el-form :model="whitelistEditForm">
-        <span>请输入API白名单，多个请用英文符号逗号隔</span>
+        <span>{{ t("systemSettings.personalCenterMerchant.whitelist.tip") }}</span>
         <el-form-item>
           <el-input
             v-model="whitelistEditForm.whitelist"
             type="textarea"
             :rows="6"
-            placeholder="请输入API白名单，多个请用英文符号逗号隔开"
+            :placeholder="t('systemSettings.personalCenterMerchant.whitelist.placeholder')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseWhitelistEditDialog">取消</el-button>
+          <el-button @click="handleCloseWhitelistEditDialog">{{ t("systemSettings.personalCenterMerchant.buttons.cancel") }}</el-button>
           <el-button type="primary" @click="handleSaveWhitelist">
-            确认
+            {{ t("systemSettings.personalCenterMerchant.buttons.confirm") }}
           </el-button>
         </div>
       </template>
@@ -899,24 +903,24 @@ onUnmounted(() => {
     <!-- 编辑回调地址对话框 -->
     <el-dialog
       v-model="showCallbackAddressDialog"
-      title="编辑回调地址"
+      :title="t('systemSettings.personalCenterMerchant.callbackAddress.title')"
       width="500px"
       :close-on-click-modal="false"
       @close="handleCloseCallbackAddressDialog"
     >
       <el-form :model="callbackAddressForm" label-width="100px">
-        <el-form-item label="回调地址">
+        <el-form-item :label="t('systemSettings.personalCenterMerchant.callbackAddress.label')">
           <el-input
             v-model="callbackAddressForm.address"
-            placeholder="请输入回调地址"
+            :placeholder="t('systemSettings.personalCenterMerchant.callbackAddress.placeholder')"
           />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseCallbackAddressDialog">取消</el-button>
+          <el-button @click="handleCloseCallbackAddressDialog">{{ t("systemSettings.personalCenterMerchant.buttons.cancel") }}</el-button>
           <el-button type="primary" @click="handleSaveCallbackAddress">
-            确认
+            {{ t("systemSettings.personalCenterMerchant.buttons.confirm") }}
           </el-button>
         </div>
       </template>
@@ -926,30 +930,30 @@ onUnmounted(() => {
     <!-- 更改邮箱对话框 -->
     <el-dialog
       v-model="showChangeEmailDialog"
-      title="输入邮箱验证码"
+      :title="t('systemSettings.personalCenterMerchant.changeEmail.title')"
       width="480px"
       :close-on-click-modal="false"
       @close="handleCloseChangeEmailDialog"
     >
       <div class="email-verify-content">
         <p class="email-verify-tip">
-          验证码已发送至 {{ formattedEmail || changeEmailForm.email }}，有效期10分钟
+          {{ t("systemSettings.personalCenterMerchant.changeEmail.tip", { email: formattedEmail || changeEmailForm.email }) }}
         </p>
         <p class="email-verify-warning">
-          邮箱已停用?请联系管理员
+          {{ t("systemSettings.personalCenterMerchant.changeEmail.warning") }}
         </p>
         <el-form :model="changeEmailForm">
-          <el-form-item label="新邮箱">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.changeEmail.newEmail')">
             <el-input
               v-model="changeEmailForm.email"
-              placeholder="请输入新邮箱"
+              :placeholder="t('systemSettings.personalCenterMerchant.changeEmail.newEmailPlaceholder')"
               clearable
             />
           </el-form-item>
-          <el-form-item label="验证码">
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.changeEmail.verifyCode')">
             <el-input
               v-model="changeEmailForm.emailCode"
-              placeholder="请输入验证码"
+              :placeholder="t('systemSettings.personalCenterMerchant.changeEmail.verifyCodePlaceholder')"
               clearable
             />
             <div v-if="emailCountdownText" class="countdown-text">
@@ -963,14 +967,14 @@ onUnmounted(() => {
                 @click="sendChangeEmailCode"
                 :loading="emailLoading"
               >
-                重新获取验证码
+                {{ t("systemSettings.personalCenterMerchant.changeEmail.resendCode") }}
               </el-button>
             </div>
           </el-form-item>
-          <el-form-item v-if="merchantInfo.google_status === 1" label="谷歌验证码">
+          <el-form-item v-if="merchantInfo.google_status === 1" :label="t('systemSettings.personalCenterMerchant.changeEmail.googleCode')">
             <el-input
               v-model="changeEmailForm.googleCode"
-              placeholder="请输入谷歌验证码"
+              :placeholder="t('systemSettings.personalCenterMerchant.changeEmail.googleCodePlaceholder')"
               clearable
             />
           </el-form-item>
@@ -978,9 +982,9 @@ onUnmounted(() => {
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseChangeEmailDialog">返回</el-button>
+          <el-button @click="handleCloseChangeEmailDialog">{{ t("systemSettings.personalCenterMerchant.buttons.back") }}</el-button>
           <el-button type="primary" @click="handleConfirmChangeEmail">
-            下一步
+            {{ t("systemSettings.personalCenterMerchant.buttons.next") }}
           </el-button>
         </div>
       </template>
@@ -989,27 +993,27 @@ onUnmounted(() => {
     <!-- 绑定谷歌验证对话框 -->
     <el-dialog
       v-model="showBindGoogleDialog"
-      title="设置谷歌验证器"
+      :title="t('systemSettings.personalCenterMerchant.bindGoogle.title')"
       width="600px"
       :close-on-click-modal="false"
       @close="handleCloseBindGoogleDialog"
     >
       <div class="bind-google-content">
         <div class="step-section">
-          <h3>第一步: 下载Google Authenticator应用</h3>
+          <h3>{{ t("systemSettings.personalCenterMerchant.bindGoogle.step1") }}</h3>
           <div class="download-buttons">
             <el-button type="success">
               <el-icon><component :is="Plus" /></el-icon>
-              <span style="margin-left: 5px;">Android 下载</span>
+              <span style="margin-left: 5px;">{{ t("systemSettings.personalCenterMerchant.bindGoogle.androidDownload") }}</span>
             </el-button>
             <el-button type="primary">
               <el-icon><component :is="Plus" /></el-icon>
-              <span style="margin-left: 5px;">iOS 下载</span>
+              <span style="margin-left: 5px;">{{ t("systemSettings.personalCenterMerchant.bindGoogle.iosDownload") }}</span>
             </el-button>
           </div>
         </div>
         <div class="step-section">
-          <h3>第二步: 扫描二维码或手动输入密钥</h3>
+          <h3>{{ t("systemSettings.personalCenterMerchant.bindGoogle.step2") }}</h3>
           <div class="qr-section">
             <div class="qr-code-wrapper">
               <el-image
@@ -1020,7 +1024,7 @@ onUnmounted(() => {
               />
             </div>
             <div class="secret-section">
-              <div class="secret-label">手动输入密钥:</div>
+              <div class="secret-label">{{ t("systemSettings.personalCenterMerchant.bindGoogle.manualInput") }}</div>
               <div class="secret-input-wrapper">
                 <el-input
                   :model-value="bindGoogleForm.secret"
@@ -1031,18 +1035,18 @@ onUnmounted(() => {
                   type="primary"
                   @click="handleCopySecret"
                 >
-                  复制
+                  {{ t("systemSettings.personalCenterMerchant.buttons.copy") }}
                 </el-button>
               </div>
             </div>
           </div>
         </div>
         <div class="step-section">
-          <h3>第三步: 输入验证码</h3>
-          <el-form-item label="验证码">
+          <h3>{{ t("systemSettings.personalCenterMerchant.bindGoogle.step3") }}</h3>
+          <el-form-item :label="t('systemSettings.personalCenterMerchant.bindGoogle.verifyCode')">
             <el-input
               v-model="bindGoogleForm.verifyCode"
-              placeholder="请输入验证码"
+              :placeholder="t('systemSettings.personalCenterMerchant.bindGoogle.verifyCodePlaceholder')"
               clearable
             />
           </el-form-item>
@@ -1050,9 +1054,9 @@ onUnmounted(() => {
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseBindGoogleDialog">返回</el-button>
+          <el-button @click="handleCloseBindGoogleDialog">{{ t("systemSettings.personalCenterMerchant.buttons.back") }}</el-button>
           <el-button type="primary" @click="handleConfirmBindGoogle">
-            确认绑定
+            {{ t("systemSettings.personalCenterMerchant.buttons.confirmBind") }}
           </el-button>
         </div>
       </template>
@@ -1061,28 +1065,28 @@ onUnmounted(() => {
     <!-- 解绑谷歌验证对话框 -->
     <el-dialog
       v-model="showUnbindGoogleDialog"
-      title="解绑谷歌验证"
+      :title="t('systemSettings.personalCenterMerchant.unbind.title')"
       width="480px"
       :close-on-click-modal="false"
       @close="handleCloseUnbindGoogleDialog"
     >
       <div class="unbind-google-content">
         <p class="unbind-warning">
-          解绑安全系数将降低,请谨慎解绑。
+          {{ t("systemSettings.personalCenterMerchant.unbind.warning") }}
         </p>
-        <el-form-item label="验证码">
+        <el-form-item :label="t('systemSettings.personalCenterMerchant.unbind.verifyCode')">
           <el-input
             v-model="unbindGoogleForm.verifyCode"
-            placeholder="请输入谷歌验证码"
+            :placeholder="t('systemSettings.personalCenterMerchant.unbind.verifyCodePlaceholder')"
             clearable
           />
         </el-form-item>
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseUnbindGoogleDialog">取消</el-button>
+          <el-button @click="handleCloseUnbindGoogleDialog">{{ t("systemSettings.personalCenterMerchant.buttons.cancel") }}</el-button>
           <el-button type="primary" @click="handleConfirmUnbindGoogle">
-            确认解绑
+            {{ t("systemSettings.personalCenterMerchant.buttons.confirmUnbind") }}
           </el-button>
         </div>
       </template>

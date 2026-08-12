@@ -6,8 +6,12 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import { ElMessageBox, ElTag, ElDialog, ElForm, ElFormItem, ElInput, ElRadioGroup, ElRadio } from "element-plus";
 import {
   getCurrencyList,
@@ -47,41 +51,45 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("merchant.currency.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "ID"
+      placeholder: t("merchant.currency.search.id")
     }))
   },
   {
     label: "币种名称",
+    renderLabel: () => t("merchant.currency.search.name"),
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "币种名称"
+      placeholder: t("merchant.currency.search.name")
     }))
   },
   {
     label: "备注",
+    renderLabel: () => t("merchant.currency.search.remark"),
     prop: "remark",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "备注"
+      placeholder: t("merchant.currency.search.remark")
     }))
   },
   {
     label: "创建时间",
+    renderLabel: () => t("merchant.currency.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("merchant.currency.search.startDateTime"),
+      endPlaceholder: t("merchant.currency.search.endDateTime"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -91,7 +99,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -101,7 +109,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -112,7 +120,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -123,7 +131,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -133,7 +141,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -147,17 +155,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "更新时间",
+    renderLabel: () => t("merchant.currency.search.updateTime"),
     prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("merchant.currency.search.startDateTime"),
+      endPlaceholder: t("merchant.currency.search.endDateTime"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -167,7 +176,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -177,7 +186,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -188,7 +197,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -199,7 +208,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -209,7 +218,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -223,25 +232,26 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "状态",
+    renderLabel: () => t("merchant.currency.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("merchant.currency.search.status")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.currency.search.all"),
         value: ""
       },
       {
-        label: "正常",
+        label: t("merchant.currency.search.normal"),
         value: "1"
       },
       {
-        label: "停用",
+        label: t("merchant.currency.search.disabled"),
         value: "-1"
       }
-    ]
+    ])
   }
 ];
 
@@ -278,6 +288,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("merchant.currency.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -285,6 +296,7 @@ const tableConfig: any = ref([
   },
   {
     label: "币种",
+    renderHeader: () => t("merchant.currency.table.name"),
     prop: "name",
     tableColumnProps: {
       align: "center"
@@ -292,6 +304,7 @@ const tableConfig: any = ref([
   },
   {
     label: "备注",
+    renderHeader: () => t("merchant.currency.table.remark"),
     prop: "remark",
     tableColumnProps: {
       align: "center"
@@ -299,6 +312,7 @@ const tableConfig: any = ref([
   },
   {
     label: "时差",
+    renderHeader: () => t("merchant.currency.table.difftime"),
     prop: "difftime",
     tableColumnProps: {
       align: "center"
@@ -306,6 +320,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("merchant.currency.table.createtime"),
     prop: "createtime",
     width: "160",
     tableColumnProps: {
@@ -315,6 +330,7 @@ const tableConfig: any = ref([
   },
   {
     label: "更新时间",
+    renderHeader: () => t("merchant.currency.table.updatetime"),
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
@@ -324,11 +340,12 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("merchant.currency.table.status"),
     prop: "status",
     render: (value: string) => {
       return h(ElTag, {
         type: value === '1' ? "success" : "danger"
-      }, () => value === '1' ? '正常' : '停用');
+      }, () => value === '1' ? t("merchant.currency.table.normal") : t("merchant.currency.table.disabled"));
     },
     tableColumnProps: {
       sortable: true,
@@ -340,7 +357,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: () => t("merchant.currency.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -393,11 +410,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("merchant.currency.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("merchant.currency.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -423,120 +440,68 @@ getList();
 // 操作按钮 loading 状态
 const deleteLoading = ref(false);
 
-// 新增币种对话框相关
-const showAddDialog = ref(false);
-const addFormRef = ref();
-const addFormData = ref({
-  name: "",
-  remark: "",
-  difftime: "",
-  status: "1"
-});
-const addFormRules = {
-  name: [
-    { required: true, message: "请输入币种名称", trigger: "blur" }
-  ]
-};
-
-// 打开新增对话框
-const handleAdd = () => {
-  showAddDialog.value = true;
-  // 重置表单
-  addFormData.value = {
-    name: "",
-    remark: "",
-    difftime: "",
-    status: "1"
-  };
-};
-
-// 关闭新增对话框
-const handleCloseAddDialog = () => {
-  showAddDialog.value = false;
-  addFormRef.value?.resetFields();
-  addFormData.value = {
-    name: "",
-    remark: "",
-    difftime: "",
-    status: "1"
-  };
-};
-
-// 提交新增表单
-const handleSubmitAdd = async () => {
-  if (!addFormRef.value) return;
-
-  await addFormRef.value.validate(async (valid: boolean) => {
-    if (valid) {
-      try {
-        const params: AddCurrencyParams = {
-          name: addFormData.value.name,
-          remark: addFormData.value.remark,
-          difftime: addFormData.value.difftime,
-          status: addFormData.value.status
-        };
-
-        const res = await addCurrency(params);
-
-        if (res.code === 0) {
-          message("新增币种成功", { type: "success" });
-          handleCloseAddDialog();
-          // 刷新列表
-          getList();
-        } else {
-          message(res.msg || "新增币种失败", { type: "error" });
-        }
-      } catch (error: any) {
-        console.error("新增币种失败:", error);
-        message(error?.message || "新增币种失败", { type: "error" });
-      }
-    }
-  });
-};
-
-// 编辑（批量）- 只有一条选中时才能编辑
-const handleEdit = () => {
-  if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑！", { type: "warning" });
-    return;
-  }
-  handleEditRow(multipleSelection.value[0]);
-};
-
-// 编辑币种对话框相关
-const showEditDialog = ref(false);
-const editFormRef = ref();
-const editFormData = ref({
+// 对话框相关（统一新增和编辑）
+const showDialog = ref(false);
+const isEdit = ref(false);
+const formRef = ref();
+const formData = ref({
   id: 0,
   name: "",
   remark: "",
   difftime: "",
   status: "1"
 });
-const editFormRules = {
+const formRules = {
   name: [
-    { required: true, message: "请输入币种名称", trigger: "blur" }
+    { required: true, message: t("merchant.currency.form.nameRequired"), trigger: "blur" }
   ]
+};
+
+// 对话框标题
+const dialogTitle = computed(() => {
+  return isEdit.value ? t("merchant.currency.edit.title") : t("merchant.currency.add.title");
+});
+
+// 打开新增对话框
+const handleAdd = () => {
+  isEdit.value = false;
+  formData.value = {
+    id: 0,
+    name: "",
+    remark: "",
+    difftime: "",
+    status: "1"
+  };
+  showDialog.value = true;
+};
+
+// 编辑（批量）- 只有一条选中时才能编辑
+const handleEdit = () => {
+  if (multipleSelection.value.length !== 1) {
+    message(t("merchant.currency.message.selectOneToEdit"), { type: "warning" });
+    return;
+  }
+  handleEditRow(multipleSelection.value[0]);
 };
 
 // 编辑单行数据
 const handleEditRow = (row: TableRow) => {
-  showEditDialog.value = true;
-  // 回填数据
-  editFormData.value = {
+  isEdit.value = true;
+  formData.value = {
     id: row.id,
     name: row.name,
     remark: row.remark || "",
     difftime: row.difftime || "",
     status: row.status || "1"
   };
+  showDialog.value = true;
 };
 
-// 关闭编辑对话框
-const handleCloseEditDialog = () => {
-  showEditDialog.value = false;
-  editFormRef.value?.resetFields();
-  editFormData.value = {
+// 关闭对话框
+const handleCloseDialog = () => {
+  showDialog.value = false;
+  formRef.value?.resetFields();
+  formData.value = {
     id: 0,
     name: "",
     remark: "",
@@ -545,34 +510,54 @@ const handleCloseEditDialog = () => {
   };
 };
 
-// 提交编辑表单
-const handleSubmitEdit = async () => {
-  if (!editFormRef.value) return;
+// 提交表单
+const handleSubmit = async () => {
+  if (!formRef.value) return;
 
-  await editFormRef.value.validate(async (valid: boolean) => {
+  await formRef.value.validate(async (valid: boolean) => {
     if (valid) {
       try {
-        const params: EditCurrencyParams = {
-          id: editFormData.value.id,
-          name: editFormData.value.name,
-          remark: editFormData.value.remark,
-          difftime: editFormData.value.difftime,
-          status: editFormData.value.status
-        };
+        if (isEdit.value) {
+          // 编辑
+          const params: EditCurrencyParams = {
+            id: formData.value.id,
+            name: formData.value.name,
+            remark: formData.value.remark,
+            difftime: formData.value.difftime,
+            status: formData.value.status
+          };
 
-        const res = await editCurrency(params);
+          const res = await editCurrency(params);
 
-        if (res.code === 0) {
-          message("编辑币种成功", { type: "success" });
-          handleCloseEditDialog();
-          // 刷新列表
-          getList();
+          if (res.code === 0) {
+            message(t("merchant.currency.message.editSuccess"), { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || t("merchant.currency.message.editFail"), { type: "error" });
+          }
         } else {
-          message(res.msg || "编辑币种失败", { type: "error" });
+          // 新增
+          const params: AddCurrencyParams = {
+            name: formData.value.name,
+            remark: formData.value.remark,
+            difftime: formData.value.difftime,
+            status: formData.value.status
+          };
+
+          const res = await addCurrency(params);
+
+          if (res.code === 0) {
+            message(t("merchant.currency.message.addSuccess"), { type: "success" });
+            handleCloseDialog();
+            getList();
+          } else {
+            message(res.msg || t("merchant.currency.message.addFail"), { type: "error" });
+          }
         }
       } catch (error: any) {
-        console.error("编辑币种失败:", error);
-        message(error?.message || "编辑币种失败", { type: "error" });
+        console.error(isEdit.value ? "编辑币种失败:" : "新增币种失败:", error);
+        message(error?.message || (isEdit.value ? t("merchant.currency.message.editFail") : t("merchant.currency.message.addFail")), { type: "error" });
       }
     }
   });
@@ -581,18 +566,18 @@ const handleSubmitEdit = async () => {
 // 删除
 const handleDelete = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
+    message(t("merchant.currency.message.selectToDelete"), { type: "warning" });
     return;
   }
 
   // 构建删除确认消息
   const currencyNames = multipleSelection.value.map(item => item.name).join("、");
-  const confirmMessage = `确定删除币种 ${currencyNames}？`;
+  const confirmMessage = t("merchant.currency.message.confirmDelete", { names: currencyNames });
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "删除币种", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("merchant.currency.delete.title"), {
+      confirmButtonText: t("merchant.currency.buttons.confirm"),
+      cancelButtonText: t("merchant.currency.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -610,19 +595,19 @@ const handleDelete = async () => {
       const failedCount = results.filter(res => res.code !== 0).length;
       
       if (failedCount === 0) {
-        message("删除成功", { type: "success" });
+        message(t("merchant.currency.message.deleteSuccess"), { type: "success" });
         // 清空选中数据
         multipleSelection.value = [];
         // 刷新列表
         getList();
       } else {
-        message(`删除失败 ${failedCount} 条数据`, { type: "error" });
+        message(t("merchant.currency.message.deleteFailCount", { count: failedCount }), { type: "error" });
         // 即使有失败，也刷新列表
         getList();
       }
     } catch (error: any) {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("merchant.currency.message.deleteFail"), { type: "error" });
     } finally {
       deleteLoading.value = false;
     }
@@ -646,7 +631,7 @@ const exportExcel = () => {
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status") {
-        return item.status === "1" ? "正常" : "停用";
+        return item.status === "1" ? t("merchant.currency.table.normal") : t("merchant.currency.table.disabled");
       }
       return item[prop as keyof TableRow] ?? "";
     });
@@ -656,16 +641,16 @@ const exportExcel = () => {
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "币种管理";
+  const sheetName = t("merchant.currency.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `币种管理.xlsx`;
+  const fileName = t("merchant.currency.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("merchant.currency.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -673,7 +658,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "币种管理.json";
+  a.download = t("merchant.currency.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -688,11 +673,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="120"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('merchant.currency.buttons.search')"
+        :resetText="t('merchant.currency.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -709,7 +694,7 @@ const exportJson = () => {
         :action-bar="{
           buttons,
           width: '150px',
-          label: '操作'
+          label: t('merchant.currency.table.action')
         }"
         width="100%"
         height="90%"
@@ -719,7 +704,7 @@ const exportJson = () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t('merchant.currency.buttons.add') }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -728,7 +713,7 @@ const exportJson = () => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t('merchant.currency.buttons.edit') }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -738,24 +723,24 @@ const exportJson = () => {
             :loading="deleteLoading"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('merchant.currency.buttons.delete') }}</span>
           </el-button>
           <el-dropdown style="margin-left: 15px;">
             <el-button type="info" size="default" >
-              <span>更多</span>
+              <span>{{ t('merchant.currency.buttons.more') }}</span>
               <el-icon class="el-icon--right"><component :is="More" /></el-icon>
             </el-button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>操作1</el-dropdown-item>
-                <el-dropdown-item>操作2</el-dropdown-item>
+                <el-dropdown-item>{{ t('merchant.currency.buttons.action1') }}</el-dropdown-item>
+                <el-dropdown-item>{{ t('merchant.currency.buttons.action2') }}</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('merchant.currency.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -766,7 +751,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('merchant.currency.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -780,7 +765,7 @@ const exportJson = () => {
           <div>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('merchant.currency.toolbar.hideSearch') : t('merchant.currency.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -800,7 +785,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('merchant.currency.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -844,105 +829,53 @@ const exportJson = () => {
       />
     </el-card>
 
-    <!-- 新增币种对话框 -->
+    <!-- 新增/编辑币种对话框 -->
     <el-dialog
-      v-model="showAddDialog"
-      title="新增币种"
+      v-model="showDialog"
+      :title="dialogTitle"
       width="500px"
       :close-on-click-modal="false"
-      @close="handleCloseAddDialog"
+      @close="handleCloseDialog"
     >
       <el-form
-        ref="addFormRef"
-        :model="addFormData"
-        :rules="addFormRules"
-        label-width="80px"
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-width="130px"
       >
-        <el-form-item label="币种名称" prop="name">
+        <el-form-item :label="t('merchant.currency.form.name')" prop="name">
           <el-input
-            v-model="addFormData.name"
-            placeholder="请输入"
+            v-model="formData.name"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="备注">
+        <el-form-item :label="t('merchant.currency.form.remark')">
           <el-input
-            v-model="addFormData.remark"
-            placeholder="请输入"
+            v-model="formData.remark"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="时差">
+        <el-form-item :label="t('merchant.currency.form.difftime')">
           <el-input
-            v-model="addFormData.difftime"
-            placeholder="请输入"
+            v-model="formData.difftime"
+            :placeholder="t('placeholder.input')"
             maxlength="20"
           />
         </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="addFormData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="-1">关闭</el-radio>
+        <el-form-item :label="t('merchant.currency.form.status')">
+          <el-radio-group v-model="formData.status">
+            <el-radio label="1">{{ t('merchant.currency.form.open') }}</el-radio>
+            <el-radio label="-1">{{ t('merchant.currency.form.close') }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseAddDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitAdd">
-            确认
-          </el-button>
-        </div>
-      </template>
-    </el-dialog>
-
-    <!-- 编辑币种对话框 -->
-    <el-dialog
-      v-model="showEditDialog"
-      title="编辑"
-      width="500px"
-      :close-on-click-modal="false"
-      @close="handleCloseEditDialog"
-    >
-      <el-form
-        ref="editFormRef"
-        :model="editFormData"
-        :rules="editFormRules"
-        label-width="80px"
-      >
-        <el-form-item label="币种名称" prop="name">
-          <el-input
-            v-model="editFormData.name"
-            placeholder="请输入"
-            maxlength="50"
-          />
-        </el-form-item>
-        <el-form-item label="备注">
-          <el-input
-            v-model="editFormData.remark"
-            placeholder="请输入"
-            maxlength="200"
-          />
-        </el-form-item>
-        <el-form-item label="时差">
-          <el-input
-            v-model="editFormData.difftime"
-            placeholder="请输入"
-            maxlength="20"
-          />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="editFormData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="-1">关闭</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleCloseEditDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitEdit">
-            确认
+          <el-button @click="handleCloseDialog">{{ t('merchant.currency.buttons.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ t('merchant.currency.buttons.confirm') }}
           </el-button>
         </div>
       </template>

@@ -217,7 +217,7 @@ useEventListener(document, "keydown", ({ code }) => {
         <div class="login-box">
           <div class="login-form">
             <div class="login-outline"> 
-              <h1 class="outline-hidden" style="margin-bottom: 25px;">{{ title }}</h1>
+              <h1 class="outline-hidden login-title">{{ transformI18n($t('login.title')) }}</h1>
             </div>
             <el-form
               ref="ruleFormRef"

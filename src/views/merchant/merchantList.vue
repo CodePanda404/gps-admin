@@ -6,6 +6,7 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
 import { ElMessageBox, ElTag, ElTooltip, ElButton, ElDropdown, ElDropdownMenu, ElDropdownItem } from "element-plus";
@@ -26,6 +27,9 @@ import Grid from "~icons/ep/grid";
 import Filter from "~icons/ep/filter";
 import Plus from "~icons/ep/plus";
 import Edit from "~icons/ep/edit";
+
+// 国际化
+const { t } = useI18n();
 
 /*  -----搜索表单相关-----  */
 // 币种列表（用于下拉选择）
@@ -86,31 +90,34 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "商户ID",
+    renderLabel: () => t("merchant.merchantList.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
+      placeholder: t("merchant.merchantList.search.id")
     }))
   },
   {
     label: "商户名称",
+    renderLabel: () => t("merchant.merchantList.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户名称"
+      placeholder: t("merchant.merchantList.search.username")
     }))
   },
   {
     label: "币种",
+    renderLabel: () => t("merchant.merchantList.search.currency"),
     prop: "currency",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择币种",
+      placeholder: t("merchant.merchantList.search.currency"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.merchantList.search.all"),
         value: ""
       },
       ...currencyOptions.value
@@ -118,75 +125,80 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "商户类型",
+    renderLabel: () => t("merchant.merchantList.search.type"),
     prop: "type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择商户类型"
+      placeholder: t("merchant.merchantList.search.type")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.merchantList.search.all"),
         value: ""
       },
       {
-        label: "正式",
+        label: t("merchant.merchantList.search.formal"),
         value: "1"
       },
       {
-        label: "测试",
+        label: t("merchant.merchantList.search.test"),
         value: "2"
       }
-    ]
+    ])
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("merchant.merchantList.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择钱包类型"
+      placeholder: t("merchant.merchantList.search.wallet_type")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.merchantList.search.all"),
         value: ""
       },
       {
-        label: "单一/免转",
+        label: t("merchant.merchantList.search.single"),
         value: "1"
       },
       {
-        label: "转账",
+        label: t("merchant.merchantList.search.transfer"),
         value: "2"
       }
-    ]
+    ])
   },
   {
     label: "WLG账户ID",
+    renderLabel: () => t("merchant.merchantList.search.wlg_account_id"),
     prop: "wlg_account_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入WLG账户ID"
+      placeholder: t("merchant.merchantList.search.wlg_account_id")
     }))
   },
   {
     label: "关联产品",
+    renderLabel: () => t("merchant.merchantList.search.pid"),
     prop: "pid",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入关联产品ID"
+      placeholder: t("merchant.merchantList.search.pid")
     }))
   },
   {
     label: "所属代理",
+    renderLabel: () => t("merchant.merchantList.search.parent_name"),
     prop: "parent_name",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择所属代理",
+      placeholder: t("merchant.merchantList.search.parent_name"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.merchantList.search.all"),
         value: ""
       },
       ...agentOptions.value
@@ -194,25 +206,26 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "状态",
+    renderLabel: () => t("merchant.merchantList.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择状态"
+      placeholder: t("merchant.merchantList.search.status")
     })),
-    options: [
+    options: computed(() => [
       {
-        label: "全部",
+        label: t("merchant.merchantList.search.all"),
         value: ""
       },
       {
-        label: "正常",
+        label: t("merchant.merchantList.search.normal"),
         value: "normal"
       },
       {
-        label: "隐藏",
+        label: t("merchant.merchantList.search.hidden"),
         value: "hidden"
       }
-    ]
+    ])
   }
 ];
 
@@ -246,31 +259,31 @@ const handleRest = () => {
 // 新增按钮处理
 const handleAdd = () => {
   // TODO: 实现新增功能
-  message("新增功能待实现", { type: "info" });
+  message(t("merchant.merchantList.message.addNotImplemented"), { type: "info" });
 };
 
 // 编辑按钮处理
 const handleEdit = (row: TableRow) => {
   // TODO: 实现编辑功能
-  message("编辑功能待实现", { type: "info" });
+  message(t("merchant.merchantList.message.editNotImplemented"), { type: "info" });
 };
 
 // 额度调整按钮处理
 const handleCreditAdjust = (row: TableRow) => {
   // TODO: 实现额度调整功能
-  message("额度调整功能待实现", { type: "info" });
+  message(t("merchant.merchantList.message.creditAdjustNotImplemented"), { type: "info" });
 };
 
 // 调额记录按钮处理
 const handleAdjustRecord = (row: TableRow) => {
   // TODO: 实现调额记录功能
-  message("调额记录功能待实现", { type: "info" });
+  message(t("merchant.merchantList.message.adjustRecordNotImplemented"), { type: "info" });
 };
 
 // 查看API秘钥按钮处理
 const handleViewApiKey = (row: TableRow) => {
   // TODO: 实现查看API秘钥功能
-  message("查看API秘钥功能待实现", { type: "info" });
+  message(t("merchant.merchantList.message.viewApiKeyNotImplemented"), { type: "info" });
 };
 
 // /  *----表格相关-----  */ */
@@ -286,86 +299,88 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "商户ID",
+    renderHeader: () => t("merchant.merchantList.table.id"),
     prop: "id",
-    minWidth: 100,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "商户名称",
-    prop: "username",
-    minWidth: 120,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "商户类型",
-    prop: "type",
-    minWidth: 100,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "币种",
-    prop: "currency",
-    minWidth: 100,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "授信额度",
-    prop: "credit_limit",
-    minWidth: 120,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "授信余额",
-    prop: "credit_balance",
-    minWidth: 120,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
-    label: "保证金余额",
-    prop: "deposit_balance",
-    minWidth: 120,
     tableColumnProps: {
       align: "center"
     },
+    width: 100
+  },
+  {
+    label: "商户名称",
+    renderHeader: () => t("merchant.merchantList.table.username"),
+    prop: "username",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 130
+  },
+  {
+    label: "商户类型",
+    renderHeader: () => t("merchant.merchantList.table.type"),
+    prop: "type",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 130
+  },
+  {
+    label: "币种",
+    renderHeader: () => t("merchant.merchantList.table.currency"),
+    prop: "currency",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 100
+  },
+  {
+    label: "授信额度",
+    renderHeader: () => t("merchant.merchantList.table.credit_limit"),
+    prop: "credit_limit",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 120
+  },
+  {
+    label: "授信余额",
+    renderHeader: () => t("merchant.merchantList.table.credit_balance"),
+    prop: "credit_balance",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 130
+  },
+  {
+    label: "保证金余额",
+    renderHeader: () => t("merchant.merchantList.table.deposit_balance"),
+    prop: "deposit_balance",
+    tableColumnProps: {
+      align: "center"
+    },
+    width: 130
   },
   {
     label: "钱包类型",
+    renderHeader: () => t("merchant.merchantList.table.wallet_type"),
     prop: "wallet_type",
-    minWidth: 120,
     tableColumnProps: {
       align: "center"
-    }
-  },
-  {
-    label: "API-KEY",
-    prop: "api_key",
-    minWidth: 150,
-    tableColumnProps: {
-      align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "WLG账号ID",
+    renderHeader: () => t("merchant.merchantList.table.wlg_account_id"),
     prop: "wlg_account_id",
-    minWidth: 120,
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 140
   },
   {
     label: "关联产品",
+    renderHeader: () => t("merchant.merchantList.table.pid"),
     prop: "pid",
     minWidth: 120,
     tableColumnProps: {
@@ -374,6 +389,7 @@ const tableConfig: any = ref([
   },
   {
     label: "所属代理",
+    renderHeader: () => t("merchant.merchantList.table.parent_name"),
     prop: "parent_name",
     minWidth: 120,
     tableColumnProps: {
@@ -381,15 +397,8 @@ const tableConfig: any = ref([
     }
   },
   {
-    label: "角色组",
-    prop: "groups_text",
-    minWidth: 100,
-    tableColumnProps: {
-      align: "center"
-    }
-  },
-  {
     label: "登录时间",
+    renderHeader: () => t("merchant.merchantList.table.update_time"),
     prop: "updatetime",
     minWidth: 160,
     tableColumnProps: {
@@ -398,6 +407,7 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("merchant.merchantList.table.status"),
     prop: "status",
     valueType: "switch",
     editable: true,
@@ -415,7 +425,29 @@ const tableConfig: any = ref([
 
 buttons.value = [
   {
-    text: "额度调整",
+    text: () => t("merchant.merchantList.buttons.creditAdjust"),
+    code: "edit",
+    props: {
+      type: "primary"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleCreditAdjust(row);
+    }
+  },
+  {
+    text: () => t("merchant.merchantList.buttons.adjustRecord"),
+    code: "edit",
+    props: {
+      type: "primary"
+    },
+    onClick: (params: any) => {
+      const row = params.row as TableRow;
+      handleAdjustRecord(row);
+    }
+  },
+  {
+    text: () => t("merchant.merchantList.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -426,36 +458,14 @@ buttons.value = [
     }
   },
   {
-    text: "调额记录",
+    text: () => t("merchant.merchantList.buttons.viewApiKey"),
     code: "edit",
     props: {
       type: "primary"
     },
     onClick: (params: any) => {
       const row = params.row as TableRow;
-      handleEdit(row);
-    }
-  },
-  {
-    text: "编辑",
-    code: "edit",
-    props: {
-      type: "primary"
-    },
-    onClick: (params: any) => {
-      const row = params.row as TableRow;
-      handleEdit(row);
-    }
-  },
-  {
-    text: "查看API密钥",
-    code: "edit",
-    props: {
-      type: "primary"
-    },
-    onClick: (params: any) => {
-      const row = params.row as TableRow;
-      handleEdit(row);
+      handleViewApiKey(row);
     }
   }
 ];
@@ -480,7 +490,7 @@ const handleStatusChange = async (params: {
   // 检查 row 是否存在
   if (!row) {
     console.error("行数据不存在");
-    message("操作失败：无法找到对应的数据", { type: "error" });
+    message(t("merchant.merchantList.message.operationFail"), { type: "error" });
     return;
   }
 
@@ -490,21 +500,21 @@ const handleStatusChange = async (params: {
   // 提示文字
   const confirmMessage =
     value === "normal"
-      ? `是否确定将商户${row.username}设置为正常状态?`
-      : `是否确定将商户${row.username}设置为隐藏状态?`;
+      ? t("merchant.merchantList.message.confirmSetNormal", { name: row.username })
+      : t("merchant.merchantList.message.confirmSetHidden", { name: row.username });
 
   // 查找当前行在 tableData 中的索引
   const index = tableData.value.findIndex(item => item.id === row.id);
   if (index === -1) {
-    message("操作失败：无法找到对应的数据", { type: "error" });
+    message(t("merchant.merchantList.message.operationFail"), { type: "error" });
     return;
   }
 
   try {
     // 弹出确认对话框
-    await ElMessageBox.confirm(confirmMessage, "切换状态", {
-      confirmButtonText: "确认",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("merchant.merchantList.message.switchStatus"), {
+      confirmButtonText: t("merchant.merchantList.buttons.confirm"),
+      cancelButtonText: t("merchant.merchantList.buttons.cancel"),
       draggable: true
     });
 
@@ -514,7 +524,7 @@ const handleStatusChange = async (params: {
     });
 
     if (res.code === 0) {
-      message(value === "normal" ? "商户已设置为正常状态" : "商户已设置为隐藏状态", {
+      message(value === "normal" ? t("merchant.merchantList.message.setNormalSuccess") : t("merchant.merchantList.message.setHiddenSuccess"), {
         type: "success"
       });
       // 更新本地数据
@@ -528,7 +538,7 @@ const handleStatusChange = async (params: {
         ...tableData.value[index],
         status: originalStatus
       };
-      message(res.msg || "商户状态切换失败", { type: "error" });
+      message(res.msg || t("merchant.merchantList.message.switchStatusFail"), { type: "error" });
     }
   } catch (error: any) {
     // 取消或出错恢复
@@ -538,7 +548,7 @@ const handleStatusChange = async (params: {
     };
     if (error !== "cancel") {
       console.error("状态切换失败:", error);
-      message(error?.message || "状态切换失败", { type: "error" });
+      message(error?.message || t("merchant.merchantList.message.switchStatusFail"), { type: "error" });
     }
   }
 };
@@ -577,7 +587,7 @@ const getList = async () => {
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("merchant.merchantList.message.getListFail"), { type: "error" });
     tableData.value = [];
   } finally {
     loadingStatus.value = false;
@@ -596,17 +606,22 @@ const handlePageChange = (val: any) => {
 // 导出Excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("merchant.merchantList.message.selectToExport"), { type: "warning" });
     return;
   }
-  const exportTitles = tableConfig.value.map((col: any) => col.label);
+  const exportTitles = tableConfig.value.map((col: any) => {
+    if (col.renderHeader) {
+      return col.renderHeader();
+    }
+    return col.label;
+  });
   const exportProps = tableConfig.value.map((col: any) => col.prop);
 
   const res: string[][] = multipleSelection.value.map((item: any) => {
     return exportProps.map(prop => {
       // 处理特殊字段
       if (prop === "status") {
-        return item.status === "normal" ? "正常" : "隐藏";
+        return item.status === "normal" ? t("merchant.merchantList.table.normal") : t("merchant.merchantList.table.hidden");
       }
       return item[prop] ?? "";
     });
@@ -615,16 +630,16 @@ const exportExcel = () => {
   res.unshift(exportTitles);
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "数据报表";
+  const sheetName = t("merchant.merchantList.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `商户列表.xlsx`;
+  const fileName = t("merchant.merchantList.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("merchant.merchantList.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -632,7 +647,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "商户列表.json";
+  a.download = t("merchant.merchantList.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -647,11 +662,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="100"
+        label-width="130"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('merchant.merchantList.buttons.search')"
+        :resetText="t('merchant.merchantList.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -667,7 +682,7 @@ const exportJson = () => {
           showNumber: 4,
           buttons,
           width: '320px',
-          label: '操作'
+          label: t('merchant.merchantList.table.action')
         }"
         :is-selection="true"
         width="100%"
@@ -678,11 +693,11 @@ const exportJson = () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t('merchant.merchantList.buttons.add') }}</span>
           </el-button>
         </template>
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('merchant.merchantList.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style="margin-right: 15px; cursor: pointer; outline: none"
@@ -693,7 +708,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('merchant.merchantList.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style="margin-right: 5px; cursor: pointer; outline: none"
@@ -706,7 +721,7 @@ const exportJson = () => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('merchant.merchantList.toolbar.hideSearch') : t('merchant.merchantList.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -722,7 +737,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('merchant.merchantList.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"

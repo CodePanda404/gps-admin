@@ -123,46 +123,51 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "用户ID",
+    renderLabel: () => t("player.betDetail.search.userId"),
     prop: "user_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "用户ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "商户ID",
+    renderLabel: () => t("player.betDetail.search.adminId"),
     prop: "user_admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "商户ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "玩家ID",
+    renderLabel: () => t("player.betDetail.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "玩家ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "游戏ID",
+    renderLabel: () => t("player.betDetail.search.gameId"),
     prop: "game_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "游戏ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "供应商",
+    renderLabel: () => t("player.betDetail.search.supplier"),
     prop: "provider",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择供应商",
+      placeholder: t("placeholder.select"),
       filterable: true
     })),
     options: computed(() => [
-      { label: "全部", value: "" },
+      { label: t("player.betDetail.search.all"), value: "" },
       ...supplierOptions.value.map(item => ({
         label: item.label,
         value: item.value
@@ -171,15 +176,16 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "币种",
+    renderLabel: () => t("player.betDetail.search.currency"),
     prop: "currency_code",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择",
+      placeholder: t("placeholder.select"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("player.betDetail.search.all"),
         value: ""
       },
       ...currencyOptions.value.map(item => ({
@@ -190,55 +196,62 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "投注ID",
+    renderLabel: () => t("player.betDetail.search.betId"),
     prop: "bet_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "投注ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "交易ID",
+    renderLabel: () => t("player.betDetail.search.transactionId"),
     prop: "transaction_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "交易ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "状态",
+    renderLabel: () => t("player.betDetail.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("placeholder.select")
     })),
     options: [
       {
-        label: "全部",
+        label: t("player.betDetail.search.all"),
+        renderLabel: () => t("player.betDetail.search.all"),
         value: ""
       },
       {
-        label: "中奖",
+        label: t("player.betDetail.search.win"),
+        renderLabel: () => t("player.betDetail.search.win"),
         value: "1"
       },
       {
-        label: "未中奖",
+        label: t("player.betDetail.search.lose"),
+        renderLabel: () => t("player.betDetail.search.lose"),
         value: "2"
       }
     ]
   },
   {
     label: "创建时间",
+    renderLabel: () => t("player.betDetail.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -248,7 +261,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -258,7 +271,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -269,7 +282,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -280,7 +293,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -290,7 +303,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -341,6 +354,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("player.betDetail.table.id"),
     prop: "id",
     width: 100,
     tableColumnProps: {
@@ -349,6 +363,7 @@ const tableConfig: any = ref([
   },
   {
     label: "用户ID",
+    renderHeader: () => t("player.betDetail.table.userId"),
     prop: "user_id",
     tableColumnProps: {
       align: "center"
@@ -356,6 +371,7 @@ const tableConfig: any = ref([
   },
   {
     label: "玩家ID",
+    renderHeader: () => t("player.betDetail.table.username"),
     prop: "username",
     width: 140,
     tableColumnProps: {
@@ -364,13 +380,16 @@ const tableConfig: any = ref([
   },
   {
     label: "商户ID",
+    renderHeader: () => t("player.betDetail.table.merchantId"),
     prop: "user_admin_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "游戏ID",
+    renderHeader: () => t("player.betDetail.table.game_id"),
     prop: "game_id",
     width: 140,
     tableColumnProps: {
@@ -379,6 +398,7 @@ const tableConfig: any = ref([
   },
   {
     label: "游戏名称",
+    renderHeader: () => t("player.betDetail.table.gameName"),
     prop: "game_name",
     width: 180,
     tableColumnProps: {
@@ -387,6 +407,7 @@ const tableConfig: any = ref([
   },
   {
     label: "游戏类型",
+    renderHeader: () => t("player.betDetail.table.gameType"),
     prop: "game_type",
     width: 120,
     tableColumnProps: {
@@ -395,6 +416,7 @@ const tableConfig: any = ref([
   },
   {
     label: "所属分类",
+    renderHeader: () => t("player.betDetail.table.category"),
     prop: "type_id",
     width: 260,
     render: (value: string | number) => {
@@ -408,6 +430,7 @@ const tableConfig: any = ref([
   },
   {
     label: "供应商",
+    renderHeader: () => t("player.betDetail.table.supplier"),
     prop: "provider",
     width: 120,
     tableColumnProps: {
@@ -416,6 +439,7 @@ const tableConfig: any = ref([
   },
   {
     label: "币种",
+    renderHeader: () => t("player.betDetail.table.currency"),
     prop: "currency_code",
     width: 100,
     tableColumnProps: {
@@ -424,6 +448,7 @@ const tableConfig: any = ref([
   },
   {
     label: "投注ID",
+    renderHeader: () => t("player.betDetail.table.betId"),
     prop: "bet_id",
     width: 240,
     tableColumnProps: {
@@ -432,6 +457,7 @@ const tableConfig: any = ref([
   },
   {
     label: "交易ID",
+    renderHeader: () => t("player.betDetail.table.transactionId"),
     prop: "transaction_id",
     width: 240,
     tableColumnProps: {
@@ -440,36 +466,42 @@ const tableConfig: any = ref([
   },
   {
     label: "投注金额",
+    renderHeader: () => t("player.betDetail.table.betAmount"),
     prop: "bet_amount",
-    width: 100,
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "中奖金额",
+    renderHeader: () => t("player.betDetail.table.winAmount"),
     prop: "win_amount",
-    width: 100,
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 110
   },
   {
     label: "输赢",
+    renderHeader: () => t("player.betDetail.table.winLoss"),
     prop: "win_and_lose",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: 100
   },
   {
     label: "状态",
+    renderHeader: () => t("player.betDetail.table.status"),
     prop: "status_text",
     valueType: "tag",
     width: "100",
     render: (value: string) => {
+      const isWin = value === t("player.betDetail.table.win") || value === '中奖';
       return h(ElTag, {
-        type: value === '中奖' ? "success" : "danger"
-      }, () => value === '中奖' ? value : '未中奖');
+        type: isWin ? "success" : "danger"
+      }, () => isWin ? t("player.betDetail.table.win") : t("player.betDetail.table.lose"));
     },
     tableColumnProps: {
       fixed: "right",
@@ -478,6 +510,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("player.betDetail.table.createTime"),
     prop: "createtime",
     width: 160,
     tableColumnProps: {
@@ -488,13 +521,13 @@ const tableConfig: any = ref([
 
 // 表格操作栏按钮定义
 buttons.value = [{
-    text: () => "游戏数据",
+    text: () => t("player.betDetail.table.gameHistory"),
     code: "gameData",
     props: {
       type: "primary"
     },
     onClick: () => {
-      message("游戏数据", { type: "info" });
+      message(t("player.betDetail.table.gameHistory"), { type: "info" });
     }
   }];
 
@@ -540,7 +573,7 @@ const getList = async () => {
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("player.betDetail.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -586,34 +619,35 @@ watch(
 // 导出到excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("player.betDetail.message.selectToExport"), { type: "warning" });
     return;
   }
-  const exportTitles = tableConfig.value.map((col: any) => col.label);
+  const exportTitles = tableConfig.value.map((col: any) => col.renderHeader());
   const exportProps = tableConfig.value
     .map((col: any) => col.prop)
     .filter((prop: string) => prop !== "action");
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status_text") {
-        return item.status_text || "";
+        const isWin = item.status_text === t("player.betDetail.table.win") || item.status_text === '中奖';
+        return isWin ? t("player.betDetail.table.win") : t("player.betDetail.table.lose");
       }
       return item[prop as keyof TableRow] ?? "";
     });
   });
-  res.unshift(exportTitles.filter((title: string) => title !== "操作"));
+  res.unshift(exportTitles.filter((title: string) => title !== t("player.betDetail.table.action")));
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "投注明细";
+  const sheetName = t("player.betDetail.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `投注明细.xlsx`;
+  const fileName = t("player.betDetail.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("player.betDetail.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -621,7 +655,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "投注明细.json";
+  a.download = t("player.betDetail.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -636,11 +670,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="110"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('player.betDetail.buttons.search')"
+        :resetText="t('player.betDetail.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -656,7 +690,7 @@ const exportJson = () => {
         :action-bar="{
           buttons,
           width: '150px',
-          label: t('player.transfer.action')
+          label: t('player.betDetail.table.action')
         }"
         width="100%"
         height="90%"
@@ -665,7 +699,7 @@ const exportJson = () => {
 
        <!-- 表格操作工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('player.betDetail.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -676,7 +710,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('player.betDetail.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -690,7 +724,7 @@ const exportJson = () => {
           <div>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('player.betDetail.toolbar.hideSearch') : t('player.betDetail.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -710,7 +744,7 @@ const exportJson = () => {
               </span>
             </el-tooltip>
             <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('player.betDetail.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -731,10 +765,10 @@ const exportJson = () => {
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item class="export-active" @click="exportJson"
-                      >Json</el-dropdown-item
+                      >{{ t("player.betDetail.export.json") }}</el-dropdown-item
                     >
                     <el-dropdown-item @click="exportExcel"
-                      >Excel</el-dropdown-item
+                      >{{ t("player.betDetail.export.excel") }}</el-dropdown-item
                     >
                   </el-dropdown-menu>
                 </template>

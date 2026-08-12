@@ -6,7 +6,11 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import { ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElButton, ElMessageBox, type FormInstance } from "element-plus";
 import RichTextEditor from "@/components/RichTextEditor/index.vue";
 import "@wangeditor/editor/dist/css/style.css";
@@ -45,33 +49,36 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("article.help.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: t("article.help.search.id")
     }))
   },
   {
     label: "标题",
+    renderLabel: () => t("article.help.search.title"),
     prop: "title",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入标题"
+      placeholder: t("article.help.search.title")
     }))
   },
   {
     label: "创建时间",
+    renderLabel: () => t("article.help.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -81,7 +88,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -91,7 +98,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -102,7 +109,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -113,7 +120,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -123,7 +130,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -137,17 +144,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "更新时间",
+    renderLabel: () => t("article.help.search.updateTime"),
     prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -157,7 +165,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -167,7 +175,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -178,7 +186,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -189,7 +197,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -199,7 +207,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -244,6 +252,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("article.help.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -251,6 +260,7 @@ const tableConfig: any = ref([
   },
   {
     label: "标题",
+    renderHeader: () => t("article.help.table.title"),
     prop: "title",
     tableColumnProps: {
       align: "center"
@@ -258,6 +268,7 @@ const tableConfig: any = ref([
   },
   {
     label: "排序",
+    renderHeader: () => t("article.help.table.sort"),
     prop: "weigh",
     tableColumnProps: {
       align: "center"
@@ -265,6 +276,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("article.help.table.createTime"),
     prop: "createtime",
     width: "160",
     tableColumnProps: {
@@ -273,6 +285,7 @@ const tableConfig: any = ref([
   },
   {
     label: "更新时间",
+    renderHeader: () => t("article.help.table.updateTime"),
     prop: "updatetime",
     width: "160",
     tableColumnProps: {
@@ -283,7 +296,9 @@ const tableConfig: any = ref([
 
 // 对话框相关
 const showDialog = ref(false);
-const dialogTitle = ref("新增");
+const dialogTitle = computed(() => {
+  return isEdit.value ? t("article.help.edit.title") : t("article.help.add.title");
+});
 const isEdit = ref(false);
 const formRef = ref<FormInstance>();
 const formData = ref({
@@ -296,21 +311,20 @@ const formData = ref({
 // 表单验证规则
 const formRules = {
   title: [
-    { required: true, message: "请输入标题", trigger: "blur" }
+    { required: true, message: t("article.help.form.titleRequired"), trigger: "blur" }
   ],
   content: [
-    { required: true, message: "请输入内容", trigger: "blur" }
+    { required: true, message: t("article.help.form.contentRequired"), trigger: "blur" }
   ],
   weigh: [
-    { required: true, message: "请输入排序", trigger: "blur" },
-    { type: "number" as const, min: 0, message: "排序必须大于等于0", trigger: "blur" }
+    { required: true, message: t("article.help.form.weighRequired"), trigger: "blur" },
+    { type: "number" as const, min: 0, message: t("article.help.form.weighMin"), trigger: "blur" }
   ]
 };
 
 // 打开新增对话框
 const handleAdd = () => {
   isEdit.value = false;
-  dialogTitle.value = "新增";
   formData.value = {
     id: 0,
     title: "",
@@ -328,11 +342,10 @@ const handleAdd = () => {
 const handleEdit = (row?: TableRow) => {
   const editRow = row || (multipleSelection.value.length === 1 ? multipleSelection.value[0] : null);
   if (!editRow) {
-    message("请选择一条数据进行编辑", { type: "warning" });
+    message(t("article.help.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   isEdit.value = true;
-  dialogTitle.value = "编辑";
   formData.value = {
     id: editRow.id,
     title: editRow.title,
@@ -377,11 +390,11 @@ const handleSubmit = async () => {
           const res = await editHelp(params);
           
           if (res.code === 0) {
-            message("编辑成功", { type: "success" });
+            message(t("article.help.message.editSuccess"), { type: "success" });
             handleCloseDialog();
             getList();
           } else {
-            message(res.msg || "编辑失败", { type: "error" });
+            message(res.msg || t("article.help.message.editFail"), { type: "error" });
           }
         } else {
           // 新增
@@ -394,16 +407,16 @@ const handleSubmit = async () => {
           const res = await addHelp(params);
           
           if (res.code === 0) {
-            message("新增成功", { type: "success" });
+            message(t("article.help.message.addSuccess"), { type: "success" });
             handleCloseDialog();
             getList();
           } else {
-            message(res.msg || "新增失败", { type: "error" });
+            message(res.msg || t("article.help.message.addFail"), { type: "error" });
           }
         }
       } catch (error: any) {
         console.error("提交失败:", error);
-        message(error?.message || "提交失败", { type: "error" });
+        message(error?.message || t("article.help.message.submitFail"), { type: "error" });
       }
     }
   });
@@ -413,11 +426,11 @@ const handleSubmit = async () => {
 const handleDelete = async (row: TableRow) => {
   try {
     await ElMessageBox.confirm(
-      `确定删除标题为"${row.title}"的数据吗？`,
-      "删除",
+      t("article.help.message.confirmDelete", { title: row.title }),
+      t("article.help.delete.title"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("article.help.buttons.confirm"),
+        cancelButtonText: t("article.help.buttons.cancel"),
         type: "warning"
       }
     );
@@ -425,15 +438,15 @@ const handleDelete = async (row: TableRow) => {
     const res = await deleteBatchHelp({ ids: row.id.toString() });
     
     if (res.code === 0) {
-      message("删除成功", { type: "success" });
+      message(t("article.help.message.deleteSuccess"), { type: "success" });
       getList();
     } else {
-      message(res.msg || "删除失败", { type: "error" });
+      message(res.msg || t("article.help.message.deleteFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("article.help.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -441,17 +454,17 @@ const handleDelete = async (row: TableRow) => {
 // 批量删除
 const handleBatchDelete = async () => {
   if (multipleSelection.value.length === 0) {
-    message("请选择要删除的数据", { type: "warning" });
+    message(t("article.help.message.selectToDelete"), { type: "warning" });
     return;
   }
   
   try {
     await ElMessageBox.confirm(
-      `确定删除选中的 ${multipleSelection.value.length} 条数据吗？`,
-      "删除",
+      t("article.help.message.confirmBatchDelete", { count: multipleSelection.value.length }),
+      t("article.help.delete.batchTitle"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("article.help.buttons.confirm"),
+        cancelButtonText: t("article.help.buttons.cancel"),
         type: "warning"
       }
     );
@@ -460,15 +473,15 @@ const handleBatchDelete = async () => {
     const res = await deleteBatchHelp({ ids });
     
     if (res.code === 0) {
-      message("删除成功", { type: "success" });
+      message(t("article.help.message.deleteSuccess"), { type: "success" });
       getList();
     } else {
-      message(res.msg || "删除失败", { type: "error" });
+      message(res.msg || t("article.help.message.deleteFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("article.help.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -476,7 +489,7 @@ const handleBatchDelete = async () => {
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: () => t("article.help.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -487,7 +500,7 @@ buttons.value = [
     }
   },
   {
-    text: "删除",
+    text: () => t("article.help.buttons.delete"),
     code: "delete",
     props: {
       type: "danger"
@@ -533,11 +546,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("article.help.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("article.help.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -566,7 +579,9 @@ const mode = "default";
 const editorRef = shallowRef();
 
 const toolbarConfig: any = { excludeKeys: "fullScreen" };
-const editorConfig = { placeholder: "请输入内容..." };
+const editorConfig = computed(() => ({ 
+  placeholder: t("article.help.form.contentPlaceholder") 
+}));
 
 const handleCreated = (editor: any) => {
   // 记录 editor 实例，重要！
@@ -589,11 +604,11 @@ onBeforeUnmount(() => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="100"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('article.help.buttons.search')"
+        :resetText="t('article.help.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -611,7 +626,7 @@ onBeforeUnmount(() => {
         :action-bar="{
           buttons,
           width: '120px',
-          label: '操作'
+          label: t('article.help.table.action')
         }"
         width="100%"
         height="90%"
@@ -621,7 +636,7 @@ onBeforeUnmount(() => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t('article.help.buttons.add') }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -630,7 +645,7 @@ onBeforeUnmount(() => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t('article.help.buttons.edit') }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -639,12 +654,12 @@ onBeforeUnmount(() => {
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('article.help.buttons.delete') }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('article.help.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -655,7 +670,7 @@ onBeforeUnmount(() => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('article.help.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -668,7 +683,7 @@ onBeforeUnmount(() => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('article.help.toolbar.hideSearch') : t('article.help.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -688,7 +703,7 @@ onBeforeUnmount(() => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('article.help.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"
@@ -731,14 +746,14 @@ onBeforeUnmount(() => {
         label-width="80px"
         class="dialog-form"
       >
-        <el-form-item label="标题" prop="title">
+        <el-form-item :label="t('article.help.form.title')" prop="title">
           <el-input
             v-model="formData.title"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="200"
           />
         </el-form-item>
-        <el-form-item label="内容" prop="content">
+        <el-form-item :label="t('article.help.form.content')" prop="content">
           <div class="wangeditor">
             <Toolbar
               :editor="editorRef"
@@ -755,20 +770,20 @@ onBeforeUnmount(() => {
             />
           </div>
         </el-form-item>
-        <el-form-item label="排序" prop="weigh">
+        <el-form-item :label="t('article.help.form.weigh')" prop="weigh">
           <el-input-number
             v-model="formData.weigh"
             :min="0"
             :max="9999"
-            placeholder="请输入排序"
+            :placeholder="t('article.help.form.weigh')"
             style="width: 100%"
           />
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmit">确认</el-button>
+          <el-button @click="handleCloseDialog">{{ t('article.help.buttons.cancel') }}</el-button>
+          <el-button type="primary" @click="handleSubmit">{{ t('article.help.buttons.confirm') }}</el-button>
         </div>
       </template>
     </el-dialog>

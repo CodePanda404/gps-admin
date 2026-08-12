@@ -73,31 +73,34 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("player.single.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "用户名",
+    renderLabel: () => t("player.single.search.username"),
     prop: "name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "用户名"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "币种",
+    renderLabel: () => t("player.single.search.currency"),
     prop: "currency_id",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择",
+      placeholder: t("placeholder.select"),
       filterable: true
     })),
     options: computed(() => [
       {
-        label: "全部",
+        label: t("player.single.search.all"),
         value: ""
       },
       ...currencyOptions.value.map(item => ({
@@ -108,37 +111,42 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "商户ID",
+    renderLabel: () => t("player.single.search.admin_id"),
     prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "商户ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "状态",
+    renderLabel: () => t("player.single.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("placeholder.select")
     })),
     options: [
       {
-        label: "全部",
+        label: t("player.single.search.all"),
+        renderLabel: () => t("player.single.search.all"),
         value: ""
       },
        {
-        label: "正常",
+        label: t("player.single.search.normal"),
+        renderLabel: () => t("player.single.search.normal"),
         value: "1"
       },
       {
-        label: "禁用",
+        label: t("player.single.search.disabled"),
+        renderLabel: () => t("player.single.search.disabled"),
         value: "0"
       }
     ]
   },
   {
     label: "登录IP",
-    renderLabel: () => t("player.search.login_ip"),
+    renderLabel: () => t("player.single.search.login_ip"),
     prop: "login_ip",
     valueType: "copy",
     fieldProps: computed(() => ({
@@ -147,7 +155,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "注册IP",
-    renderLabel: () => t("player.search.register_ip"),
+    renderLabel: () => t("player.single.search.register_ip"),
     prop: "register_ip",
     valueType: "copy",
     fieldProps: computed(() => ({
@@ -156,7 +164,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "登录时间",
-    renderLabel: () => t("player.search.login_time"),
+    renderLabel: () => t("player.single.search.login_time"),
     prop: "loginTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
@@ -233,7 +241,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "注册时间",
-    renderLabel: () => t("player.search.register_time"),
+    renderLabel: () => t("player.single.search.register_time"),
     prop: "registerTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
@@ -344,6 +352,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("player.single.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -351,6 +360,7 @@ const tableConfig: any = ref([
   },
   {
     label: "用户名",
+    renderHeader: () => t("player.single.table.username"),
     prop: "username",
     width: "200",
     tableColumnProps: {
@@ -359,6 +369,7 @@ const tableConfig: any = ref([
   },
   {
     label: "余额",
+    renderHeader: () => t("player.single.table.balance"),
     prop: "money",
     tableColumnProps: {
       align: "center"
@@ -366,20 +377,25 @@ const tableConfig: any = ref([
   },
   {
     label: "币种",
+    renderHeader: () => t("player.single.table.currency"),
     prop: "currency",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: "110"
   },
   {
     label: "商户ID",
+    renderHeader: () => t("player.single.table.admin_id"),
     prop: "admin_id",
     tableColumnProps: {
       align: "center"
-    }
+    },
+    width: "110"
   },
   {
     label: "登录时间",
+    renderHeader: () => t("player.single.table.login_time"),
     prop: "logintime",
     width: "160",
     tableColumnProps: {
@@ -388,6 +404,7 @@ const tableConfig: any = ref([
   },
   {
     label: "登录IP",
+    renderHeader: () => t("player.single.table.login_ip"),
     prop: "loginip",  
     width: "140",
     tableColumnProps: {
@@ -396,6 +413,7 @@ const tableConfig: any = ref([
   },
   {
     label: "注册时间",
+    renderHeader: () => t("player.single.table.register_time"),
     prop: "jointime",
     width: "160",
     tableColumnProps: {
@@ -404,6 +422,7 @@ const tableConfig: any = ref([
   },
   {
     label: "注册IP",
+    renderHeader: () => t("player.single.table.register_ip"),
     prop: "joinip",
     width: "140",
     tableColumnProps: {
@@ -412,6 +431,7 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("player.single.table.status"),
     prop: "status",
     valueType: "switch",
     editable: true,
@@ -430,7 +450,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: () => "投注明细",
+    text: () => t("player.single.table.betDetail"),
     code: "bettingDetails",
     props: {
       type: "primary"
@@ -467,7 +487,7 @@ const handleStatusChange = async (params: {
   // 检查 row 是否存在
   if (!row) {
     console.error("行数据不存在");
-    message("操作失败：无法找到对应的数据", { type: "error" });
+    message(t("player.single.message.dataNotFound"), { type: "error" });
     return;
   }
 
@@ -480,21 +500,21 @@ const handleStatusChange = async (params: {
 
   // 提示文字
   const confirmMessage = value == 'normal'
-    ? `是否确定将玩家${row.username}解锁?`
-    : `是否确定将玩家${row.username}锁定?`
+    ? t("player.single.message.confirmUnlock", { username: row.username })
+    : t("player.single.message.confirmLock", { username: row.username })
 
   // 查找当前行在 tableData 中的索引
   const index = tableData.value.findIndex(item => item.id === row.id);
   if (index === -1) {
-    message("操作失败：无法找到对应的数据", { type: "error" });
+    message(t("player.single.message.dataNotFound"), { type: "error" });
     return;
   }
 
   try {
     // 弹出确认对话框
-    await ElMessageBox.confirm(confirmMessage, "切换状态", {
-      confirmButtonText: "确认",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("player.single.statusSwitch.title"), {
+      confirmButtonText: t("player.single.buttons.confirm"),
+      cancelButtonText: t("player.single.buttons.cancel"),
       draggable: true
     });
 
@@ -504,7 +524,7 @@ const handleStatusChange = async (params: {
     });
 
     if (res.code === 0) {
-      message(value == 'normal' ? "玩家已解锁" : "玩家已锁定", {
+      message(value == 'normal' ? t("player.single.message.unlockSuccess") : t("player.single.message.lockSuccess"), {
         type: "success"
       });
       // 更新本地数据 - 通过更新 tableData 中对应的项来触发响应式更新
@@ -518,7 +538,7 @@ const handleStatusChange = async (params: {
         ...tableData.value[index],
         status: originalStatus
       };
-      message(res.msg || "玩家状态切换失败", { type: "error" });
+      message(res.msg || t("player.single.message.statusSwitchFail"), { type: "error" });
     }
   } catch (error: any) {
     //取消或出错恢复 - 通过更新 tableData 中对应的项来触发响应式更新
@@ -528,7 +548,7 @@ const handleStatusChange = async (params: {
     };
     if (error !== "cancel") {
       console.error("状态切换失败:", error);
-      message(error?.message || "状态切换失败", { type: "error" });
+      message(error?.message || t("player.single.message.statusSwitchFail"), { type: "error" });
     }
   }
 };
@@ -571,11 +591,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("player.single.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("player.single.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -601,31 +621,37 @@ getList();
 // 导出到excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("player.single.message.selectToExport"), { type: "warning" });
     return;
   }
 
-  const exportTitles = tableConfig.value.map((col: any) => col.label);
+  const exportTitles = tableConfig.value.map((col: any) => col.renderHeader());
   const exportProps = tableConfig.value.map((col: any) => col.prop);
 
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
-    return exportProps.map(prop => item[prop as keyof TableRow] ?? "");
+    return exportProps.map(prop => {
+      // 处理特殊字段
+      if (prop === "status") {
+        return item.status === "normal" ? t("player.single.table.normal") : t("player.single.table.disabled");
+      }
+      return item[prop as keyof TableRow] ?? "";
+    });
   });
 
   res.unshift(exportTitles);
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "单一/免转模式玩家";
+  const sheetName = t("player.single.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `单一/免转模式玩家.xlsx`;
+  const fileName = t("player.single.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("player.single.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -633,7 +659,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "单一/免转模式玩家.json";
+  a.download = t("player.single.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -648,11 +674,11 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="110"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('player.single.buttons.search')"
+        :resetText="t('player.single.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -670,7 +696,7 @@ const exportJson = () => {
         :action-bar="{
           buttons,
           width: '150px',
-          label: '操作'
+          label: t('player.single.table.action')
         }"
         width="100%"
         height="90%"
@@ -679,7 +705,7 @@ const exportJson = () => {
       >
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('player.single.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -690,7 +716,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('player.single.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -703,7 +729,7 @@ const exportJson = () => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('player.single.toolbar.hideSearch') : t('player.single.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -723,7 +749,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('player.single.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -743,10 +769,10 @@ const exportJson = () => {
                 <template #dropdown>
                   <el-dropdown-menu>
                     <el-dropdown-item class="export-active" @click="exportJson"
-                      >Json</el-dropdown-item
+                      >{{ t("player.single.export.json") }}</el-dropdown-item
                     >
                     <el-dropdown-item @click="exportExcel"
-                      >Excel</el-dropdown-item
+                      >{{ t("player.single.export.excel") }}</el-dropdown-item
                     >
                   </el-dropdown-menu>
                 </template>

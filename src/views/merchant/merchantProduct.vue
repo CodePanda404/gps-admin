@@ -6,8 +6,12 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { utils, writeFile } from "xlsx";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import { ElMessageBox, ElTag, ElTooltip, ElButton, ElDialog, ElForm, ElFormItem, ElInput, ElInputNumber, ElRadioGroup, ElRadio, ElDropdown, ElDropdownMenu, ElDropdownItem } from "element-plus";
 import {
   getMerchantProductList,
@@ -48,94 +52,104 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("merchant.merchantProduct.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: t("merchant.merchantProduct.search.id")
     }))
   },
   {
     label: "商户ID",
+    renderLabel: () => t("merchant.merchantProduct.search.merchant_id"),
     prop: "merchant_id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户ID"
+      placeholder: t("merchant.merchantProduct.search.merchant_id")
     }))
   },
   {
     label: "商户名",
+    renderLabel: () => t("merchant.merchantProduct.search.merchant_name"),
     prop: "merchant_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入商户名"
+      placeholder: t("merchant.merchantProduct.search.merchant_name")
     }))
   },
   {
     label: "产品ID",
+    renderLabel: () => t("merchant.merchantProduct.search.product_code"),
     prop: "product_code",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入产品ID"
+      placeholder: t("merchant.merchantProduct.search.product_code")
     }))
   },
   {
     label: "产品",
+    renderLabel: () => t("merchant.merchantProduct.search.type_name"),
     prop: "type_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入产品"
+      placeholder: t("merchant.merchantProduct.search.type_name")
     }))
   },
   {
     label: "产品全称",
+    renderLabel: () => t("merchant.merchantProduct.search.product_name"),
     prop: "product_name",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入产品全称"
+      placeholder: t("merchant.merchantProduct.search.product_name")
     }))
   },
   {
     label: "钱包类型",
+    renderLabel: () => t("merchant.merchantProduct.search.wallet_type"),
     prop: "wallet_type",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择钱包类型"
+      placeholder: t("merchant.merchantProduct.search.wallet_type")
     })),
-    options: [
-      { label: "全部", value: "" },
-      { label: "单一模式", value: "1" },
-      { label: "转账模式", value: "2" }
-    ]
+    options: computed(() => [
+      { label: t("merchant.merchantProduct.search.all"), value: "" },
+      { label: t("merchant.merchantProduct.search.single"), value: "1" },
+      { label: t("merchant.merchantProduct.search.transfer"), value: "2" }
+    ])
   },
   {
     label: "币种",
+    renderLabel: () => t("merchant.merchantProduct.search.currency"),
     prop: "currency",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入币种"
+      placeholder: t("merchant.merchantProduct.search.currency")
     }))
   },
   {
     label: "钱包支持情况",
+    renderLabel: () => t("merchant.merchantProduct.search.support_state"),
     prop: "support_state",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入钱包支持情况"
+      placeholder: t("merchant.merchantProduct.search.support_state")
     }))
   },
   {
     label: "更新时间",
+    renderLabel: () => t("merchant.merchantProduct.search.updateTime"),
     prop: "updateTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("merchant.merchantProduct.search.startDateTime"),
+      endPlaceholder: t("merchant.merchantProduct.search.endDateTime"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -145,7 +159,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -155,7 +169,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -166,7 +180,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -177,7 +191,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -187,7 +201,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -201,17 +215,18 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "状态",
+    renderLabel: () => t("merchant.merchantProduct.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择状态"
+      placeholder: t("merchant.merchantProduct.search.status")
     })),
-    options: [
-      { label: "全部", value: "" },
-      { label: "正常", value: "1" },
-      { label: "隐藏", value: "-1" },
-      { label: "维护", value: "0" }
-    ]
+    options: computed(() => [
+      { label: t("merchant.merchantProduct.search.all"), value: "" },
+      { label: t("merchant.merchantProduct.search.normal"), value: "1" },
+      { label: t("merchant.merchantProduct.search.hidden"), value: "-1" },
+      { label: t("merchant.merchantProduct.search.maintenance"), value: "0" }
+    ])
   }
 ];
 
@@ -253,6 +268,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("merchant.merchantProduct.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -261,22 +277,25 @@ const tableConfig: any = ref([
   },
   {
     label: "商户ID",
+    renderHeader: () => t("merchant.merchantProduct.table.merchant_id"),
     prop: "merchant_id",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 110
   },
   {
     label: "商户名",
+    renderHeader: () => t("merchant.merchantProduct.table.merchant_name"),
     prop: "merchant_name",
     tableColumnProps: {
       align: "center"
     },
-    width: 120
+    width: 130
   },
   {
     label: "产品",
+    renderHeader: () => t("merchant.merchantProduct.table.type_name"),
     prop: "type_name",
     tableColumnProps: {
       align: "center"
@@ -285,6 +304,7 @@ const tableConfig: any = ref([
   },
   {
     label: "产品全称",
+    renderHeader: () => t("merchant.merchantProduct.table.product_name"),
     prop: "product_name",
     tableColumnProps: {
       align: "center"
@@ -293,6 +313,7 @@ const tableConfig: any = ref([
   },
   {
     label: "产品ID",
+    renderHeader: () => t("merchant.merchantProduct.table.product_code"),
     prop: "product_code",
     tableColumnProps: {
       align: "center"
@@ -301,19 +322,21 @@ const tableConfig: any = ref([
   },
   {
     label: "钱包类型",
+    renderHeader: () => t("merchant.merchantProduct.table.wallet_type"),
     prop: "wallet_type",
     render: (value: string | number) => {
-      if (value === "1" || value === 1) return "单一模式";
-      if (value === "2" || value === 2) return "转账模式";
+      if (value === "1" || value === 1) return t("merchant.merchantProduct.table.single");
+      if (value === "2" || value === 2) return t("merchant.merchantProduct.table.transfer");
       return value || "-";
     },
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 110
   },
   {
     label: "币种",
+    renderHeader: () => t("merchant.merchantProduct.table.currency"),
     prop: "currency",
     tableColumnProps: {
       align: "center"
@@ -322,6 +345,7 @@ const tableConfig: any = ref([
   },
   {
     label: "游戏类型",
+    renderHeader: () => t("merchant.merchantProduct.table.game_type"),
     prop: "game_type",
     tableColumnProps: {
       align: "center"
@@ -330,6 +354,7 @@ const tableConfig: any = ref([
   },
   {
     label: "钱包支持情况",
+    renderHeader: () => t("merchant.merchantProduct.table.support_state"),
     prop: "support_state",
     tableColumnProps: {
       align: "center"
@@ -338,6 +363,7 @@ const tableConfig: any = ref([
   },
   {
     label: "价格",
+    renderHeader: () => t("merchant.merchantProduct.table.price"),
     prop: "price",
     tableColumnProps: {
       align: "center"
@@ -346,14 +372,16 @@ const tableConfig: any = ref([
   },
   {
     label: "代理价格",
+    renderHeader: () => t("merchant.merchantProduct.table.agent_price"),
     prop: "agent_price",
     tableColumnProps: {
       align: "center"
     },
-    width: 100
+    width: 120
   },
   {
     label: "创建时间",
+    renderHeader: () => t("merchant.merchantProduct.table.createtime"),
     prop: "createtime",
     tableColumnProps: {
       align: "center"
@@ -362,6 +390,7 @@ const tableConfig: any = ref([
   },
   {
     label: "更新时间",
+    renderHeader: () => t("merchant.merchantProduct.table.updatetime"),
     prop: "updatetime",
     tableColumnProps: {
       align: "center"
@@ -370,19 +399,20 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
+    renderHeader: () => t("merchant.merchantProduct.table.status"),
     prop: "status",
     render: (value: string) => {
       let type: "success" | "warning" | "danger" | "info" = "info";
       let label = value;
       if (value === "1") {
         type = "success";
-        label = "正常";
+        label = t("merchant.merchantProduct.table.normal");
       } else if (value === "-1") {
         type = "warning";
-        label = "隐藏";
+        label = t("merchant.merchantProduct.table.hidden");
       } else if (value === "0") {
         type = "danger";
-        label = "维护";
+        label = t("merchant.merchantProduct.table.maintenance");
       }
       return h(ElTag, { type }, () => label);
     },
@@ -397,7 +427,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: () => t("merchant.merchantProduct.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -408,7 +438,7 @@ buttons.value = [
     }
   },
   {
-    text: "删除",
+    text: () => t("merchant.merchantProduct.buttons.delete"),
     code: "delete",
     props: {
       type: "danger"
@@ -463,11 +493,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("merchant.merchantProduct.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("merchant.merchantProduct.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -512,22 +542,22 @@ const formData = ref({
 
 const formRules = {
   type_name: [
-    { required: true, message: "请输入产品", trigger: "blur" }
+    { required: true, message: t("merchant.merchantProduct.form.typeNameRequired"), trigger: "blur" }
   ],
   merchant_id: [
-    { required: true, message: "请输入商户ID", trigger: "blur" }
+    { required: true, message: t("merchant.merchantProduct.form.merchantIdRequired"), trigger: "blur" }
   ],
   merchant_name: [
-    { required: true, message: "请输入商户名称", trigger: "blur" }
+    { required: true, message: t("merchant.merchantProduct.form.merchantNameRequired"), trigger: "blur" }
   ],
   currency: [
-    { required: true, message: "请输入币种", trigger: "blur" }
+    { required: true, message: t("merchant.merchantProduct.form.currencyRequired"), trigger: "blur" }
   ],
   price: [
-    { required: true, message: "请输入商户点位", trigger: "blur" }
+    { required: true, message: t("merchant.merchantProduct.form.priceRequired"), trigger: "blur" }
   ],
   agent_price: [
-    { required: true, message: "请输入代理点位", trigger: "blur" }
+    { required: true, message: t("merchant.merchantProduct.form.agentPriceRequired"), trigger: "blur" }
   ]
 };
 
@@ -573,7 +603,7 @@ const handleSubmit = async () => {
       try {
         // 目前只有编辑接口，新增功能暂时提示
         if (!isEditMode.value) {
-          message("新增功能暂未开放", { type: "info" });
+          message(t("merchant.merchantProduct.message.addNotOpen"), { type: "info" });
           return;
         }
 
@@ -588,15 +618,15 @@ const handleSubmit = async () => {
         const res = await editMerchantProduct(params);
 
         if (res.code === 0) {
-          message("编辑成功", { type: "success" });
+          message(t("merchant.merchantProduct.message.editSuccess"), { type: "success" });
           handleCloseDialog();
           getList();
         } else {
-          message(res.msg || "编辑失败", { type: "error" });
+          message(res.msg || t("merchant.merchantProduct.message.editFail"), { type: "error" });
         }
       } catch (error: any) {
         console.error("编辑失败:", error);
-        message(error?.message || "编辑失败", { type: "error" });
+        message(error?.message || t("merchant.merchantProduct.message.editFail"), { type: "error" });
       } finally {
         submitLoading.value = false;
       }
@@ -607,7 +637,7 @@ const handleSubmit = async () => {
 // 编辑（批量）- 只有一条选中时才能编辑
 const handleEdit = () => {
   if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑！", { type: "warning" });
+    message(t("merchant.merchantProduct.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   handleEditRow(multipleSelection.value[0]);
@@ -631,12 +661,12 @@ const handleEditRow = (row: TableRow) => {
 
 // 删除单行数据
 const handleDeleteRow = async (row: TableRow) => {
-  const confirmMessage = `确定删除产品 ${row.product_name}？`;
+  const confirmMessage = t("merchant.merchantProduct.message.confirmDelete", { name: row.product_name });
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "删除产品", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("merchant.merchantProduct.delete.title"), {
+      confirmButtonText: t("merchant.merchantProduct.buttons.confirm"),
+      cancelButtonText: t("merchant.merchantProduct.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -646,14 +676,14 @@ const handleDeleteRow = async (row: TableRow) => {
       const res = await deleteBatchMerchantProduct({ ids: row.id.toString() });
 
       if (res.code === 0) {
-        message("删除成功", { type: "success" });
+        message(t("merchant.merchantProduct.message.deleteSuccess"), { type: "success" });
         getList();
       } else {
-        message(res.msg || "删除失败", { type: "error" });
+        message(res.msg || t("merchant.merchantProduct.message.deleteFail"), { type: "error" });
       }
     } catch (error: any) {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("merchant.merchantProduct.message.deleteFail"), { type: "error" });
     } finally {
       deleteLoading.value = false;
     }
@@ -667,17 +697,16 @@ const handleDeleteRow = async (row: TableRow) => {
 // 批量删除
 const handleBatchDelete = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
+    message(t("merchant.merchantProduct.message.selectToDelete"), { type: "warning" });
     return;
   }
 
-  const productNames = multipleSelection.value.map(item => item.product_name).join("、");
-  const confirmMessage = `确定删除选中的 ${multipleSelection.value.length} 条产品数据？`;
+  const confirmMessage = t("merchant.merchantProduct.message.confirmBatchDelete", { count: multipleSelection.value.length });
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "批量删除", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("merchant.merchantProduct.delete.batchTitle"), {
+      confirmButtonText: t("merchant.merchantProduct.buttons.confirm"),
+      cancelButtonText: t("merchant.merchantProduct.buttons.cancel"),
       draggable: true,
       type: "warning"
     });
@@ -688,14 +717,14 @@ const handleBatchDelete = async () => {
       const res = await deleteBatchMerchantProduct({ ids });
 
       if (res.code === 0) {
-        message("删除成功", { type: "success" });
+        message(t("merchant.merchantProduct.message.deleteSuccess"), { type: "success" });
         getList();
       } else {
-        message(res.msg || "删除失败", { type: "error" });
+        message(res.msg || t("merchant.merchantProduct.message.deleteFail"), { type: "error" });
       }
     } catch (error: any) {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("merchant.merchantProduct.message.deleteFail"), { type: "error" });
     } finally {
       deleteLoading.value = false;
     }
@@ -709,17 +738,17 @@ const handleBatchDelete = async () => {
 // 测试游戏（单一钱包）
 const handleTestGame = async () => {
   if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行测试！", { type: "warning" });
+    message(t("merchant.merchantProduct.message.selectToTest"), { type: "warning" });
     return;
   }
 
   const product = multipleSelection.value[0];
-  const confirmMessage = `是否确定测试产品 ${product.product_name} 的游戏？`;
+  const confirmMessage = t("merchant.merchantProduct.message.confirmTest", { name: product.product_name });
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "测试游戏", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("merchant.merchantProduct.test.title"), {
+      confirmButtonText: t("merchant.merchantProduct.buttons.confirm"),
+      cancelButtonText: t("merchant.merchantProduct.buttons.cancel"),
       draggable: true,
       type: "success"
     });
@@ -729,17 +758,17 @@ const handleTestGame = async () => {
       const res = await testMerchantProduct({ id: product.id });
 
       if (res.code === 0) {
-        message("测试游戏成功", { type: "success" });
+        message(t("merchant.merchantProduct.message.testSuccess"), { type: "success" });
         // 如果响应中有游戏URL，可以打开
         if (res.data && (res.data as any).game_url) {
           window.open((res.data as any).game_url, "_blank");
         }
       } else {
-        message(res.msg || "测试游戏失败", { type: "error" });
+        message(res.msg || t("merchant.merchantProduct.message.testFail"), { type: "error" });
       }
     } catch (error: any) {
       console.error("测试游戏失败:", error);
-      message(error?.message || "测试游戏失败", { type: "error" });
+      message(error?.message || t("merchant.merchantProduct.message.testFail"), { type: "error" });
     } finally {
       testGameLoading.value = false;
     }
@@ -767,13 +796,13 @@ const exportExcel = () => {
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status") {
-        if (item.status === "1") return "正常";
-        if (item.status === "-1") return "隐藏";
-        if (item.status === "0") return "维护";
+        if (item.status === "1") return t("merchant.merchantProduct.table.normal");
+        if (item.status === "-1") return t("merchant.merchantProduct.table.hidden");
+        if (item.status === "0") return t("merchant.merchantProduct.table.maintenance");
       }
       if (prop === "wallet_type") {
-        if (item.wallet_type === 1) return "单一模式";
-        if (item.wallet_type === 2) return "转账模式";
+        if (item.wallet_type === 1) return t("merchant.merchantProduct.table.single");
+        if (item.wallet_type === 2) return t("merchant.merchantProduct.table.transfer");
       }
       return item[prop as keyof TableRow] ?? "";
     });
@@ -783,16 +812,16 @@ const exportExcel = () => {
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "商户产品列表";
+  const sheetName = t("merchant.merchantProduct.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `商户产品列表.xlsx`;
+  const fileName = t("merchant.merchantProduct.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("merchant.merchantProduct.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -800,7 +829,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "商户产品列表.json";
+  a.download = t("merchant.merchantProduct.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -815,12 +844,12 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="110"
+        label-width="130"
         inline
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('merchant.merchantProduct.buttons.search')"
+        :resetText="t('merchant.merchantProduct.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -838,7 +867,7 @@ const exportJson = () => {
         :action-bar="{
           buttons,
           width: '150px',
-          label: '操作'
+          label: t('merchant.merchantProduct.table.action')
         }"
         @selection-change="handleSelectionChange"
         width="100%"
@@ -848,7 +877,7 @@ const exportJson = () => {
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t('merchant.merchantProduct.buttons.add') }}</span>
           </el-button>
           <el-button 
             type="success" 
@@ -857,7 +886,7 @@ const exportJson = () => {
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t('merchant.merchantProduct.buttons.edit') }}</span>
           </el-button>
           <el-button 
             type="danger" 
@@ -867,7 +896,7 @@ const exportJson = () => {
             :loading="deleteLoading"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('merchant.merchantProduct.buttons.delete') }}</span>
           </el-button>
           <el-button 
             @click="handleTestGame" 
@@ -876,12 +905,12 @@ const exportJson = () => {
             :disabled="multipleSelection.length !== 1"
             :loading="testGameLoading"
           >
-            <span>测试游戏（单一钱包）</span>
+            <span>{{ t('merchant.merchantProduct.buttons.test') }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('merchant.merchantProduct.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -892,7 +921,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('merchant.merchantProduct.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -905,7 +934,7 @@ const exportJson = () => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('merchant.merchantProduct.toolbar.hideSearch') : t('merchant.merchantProduct.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -925,7 +954,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('merchant.merchantProduct.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -970,7 +999,7 @@ const exportJson = () => {
     <!-- 编辑对话框 -->
     <el-dialog
       v-model="showDialog"
-      :title="isEditMode ? '编辑商户产品' : '新增商户产品'"
+      :title="isEditMode ? t('merchant.merchantProduct.edit.title') : t('merchant.merchantProduct.add.title')"
       width="600px"
       :close-on-click-modal="false"
       @close="handleCloseDialog"
@@ -979,67 +1008,67 @@ const exportJson = () => {
         ref="formRef"
         :model="formData"
         :rules="formRules"
-        label-width="100px"
+        label-width="130px"
         class="dialog-form"
       >
-        <el-form-item label="产品" prop="type_name">
+        <el-form-item :label="t('merchant.merchantProduct.form.type_name')" prop="type_name">
           <el-input
             v-model="formData.type_name"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="50"
           />
         </el-form-item>
-        <el-form-item label="商户ID" prop="merchant_id">
+        <el-form-item :label="t('merchant.merchantProduct.form.merchant_id')" prop="merchant_id">
           <el-input
             v-model="formData.merchant_id"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             :disabled="isEditMode"
           />
         </el-form-item>
-        <el-form-item label="商户名称" prop="merchant_name">
+        <el-form-item :label="t('merchant.merchantProduct.form.merchant_name')" prop="merchant_name">
           <el-input
             v-model="formData.merchant_name"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             :disabled="isEditMode"
           />
         </el-form-item>
-        <el-form-item label="币种" prop="currency">
+        <el-form-item :label="t('merchant.merchantProduct.form.currency')" prop="currency">
           <el-input
             v-model="formData.currency"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             maxlength="10"
           />
         </el-form-item>
-        <el-form-item label="商户点位" prop="price">
+        <el-form-item :label="t('merchant.merchantProduct.form.price')" prop="price">
           <el-input-number
             v-model="formData.price"
             :min="0"
             :precision="2"
             style="width: 100%"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
           />
         </el-form-item>
-        <el-form-item label="代理点位" prop="agent_price">
+        <el-form-item :label="t('merchant.merchantProduct.form.agent_price')" prop="agent_price">
           <el-input-number
             v-model="formData.agent_price"
             :min="0"
             :precision="2"
             style="width: 100%"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
           />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item :label="t('merchant.merchantProduct.form.status')">
           <el-radio-group v-model="formData.status">
-            <el-radio label="1">开启</el-radio>
-            <el-radio label="0">关闭</el-radio>
+            <el-radio label="1">{{ t('merchant.merchantProduct.form.open') }}</el-radio>
+            <el-radio label="0">{{ t('merchant.merchantProduct.form.close') }}</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDialog">取消</el-button>
+          <el-button @click="handleCloseDialog">{{ t('merchant.merchantProduct.buttons.cancel') }}</el-button>
           <el-button type="primary" @click="handleSubmit" :loading="submitLoading">
-            确定
+            {{ t('merchant.merchantProduct.buttons.confirm') }}
           </el-button>
         </div>
       </template>

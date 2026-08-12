@@ -61,6 +61,7 @@ panel:
   pureHiddenFooter: 隐藏页脚
   pureMultiTagsCache: 页签持久化
 menus:
+  login: 登录
   home: 主页
   dashboard: 平台主页
   player: 玩家管理
@@ -92,9 +93,9 @@ menus:
   gameStatistics: 游戏统计
   productStatistics: 产品统计
   permission: 权限管理
-  account: 账户
-  role: 角色
-  menu: 菜单
+  account: 账户管理
+  role: 角色管理
+  menu: 菜单管理
   gameTestLog: 游戏测试日志
   systemSettings: 系统设置
   systemConfig: 系统配置
@@ -133,6 +134,7 @@ status:
   pureNoNotify: 暂无通知
   pureNoTodo: 暂无待办
 login:
+  title: GamePlus 总控
   username: 账号
   password: 密码
   googleVerifyCode: 谷歌验证码
@@ -192,37 +194,28 @@ Time:
   thisMonth: 本月
   lastMonth: 上月
 
+# 玩家管理
 player:
+  transfer:
     search:
       id: ID
       username: 用户名
       admin_id: 商户ID
-      user_id: 用户ID
-      all: 全部
-      disabled: 禁用
-      normal: 正常
-      balance: 余额
       currency: 币种
-      merchant_id: 商户ID
-      bet_all: 累计投注
-      win_all: 累计派彩
-      company_win_all: 累计输赢
-      login_time: 登录时间
-      login_ip: 登录IP
-      register_time: 注册时间
-      register_ip: 注册IP
       status: 状态
-    buttons:
-      reset: 重置
-      search: 搜索  
+      login_ip: 登录IP
+      register_ip: 注册IP
+      login_time: 登录时间
+      register_time: 注册时间
+      all: 全部
+      normal: 正常
+      disabled: 禁用
     table:
       id: ID
       username: 用户名
-      admin_id: 商户ID
-      user_id: 用户ID
       balance: 余额
       currency: 币种
-      merchant_id: 商户ID
+      admin_id: 商户ID
       bet_all: 累计投注
       win_all: 累计派彩
       company_win_all: 累计输赢
@@ -231,9 +224,484 @@ player:
       register_time: 注册时间
       register_ip: 注册IP
       status: 状态
+      action: 操作
+      normal: 正常
+      disabled: 禁用
       depWithDrawDetail: 存取款明细
       betDetail: 投注明细
+    buttons:
+      search: 搜索
+      reset: 重置
+      confirm: 确认
+      cancel: 取消
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    statusSwitch:
+      title: 切换状态
+    export:
+      sheetName: 数据报表
+      fileName: 转账模式玩家.xlsx
+      jsonFileName: 转账模式玩家.json
+      json: Json
+      excel: Excel
+    message:
+      getListFail: 获取列表数据失败
+      dataNotFound: 操作失败：无法找到对应的数据
+      confirmUnlock: 是否确定将玩家{username}解锁?
+      confirmLock: 是否确定将玩家{username}锁定?
+      unlockSuccess: 玩家已解锁
+      lockSuccess: 玩家已锁定
+      statusSwitchFail: 玩家状态切换失败
+      selectToExport: 请先选择要导出的数据！
+  single:
+    search:
+      id: ID
+      username: 用户名
+      admin_id: 商户ID
+      currency: 币种
+      status: 状态
+      login_ip: 登录IP
+      register_ip: 注册IP
+      login_time: 登录时间
+      register_time: 注册时间
+      all: 全部
+      normal: 正常
+      disabled: 禁用
+    table:
+      id: ID
+      username: 用户名
+      balance: 余额
+      currency: 币种
+      admin_id: 商户ID
+      login_time: 登录时间
+      login_ip: 登录IP
+      register_time: 注册时间
+      register_ip: 注册IP
+      status: 状态
       action: 操作
+      normal: 正常
+      disabled: 禁用
+      betDetail: 投注明细
+    buttons:
+      search: 搜索
+      reset: 重置
+      confirm: 确认
+      cancel: 取消
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    statusSwitch:
+      title: 切换状态
+    export:
+      sheetName: 数据报表
+      fileName: 单一/免转模式玩家.xlsx
+      jsonFileName: 单一/免转模式玩家.json
+      json: Json
+      excel: Excel
+    message:
+      getListFail: 获取列表数据失败
+      dataNotFound: 操作失败：无法找到对应的数据
+      confirmUnlock: 是否确定将玩家{username}解锁?
+      confirmLock: 是否确定将玩家{username}锁定?
+      unlockSuccess: 玩家已解锁
+      lockSuccess: 玩家已锁定
+      statusSwitchFail: 玩家状态切换失败
+      selectToExport: 请先选择要导出的数据！
+  depositWithdrawal:
+    search:
+      id: ID
+      userId: 用户ID
+      username: 用户名
+      type: 类型
+      createTime: 创建时间
+      all: 全部
+      deposit: 存款
+      withdrawal: 取款
+    table:  
+      id: ID
+      userId: 用户ID
+      username: 用户名
+      type: 类型
+      changedAmount: 变动游戏币
+      beforeAmount: 变动前
+      afterAmount: 变动后
+      createTime: 创建时间
+      remark: 备注
+    buttons:
+      search: 搜索
+      reset: 重置
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    export:
+      sheetName: 数据报表
+      fileName: 存取款明细.xlsx
+      jsonFileName: 存取款明细.json
+      json: Json
+      excel: Excel
+    message:
+      getListFail: 获取列表数据失败
+      selectToExport: 请先选择要导出的数据！
+      dataNotFound: 操作失败, 无法找到对应的数据
+  betDetail:
+    search:
+      userId: 用户ID
+      adminId: 商户ID
+      username: 玩家ID
+      gameId: 游戏ID
+      supplier: 供应商
+      currency: 币种
+      betId: 投注ID
+      transactionId: 交易ID
+      status: 状态
+      win: 中奖
+      lose: 未中奖
+      all: 全部
+      createTime: 创建时间
+      updateTime: 更新时间
+    table:
+      id: ID
+      userId: 用户ID
+      username: 玩家ID
+      merchantId: 商户ID
+      game_id: 游戏ID
+      gameName: 游戏名称
+      gameType: 游戏类型
+      category: 所属分类
+      supplier: 供应商
+      currency: 币种
+      betId: 投注ID
+      transactionId: 交易ID
+      betAmount: 投注金额
+      winAmount: 中奖金额
+      winLoss: 输赢
+      createTime: 创建时间
+      status: 状态
+      action: 操作
+      win: 中奖
+      lose: 未中奖
+      gameHistory: 游戏历史
+    buttons:
+      search: 搜索
+      reset: 重置
+      confirm: 确认
+      cancel: 取消
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    stats:
+      totalBet: 总投注
+      totalWinLoss: 总输赢
+      totalCount: 总笔数
+    export:
+      sheetName: 数据报表
+      fileName: 投注明细.xlsx
+      jsonFileName: 投注明细.json
+      json: Json
+      excel: Excel
+    message:
+      getListFail: 获取列表数据失败
+      selectToExport: 请先选择要导出的数据！
+      dataNotFound: 操作失败, 无法找到对应的数据
+
+# 系统设置
+systemSettings:
+  personalCenterMerchant:
+    nickname: 昵称
+    notSet: 未设置
+    notBound: 未绑定
+    bound: 已绑定
+    googleNotBound: 谷歌验证未绑定
+    personalInfo:
+      title: 个人信息
+      nickname: 昵称
+      nicknamePlaceholder: 请输入昵称
+      username: 账号
+      roleGroup: 角色组
+    securityInfo:
+      title: 安全信息
+      email: 邮箱
+      googleVerify: 谷歌验证
+    merchantInfo:
+      title: 商户信息
+      apiDocUrl: 单一钱包API文档链接
+      currency: 币种
+      gameCategory: 开通游戏
+      apiGateway: API网关
+      viewApiSecret: 查看API 秘钥
+      apiWhitelist: API白名单
+      callbackAddress: 回调地址
+    buttons:
+      edit: 修改
+      save: 保存
+      cancel: 取消
+      change: 更改
+      bind: 绑定
+      unbind: 解绑
+      confirm: 确定
+      back: 返回
+      next: 下一步
+      copy: 复制
+      confirmBind: 确认绑定
+      confirmUnbind: 确认解绑
+    googleVerify:
+      title: 谷歌验证
+      verifyCode: 验证码
+      verifyCodePlaceholder: 请输入谷歌验证码
+    apiSecret:
+      title: API 秘钥
+      apiGateway: API网关
+      apiKey: API Key/operatorcode
+      apiSecret: API Secret
+    whitelist:
+      title: 修改API白名单
+      tip: 请输入API白名单，多个请用英文符号逗号隔
+      placeholder: 请输入API白名单，多个请用英文符号逗号隔开
+    callbackAddress:
+      title: 编辑回调地址
+      label: 回调地址
+      placeholder: 请输入回调地址
+    changeEmail:
+      title: 输入邮箱验证码
+      tip: 验证码已发送至 {email}，有效期10分钟
+      warning: 邮箱已停用?请联系管理员
+      newEmail: 新邮箱
+      newEmailPlaceholder: 请输入新邮箱
+      verifyCode: 验证码
+      verifyCodePlaceholder: 请输入验证码
+      resendCode: 重新获取验证码
+      googleCode: 谷歌验证码
+      googleCodePlaceholder: 请输入谷歌验证码
+    bindGoogle:
+      title: 设置谷歌验证器
+      step1: 第一步 下载Google Authenticator应用
+      step2: 第二步 扫描二维码或手动输入密钥
+      step3: 第三步 输入验证码
+      androidDownload: Android 下载
+      iosDownload: iOS 下载
+      manualInput: 手动输入密钥
+      verifyCode: 验证码
+      verifyCodePlaceholder: 请输入验证码
+    unbind:
+      title: 解绑确认
+      warning: 解绑安全系数将降低,请谨慎解绑。
+      verifyCode: 验证码
+      verifyCodePlaceholder: 请输入谷歌验证码
+    message:
+      inputGoogleCode: 请输入谷歌验证码
+      googleCodeError: 验证码错误
+      verifyFail: 验证失败
+      inputWhitelist: 请输入API白名单
+      verifyGoogleFirst: 请先进行谷歌验证
+      saveSuccess: 保存成功
+      saveFail: 保存失败
+      getInfoFail: 获取商户信息失败
+      nicknameNotEmpty: 昵称不能为空
+      emailCountdown: "{seconds}秒后可重新获取验证码"
+      inputEmail: 请输入邮箱
+      emailCodeSent: 验证码已发送
+      sendEmailCodeFail: 发送验证码失败
+      inputEmailCode: 请输入邮箱验证码
+      changeEmailSuccess: 更改邮箱成功
+      changeEmailFail: 更改邮箱失败
+      inputCallbackAddress: 请输入回调地址
+      secretCopied: 密钥已复制
+      inputVerifyCode: 请输入验证码
+      bindGoogleSuccess: 绑定谷歌验证成功
+      bindGoogleFail: 绑定谷歌验证失败
+      unbindWarning: 解绑安全系数将降低,请谨慎解绑。
+      unbindGoogleSuccess: 解绑谷歌验证成功
+      unbindGoogleFail: 解绑谷歌验证失败
+  personalCenterPlatform:
+    notSet: 未设置
+    notBound: 未绑定
+    bound: 已绑定
+    googleNotBound: 谷歌验证未绑定
+    personalInfo:
+      title: 个人信息
+      nickname: 昵称
+      nicknamePlaceholder: 请输入昵称
+      username: 账号
+      department: 部门
+      role: 角色
+    securityInfo:
+      title: 安全信息
+      email: 邮箱
+      googleVerify: 谷歌验证
+    buttons:
+      edit: 修改
+      save: 保存
+      cancel: 取消
+      change: 更改
+      bind: 绑定
+      unbind: 解绑
+      back: 返回
+      next: 下一步
+      copy: 复制
+      confirmBind: 确认绑定
+      confirmUnbind: 确认解绑
+    changeEmail:
+      title: 输入邮箱验证码
+      tip: 验证码已发送至 {email}，有效期10分钟
+      warning: 邮箱已停用?请联系管理员
+      verifyCode: 验证码
+      verifyCodePlaceholder: 请输入验证码
+      resendCode: 重新获取验证码
+      googleCode: 验证码
+      googleCodePlaceholder: 请输入谷歌验证码
+    bindGoogle:
+      title: 设置谷歌验证器
+      step1: 第一步 下载Google Authenticator应用
+      step2: 第二步 扫描二维码或手动输入密钥
+      step3: 第三步 输入验证码
+      androidDownload: Android 下载
+      iosDownload: iOS 下载
+      manualInput: 手动输入密钥
+      verifyCode: 验证码
+      verifyCodePlaceholder: 请输入验证码
+    unbind:
+      title: 解绑确认
+      warning: 解绑安全系数将降低,请谨慎解绑。
+      verifyCode: 验证码
+      verifyCodePlaceholder: 请输入谷歌验证码
+    message:
+      nicknameNotEmpty: 昵称不能为空
+      saveSuccess: 保存成功
+      saveFail: 保存失败
+      emailCountdown: "{seconds}秒后可重新获取验证码"
+      inputEmail: 请输入邮箱
+      emailCodeSent: 验证码已发送
+      sendEmailCodeFail: 发送验证码失败
+      inputEmailCode: 请输入邮箱验证码
+      inputGoogleCode: 请输入谷歌验证码
+      changeEmailSuccess: 更改邮箱成功
+      changeEmailFail: 更改邮箱失败
+      secretCopied: 密钥已复制
+      inputVerifyCode: 请输入验证码
+      bindGoogleSuccess: 绑定谷歌验证成功
+      bindGoogleFail: 绑定谷歌验证失败
+      unbindWarning: 解绑安全系数将降低,请谨慎解绑。
+      unbindGoogleSuccess: 解绑谷歌验证成功
+      unbindGoogleFail: 解绑谷歌验证失败
+  attachment:
+    search:
+      id: ID
+      category: 分类管理
+      filename: 文件名
+      fileType: 文件类型
+      fileTypePlaceholder: 请选择文件类型
+      storage: 存储地
+      storagePlaceholder: 请选择存储地
+      imageType: 图片类型
+      imageTypePlaceholder: 请选择图片类型
+      createTime: 创建时间
+      all: 全部
+      local: 本地
+      oss: OSS
+      cos: COS
+      jpg: JPG
+      png: PNG
+      gif: GIF
+      webp: WEBP
+    table:
+      id: ID
+      category: 分类管理
+      preview: 预览
+      filename: 文件名
+      fileType: 文件类型
+      fileSize: 文件大小
+      storage: 存储地
+      imageType: 图片类型
+      createTime: 创建时间
+      action: 操作
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 新增
+      edit: 编辑
+      delete: 删除
+      classify: 分类
+      confirm: 确认
+      cancel: 取消
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    add:
+      title: 添加
+      fileType: 附件类型
+      selectFile: 选择附件
+      clickUpload: 点击上传
+    edit:
+      title: 编辑附件
+      category: 分类管理
+      image: 图片
+      upload: 上传
+      select: 选择
+      clickUploadImage: 点击上传图片
+      jumpType: 跳转类型
+      jumpLink: 跳转链接
+      sort: 排序
+      imageWidth: 图片宽度
+      imageHeight: 图片高度
+      imageType: 图片类型
+      fileSize: 文件大小
+      uploadTime: 上传时间
+      storage: 存储地
+    classify:
+      title: 分类
+      category: 附件分类
+    select:
+      pleaseSelect: 请选择
+      homePage: 主页跳转
+      subPage: 子页跳转
+      external: 外部跳转
+      emptyLink: 空连接
+    delete:
+      title: 删除确认
+      batchTitle: 批量删除确认
+    message:
+      getListFail: 获取列表数据失败
+      onlyImage: 只能上传图片文件！
+      imageUploadSuccess: 图片上传成功
+      imageUploadFail: 图片上传失败
+      editSuccess: 编辑附件成功
+      editFail: 编辑附件失败
+      confirmDelete: 确定删除附件"{filename}"吗？
+      deleteSuccess: 删除附件成功
+      deleteFail: 删除附件失败
+      selectFileType: 请先选择附件类型
+      fileUploadSuccess: 文件上传成功
+      fileUploadFail: 文件上传失败
+      selectFileTypeWarning: 请选择附件类型
+      uploadAtLeastOne: 请至少上传一个文件
+      addSuccess: 新增附件成功
+      addFail: 新增附件失败
+      selectToEdit: 请选择要编辑的数据
+      selectOneToEdit: 请选择单条数据进行编辑
+      selectToDelete: 请选择要删除的数据
+      confirmBatchDelete: 确定删除选中的 {count} 条数据吗？
+      batchDeleteSuccess: 批量删除附件成功
+      batchDeleteFail: 批量删除附件失败
+      selectToClassify: 请选择要分类的数据
+      selectCategory: 请选择附件分类
+      classifySuccess: 分类成功
+      classifyFail: 分类失败
 
 # 游戏管理
 game:
@@ -262,14 +730,577 @@ game:
       updateTime: 更新时间
       createTime: 创建时间  
       action: 操作
-    addTitle: 新增供应商
-    editTitle: 编辑供应商
-    upload: 上传
-    uploadTip: 点击上传图片
+    add:
+      title: 新增供应商
+      success: 新增供应商成功
+      fail: 新增供应商失败
+      upload: 上传
+      uploadTip: 点击上传图片
+    edit:
+      title: 编辑供应商
+      success: 编辑供应商成功
+      fail: 编辑供应商失败
+    delete:
+      title: 删除供应商
+      fail: 删除供应商失败
+      success: 删除成功
+      tip: 确认删除供应商
+    status:
+      switchTitle: 切换状态
+      confirmHide: 是否确定将供应商{name}隐藏?
+      confirmRestore: 是否确定将供应商{name}恢复正常?
+      success: 状态切换成功
+      fail: 状态切换失败
+      hidden: 已隐藏
+      restored: 已恢复正常
+    form:
+      nameRequired: 请输入供应商名称
+    upload:
+      onlyImage: 只能上传图片文件！
+      sizeLimit: 图片大小不能超过 2MB！
+      success: 图片上传成功
+      fail: 图片上传失败
+    message:
+      selectOneToEdit: 请选择一条数据进行编辑！
+      selectToDelete: 请先选择要删除的数据！
+      selectToExport: 请先选择要导出的数据！
+      getListFail: 获取列表数据失败
+    export:
+      sheetName: 供应商
+      fileName: 供应商.xlsx
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    addSuccess: 新增供应商成功
+    addFail: 新增供应商失败
+    editSuccess: 编辑供应商成功
+    editFail: 编辑供应商失败
+  playType:
+    search:
+      id: ID
+      name: 玩法类型
+      shortname: 玩法缩写
+      name_cn: 中文名称
+      status: 状态
+      updateTime: 更新时间
+      all: 全部
+      hidden: 隐藏
+      normal: 正常
+    buttons:
+      reset: 重置
+      search: 搜索
+      add: 添加
+      edit: 编辑
+      delete: 删除
+      confirm: 确认
+      cancel: 取消
+      select: 选择
+    table:
+      id: ID
+      name: 玩法类型
+      shortname: 玩法缩写
+      name_cn: 中文名称
+      pic: 图片
+      sort_no: 排序
+      createTime: 创建时间
+      updateTime: 更新时间
+      status: 状态
+      hidden: 隐藏
+      normal: 正常
+      disabled: 停用
+      action: 操作
+    add:
+      title: 新增玩法类型
+      success: 新增玩法类型成功
+      fail: 新增玩法类型失败
+      upload: 上传
+      uploadTip: 点击上传图片
+    edit:
+      title: 编辑玩法类型
+      success: 编辑玩法类型成功
+      fail: 编辑玩法类型失败
+    delete:
+      title: 删除玩法类型
+      fail: 删除玩法类型失败
+      success: 删除成功
+      tip: 确认删除玩法类型
+    form:
+      nameRequired: 请输入玩法类型
+      shortnameRequired: 请输入玩法缩写
+      nameCnRequired: 请输入中文名称
+    upload:
+      onlyImage: 只能上传图片文件！
+      sizeLimit: 图片大小不能超过 2MB！
+      success: 图片上传成功
+      fail: 图片上传失败
+    message:
+      selectOneToEdit: 请选择一条数据进行编辑！
+      selectToDelete: 请先选择要删除的数据！
+      selectToExport: 请先选择要导出的数据！
+      getListFail: 获取列表数据失败
+    export:
+      sheetName: 玩法类型
+      fileName: 玩法类型.xlsx
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    addSuccess: 新增玩法类型成功
+    addFail: 新增玩法类型失败
+    editSuccess: 编辑玩法类型成功
+    editFail: 编辑玩法类型失败
+  gameList:
+    search:
+      id: ID
+      wallet_type: 钱包类型
+      provider: 供应商
+      game_id: 游戏ID
+      game_code: 游戏code
+      name: 游戏英文名称
+      name_cn: 游戏中文名称
+      common_name: 产品缩写
+      product_code: 产品ID
+      common_content: 所属玩法
+      type_id: 所属分类
+      tag: 标签
+      has_pic: 有无图片
+      currency: 支持币种
+      disabled_currency: 已停用币种
+      createTime: 创建时间
+      updateTime: 更新时间
+      status: 状态
+      all: 全部
+      single: 单一模式
+      transfer: 转账模式
+      normal: 正常
+      hidden: 隐藏
+      maintenance: 维护
+      has: 有
+      no: 无
+    buttons:
+      reset: 重置
+      search: 搜索
+      add: 新增
+      edit: 编辑
+      delete: 删除
+      test: 测试游戏
+      confirm: 确认
+      cancel: 取消
+    table:
+      id: ID
+      wallet_type: 钱包类型
+      provider: 供应商
+      game_id: 游戏ID
+      game_code: 游戏code
+      name: 游戏英文名称
+      name_cn: 游戏中文名称
+      common_name: 产品缩写
+      product_code: 产品ID
+      common_content: 所属玩法
+      type_id: 所属分类
+      tag: 标签
+      product_pic: 产品主图
+      web_pic: 演示站游戏图
+      pic: webp游戏图
+      is_local: 图片存储
+      local: 本地
+      remote: 远程
+      has_pic: 有无图片
+      currency: 支持币种
+      disabled_currency: 已停用币种
+      createTime: 创建时间
+      updateTime: 更新时间
+      status: 状态
+      normal: 正常
+      hidden: 隐藏
+      maintenance: 维护
+      action: 操作
+    add:
+      title: 新增游戏
+      success: 新增游戏成功
+      fail: 新增游戏失败
+    edit:
+      title: 编辑游戏
+      success: 编辑游戏成功
+      fail: 编辑游戏失败
+    delete:
+      title: 删除游戏
+      fail: 删除游戏失败
+      success: 删除成功
+      tip: 确定删除游戏
+    status:
+      switchTitle: 状态切换
+      success: 状态切换成功
+      fail: 状态切换失败
+      normal: 正常
+      hidden: 隐藏
+      maintenance: 维护
+    test:
+      title: 测试游戏
+      success: 测试游戏成功
+      fail: 测试游戏失败
+      tip: 是否确定测试游戏
+      gameUrlOpen: 游戏页面已打开
+    form:
+      gameIdRequired: 请输入游戏ID
+      nameRequired: 请输入游戏名称
+      tag: 备注
+      wallet_type: 钱包模式
+      game_code: 游戏Code
+      common_name: 产品缩写
+      product_code: 产品ID
+      type_id: 分类
+      currency: 支持币种
+      common_content: 游戏类型
+      currentGameType: 当前自定义游戏类型
+      modifyGameType: 修改自定义游戏类型
+      product_pic: 游戏主图
+      web_pic: 演示站游戏图
+      weigh: 热门排序
+      ranking: 排序
+      fee_rate: 宣传费率
+      prize_rate: RTP
+      pic_text: 封面文字内容
+      pic_text_status: 封面文字显示
+      recommend: 推荐
+      open: 开启
+      close: 关闭
+      upload: 上传
+      select: 选择
+      delete: 删除
+      uploadTip: 点击上传图片
+      originalCategory: 原分类
+    upload:
+      onlyImage: 只能上传图片文件！
+      sizeLimit: 图片大小不能超过 2MB！
+      success: 图片上传成功
+      fail: 图片上传失败
+    message:
+      selectOneToEdit: 请选择一条数据进行编辑！
+      selectToDelete: 请先选择要删除的数据！
+      selectToExport: 请先选择要导出的数据！
+      selectToTest: 请先选择要测试的游戏！
+      getListFail: 获取列表数据失败
+    export:
+      sheetName: 游戏列表
+      fileName: 游戏列表.xlsx
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    addSuccess: 新增游戏成功
+    addFail: 新增游戏失败
+    editSuccess: 编辑游戏成功
+    editFail: 编辑游戏失败
+  gameBrand:
+    search:
+      id: ID
+      wallet_type: 钱包类型
+      name: 产品名称
+      type: 类型
+      shortname: 缩写
+      game_count: 游戏数量
+      provider: 供应商
+      product_id: 产品ID
+      currency: 币种
+      type_code: 类型代码
+      type_description: 类型说明
+      status: 状态
+      updateTime: 更新时间
+      all: 全部
+      single: 单一模式
+      transfer: 转账模式
+      normal: 正常
+      hidden: 隐藏
+      maintenance: 维护
+    buttons:
+      reset: 重置
+      search: 搜索
+      add: 新增
+      edit: 编辑
+      delete: 删除
+      syncGames: 同步游戏
+      syncImages: 同步图片
+      test: 测试游戏
+      confirm: 确认
+      cancel: 取消
+    table:
+      id: ID
+      wallet_type: 钱包类型
+      name: 产品名称
+      name_original: 产品名称 (原厂商)
+      pic: 产品主图
+      category: 类型
+      shortname: 缩写
+      game_count: 游戏数量
+      provider: 供应商
+      product_code: 产品ID
+      currency: 币种
+      cost_price_asia: 亚洲成本价
+      cost_price: 欧洲成本价
+      market_price_asia: 亚洲市场价
+      market_price: 欧洲市场价
+      sort_no: 排序
+      type_code: 类型代码
+      type_description: 类型说明
+      updateTime: 更新时间
+      status: 状态
+      normal: 正常
+      hidden: 隐藏
+      maintenance: 维护
+      action: 操作
+    add:
+      title: 新增游戏品牌
+      success: 新增游戏品牌成功
+      fail: 新增游戏品牌失败
+      upload: 上传
+      uploadTip: 点击上传图片
+    edit:
+      title: 编辑游戏品牌
+      success: 编辑游戏品牌成功
+      fail: 编辑游戏品牌失败
+    delete:
+      title: 删除游戏品牌
+      fail: 删除游戏品牌失败
+      success: 删除成功
+      tip: 确定删除游戏品牌
+    status:
+      switchTitle: 状态切换
+      success: 状态切换成功
+      fail: 状态切换失败
+      normal: 正常
+      hidden: 隐藏
+      maintenance: 维护
+      open: 开启
+    sync:
+      games:
+        title: 同步游戏
+        success: 同步游戏成功
+        fail: 同步游戏失败
+        tip: 是否确定同步品牌
+      images:
+        title: 同步图片
+        success: 同步图片成功
+        fail: 同步图片失败
+        tip: 是否确定同步品牌
+    test:
+      title: 测试游戏
+      success: 游戏页面已打开
+      fail: 获取游戏链接失败
+      tip: 是否确定测试品牌
+    form:
+      nameRequired: 请输入产品名称
+      syncCurrency: 同步币种到游戏列表
+      open: 开启
+      close: 关闭
+    upload:
+      onlyImage: 只能上传图片文件！
+      sizeLimit: 图片大小不能超过 2MB！
+      success: 图片上传成功
+      fail: 图片上传失败
+    message:
+      selectOneToEdit: 请选择一条数据进行编辑！
+      selectToDelete: 请先选择要删除的数据！
+      selectToExport: 请先选择要导出的数据！
+      selectOneToSync: 请选择一条数据进行同步！
+      selectOneToTest: 请选择一条数据进行测试！
+      getListFail: 获取列表数据失败
+    export:
+      sheetName: 游戏品牌
+      fileName: 游戏品牌.xlsx
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    addSuccess: 新增游戏品牌成功
+    addFail: 新增游戏品牌失败
+    editSuccess: 编辑游戏品牌成功
+    editFail: 编辑游戏品牌失败
 
+# 统计管理
+statistics:
+  productStatistics:
+    tabs:
+      daily: 日报表
+      monthly: 月报表
+    search:
+      date: 日期
+      month: 月份
+      admin_id: 商户ID
+      type_name: 分类
+      provider: 厂商
+      currency: 币种
+      startDate: 开始日期
+      endDate: 结束日期
+      startMonth: 开始月份
+      endMonth: 结束月份
+      all: 全部
+    buttons:
+      search: 搜索
+      reset: 重置
+    table:
+      date: 日期
+      month: 月份
+      admin_id: 商户ID
+      type_name: 分类
+      provider: 厂商
+      currency: 币种
+      bet: 下单总额
+      win: 派彩总额
+      company_win: 输赢
+      cost_price: 成本价
+      agent_price: 代理点位
+      cost: 成本
+      agent_sale: 代理销售
+      sale: 平台销售
+      agent_profit: 代理利润
+      profit: 平台利润
+    stats:
+      totalOrderAmount: 累计下单总额
+      totalPayoutAmount: 累计派彩总额
+      totalWinLoss: 累计输赢总额
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    message:
+      getListFail: 获取列表数据失败
+  playerStatistics:
+    tabs:
+      daily: 日报表
+      monthly: 月报表
+    search:
+      date: 日期
+      month: 月份
+      admin_id: 商户ID
+      user_id: 玩家ID
+      currency: 币种
+      wallet_type: 钱包类型
+      game_name: 游戏名称
+      startDate: 开始日期
+      endDate: 结束日期
+      startMonth: 开始月份
+      endMonth: 结束月份
+      all: 全部
+      single: 单一钱包
+      transfer: 转账钱包
+    buttons:
+      search: 搜索
+      reset: 重置
+    table:
+      date: 日期
+      month: 月份
+      admin_id: 商户ID
+      user_id: 玩家ID
+      currency: 币种
+      bet: 下单总额
+      win: 派彩总额
+      company_win: 输赢
+    stats:
+      totalOrderAmount: 累计下单总额
+      totalPayoutAmount: 累计派彩总额
+      totalWinLoss: 累计输赢总额
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    message:
+      getListFail: 获取列表数据失败
+  gameStatistics:
+    tabs:
+      daily: 日报表
+      monthly: 月报表
+    search:
+      date: 日期
+      month: 月份
+      game_id: 游戏ID
+      game_name: 游戏名称
+      type_name: 分类
+      provider: 厂商
+      admin_id: 商户ID
+      admin_name: 商户名称
+      wallet_type: 钱包类型
+      startDate: 开始日期
+      endDate: 结束日期
+      startMonth: 开始月份
+      endMonth: 结束月份
+      all: 全部
+      single: 单一钱包
+      transfer: 转账钱包
+    buttons:
+      search: 搜索
+      reset: 重置
+    table:
+      date: 日期
+      month: 月份
+      game_id: 游戏ID
+      currency: 币种
+      game_name: 游戏名称
+      type_name: 分类
+      provider: 厂商
+      admin_id: 商户ID
+      admin_name: 商户名称
+      wallet_type: 钱包类型
+      bet: 下单总额
+      win: 派彩总额
+      company_win: 输赢
+      cost_price: 成本价
+      agent_price: 代理点位
+      cost: 成本
+      agent_sale: 代理销售
+      sale: 平台销售
+      agent_profit: 代理利润
+      profit: 平台利润
+    stats:
+      totalOrderAmount: 累计下单总额
+      totalPayoutAmount: 累计派彩总额
+      totalWinLoss: 累计输赢总额
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    message:
+      getListFail: 获取列表数据失败
+  merchantDailyReport:
+    search:
+      merchant_id: 商户ID
+      date: 日期
+      startDate: 开始日期
+      endDate: 结束日期
+    buttons:
+      search: 搜索
+      reset: 重置
+    table:
+      date: 日期
+      merchant_id: 商户ID
+      merchant_name: 商户名称
+      bet_amount: 投注金额
+      win_amount: 中奖金额
+      profit_loss: 盈亏
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    message:
+      getListFail: 获取列表数据失败
 
-
-system:
   attachment:
     type: 类型
     typePlaceholder: 请选择
@@ -293,3 +1324,966 @@ system:
     status: 状态
     itemName: 项目名称
     action: 操作
+
+# 商户管理
+merchant:
+  merchantList:
+    search:
+      id: ID
+      username: 商户名称
+      admin_id: 商户ID
+      type: 商户类型
+      currency: 币种
+      status: 状态
+      parent_name: 所属代理
+      pid: 关联产品ID
+      wlg_account_id: WLG账户ID
+      wallet_type: 钱包类型
+      all: 全部
+      formal: 正式
+      test: 测试
+      single: 单一模式
+      transfer: 转账模式
+      normal: 正常
+      hidden: 隐藏
+    table:
+      id: ID
+      username: 商户名称
+      admin_id: 商户ID
+      type: 商户类型
+      currency: 币种
+      status: 状态
+      parent_name: 所属代理
+      pid: 关联产品ID
+      wlg_account_id: WLG账户ID
+      transfer: 转账钱包
+      wallet_type: 钱包类型
+      deposit_balance: 保证金余额
+      credit_balance: 信用余额
+      credit_limit: 信用额度
+      update_time: 更新时间
+      action: 操作
+    buttons:
+      reset: 重置
+      search: 搜索
+      add: 新增
+      edit: 编辑
+      creditAdjust: 信用调整
+      adjustRecord: 调额记录
+      viewApiKey: API密钥
+    message:
+      getListFail: 获取列表数据失败
+  merchantAccount:
+    title: 商户账号
+    developing: 待开发...
+  merchantProduct:
+    search:
+      id: ID
+      merchant_id: 商户ID
+      merchant_name: 商户名
+      type_name: 产品
+      product_name: 产品全称
+      product_code: 产品ID
+      wallet_type: 钱包类型
+      currency: 币种
+      support_state: 钱包支持情况
+      updateTime: 更新时间
+      status: 状态
+      all: 全部
+      single: 单一模式
+      transfer: 转账模式
+      normal: 正常
+      hidden: 隐藏
+      maintenance: 维护
+      startDateTime: 开始日期时间
+      endDateTime: 结束日期时间
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 新增
+      edit: 编辑
+      delete: 删除
+      test: 测试游戏（单一钱包）
+      confirm: 确定
+      cancel: 取消
+    table:
+      id: ID
+      merchant_id: 商户ID
+      merchant_name: 商户名
+      type_name: 产品
+      product_name: 产品全称
+      product_code: 产品ID
+      wallet_type: 钱包类型
+      currency: 币种
+      game_type: 游戏类型
+      support_state: 钱包支持情况
+      price: 价格
+      agent_price: 代理价格
+      createtime: 创建时间
+      updatetime: 更新时间
+      status: 状态
+      single: 单一模式
+      transfer: 转账模式
+      normal: 正常
+      hidden: 隐藏
+      maintenance: 维护
+      action: 操作
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    message:
+      getListFail: 获取列表数据失败
+      addNotOpen: 新增功能暂未开放
+      editSuccess: 编辑成功
+      editFail: 编辑失败
+      selectOneToEdit: 请选择一条数据进行编辑！
+      selectToDelete: 请先选择要删除的数据！
+      selectToTest: 请选择一条数据进行测试！
+      selectToExport: 请先选择要导出的数据！
+      confirmDelete: 确定删除产品 {name}？
+      confirmBatchDelete: 确定删除选中的 {count} 条产品数据？
+      confirmTest: 是否确定测试产品 {name} 的游戏？
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+      testSuccess: 测试游戏成功
+      testFail: 测试游戏失败
+    add:
+      title: 新增商户产品
+    edit:
+      title: 编辑商户产品
+    delete:
+      title: 删除产品
+      batchTitle: 批量删除
+    test:
+      title: 测试游戏
+    form:
+      type_name: 产品
+      merchant_id: 商户ID
+      merchant_name: 商户名称
+      currency: 币种
+      price: 商户点位
+      agent_price: 代理点位
+      status: 状态
+      open: 开启
+      close: 关闭
+      typeNameRequired: 请输入产品
+      merchantIdRequired: 请输入商户ID
+      merchantNameRequired: 请输入商户名称
+      currencyRequired: 请输入币种
+      priceRequired: 请输入商户点位
+      agentPriceRequired: 请输入代理点位
+    export:
+      sheetName: 商户产品列表
+      fileName: 商户产品列表.xlsx
+      jsonFileName: 商户产品列表.json
+  currency:
+    search:
+      id: ID
+      name: 币种名称
+      remark: 备注
+      createTime: 创建时间
+      updateTime: 更新时间
+      status: 状态
+      all: 全部
+      normal: 正常
+      disabled: 停用
+      startDateTime: 开始日期时间
+      endDateTime: 结束日期时间
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 新增
+      edit: 编辑
+      delete: 删除
+      more: 更多
+      action1: 操作1
+      action2: 操作2
+      confirm: 确认
+      cancel: 取消
+    table:
+      id: ID
+      name: 币种
+      remark: 备注
+      difftime: 时差
+      createtime: 创建时间
+      updatetime: 更新时间
+      status: 状态
+      normal: 正常
+      disabled: 停用
+      action: 操作
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    message:
+      getListFail: 获取列表数据失败
+      addSuccess: 新增币种成功
+      addFail: 新增币种失败
+      editSuccess: 编辑币种成功
+      editFail: 编辑币种失败
+      selectOneToEdit: 请选择一条数据进行编辑！
+      selectToDelete: 请先选择要删除的数据！
+      selectToExport: 请先选择要导出的数据！
+      confirmDelete: 确定删除币种 {names}？
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+      deleteFailCount: 删除失败 {count} 条数据
+    add:
+      title: 新增币种
+    edit:
+      title: 编辑币种
+    delete:
+      title: 删除币种
+    form:
+      name: 币种名称
+      remark: 备注
+      difftime: 时差
+      status: 状态
+      open: 开启
+      close: 关闭
+      nameRequired: 请输入币种名称
+    export:
+      sheetName: 币种管理
+      fileName: 币种管理.xlsx
+      jsonFileName: 币种管理.json
+  wlgAccount:
+    search:
+      id: ID
+      wallet_type: 钱包类型
+      type: 账号类型
+      currency_id: 币种
+      dealer_name: 总社名称
+      bound_merchant: 绑定商户
+      dealer_id: 总社ID
+      agent_id: 代理ID
+      key: API密钥
+      api_host: API地址
+      dealer_account: 总社账号
+      dealer_pwd: 总社密码
+      agent_account: 代理账号
+      agent_pwd: 代理密码
+      sn_url: 总社后台
+      agent_url: 代理后台
+      remark: 备注
+      status: 状态
+      createTime: 创建时间
+      updateTime: 更新时间
+      all: 全部
+      single: 单一模式
+      transfer: 转账模式
+      formal: 正式账号
+      test: 测试账号
+      normal: 正常
+      hidden: 隐藏
+      startDateTime: 开始日期时间
+      endDateTime: 结束日期时间
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 添加
+      edit: 编辑
+      delete: 删除
+      unbind: 解绑商户
+      confirm: 确认
+      cancel: 取消
+    table:
+      id: ID
+      wallet_type: 钱包类型
+      type: 账户类型
+      currency_id: 币种
+      dealer_name: 总社名称
+      bound_merchant: 绑定商户
+      dealer_id: 总社ID
+      agent_id: 代理ID
+      key: API密钥
+      api_host: API地址
+      dealer_account: 总社账号
+      dealer_pwd: 总社密码
+      agent_account: 代理账号
+      agent_pwd: 代理密码
+      sn_url: 总社后台
+      agent_url: 代理后台
+      remark: 备注
+      createtime: 创建时间
+      updatetime: 更新时间
+      status: 状态
+      single: 单一模式
+      transfer: 转账模式
+      formal: 正式账号
+      test: 测试账号
+      normal: 正常
+      hidden: 隐藏
+      action: 操作
+      boundMerchantPlaceholder: SB商户
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    message:
+      getListFail: 获取列表数据失败
+      addSuccess: 新增WLG账号成功
+      addFail: 新增WLG账号失败
+      editSuccess: 编辑WLG账号成功
+      editFail: 编辑WLG账号失败
+      selectOneToEdit: 请选择一条数据进行编辑！
+      selectToDelete: 请先选择要删除的数据！
+      selectToExport: 请先选择要导出的数据！
+      selectToUnbind: 请先选择要解绑的数据！
+      confirmDelete: 确定删除WLG账号 {names}？
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+      confirmUnbind: 是否确定解绑商户?
+      unbindSuccess: 解绑成功
+      unbindFail: 解绑失败
+    add:
+      title: 添加
+    edit:
+      title: 编辑
+    delete:
+      title: 删除WLG账号
+    unbind:
+      title: 解绑商户
+    form:
+      wallet_type: 钱包模式
+      type: 账号类型
+      currency_id: 选择币种
+      dealer_name: 总社名称
+      dealer_id: 总社ID
+      agent_id: 代理ID
+      key: API 秘钥
+      api_host: API 地址
+      sn_url: 总社后台
+      dealer_account: 总社账号
+      dealer_pwd: 总社密码
+      agent_url: 代理后台
+      agent_account: 代理账号
+      agent_pwd: 代理密码
+      status: 状态
+      single: 单一模式
+      transfer: 转账模式
+      formal: 正式账号
+      test: 测试账号
+      open: 开启
+      close: 关闭
+      walletTypeRequired: 请选择钱包模式
+      dealerNameRequired: 请输入总社名称
+    export:
+      sheetName: WLG账号管理
+      fileName: WLG账号管理.xlsx
+      jsonFileName: WLG账号管理.json
+  pgfAccount:
+    search:
+      id: ID
+      wallet_type: 钱包类型
+      type: 账号类型
+      currency_id: 币种
+      bound_merchant: 绑定商户
+      token: Token值
+      key: API密钥
+      api_host: API地址
+      status: 状态
+      createTime: 创建时间
+      updateTime: 更新时间
+      all: 全部
+      single: 单一模式
+      transfer: 转账模式
+      formal: 正式账号
+      test: 测试账号
+      normal: 正常
+      hidden: 隐藏
+      startDateTime: 开始日期时间
+      endDateTime: 结束日期时间
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 添加
+      edit: 编辑
+      delete: 删除
+      unbind: 解绑商户
+      confirm: 确认
+      cancel: 取消
+    table:
+      id: ID
+      wallet_type: 钱包类型
+      type: 账户类型
+      currency_id: 币种
+      bound_merchant: 绑定商户
+      token: Token值
+      key: API密钥
+      api_host: API地址
+      createtime: 创建时间
+      updatetime: 更新时间
+      status: 状态
+      single: 单一模式
+      transfer: 转账模式
+      formal: 正式账号
+      test: 测试账号
+      normal: 正常
+      hidden: 隐藏
+      action: 操作
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    message:
+      getListFail: 获取列表数据失败
+      addSuccess: 新增PGF账号成功
+      addFail: 新增PGF账号失败
+      editSuccess: 编辑PGF账号成功
+      editFail: 编辑PGF账号失败
+      selectOneToEdit: 请选择一条数据进行编辑！
+      selectToDelete: 请先选择要删除的数据！
+      selectToExport: 请先选择要导出的数据！
+      selectToUnbind: 请先选择要解绑的数据！
+      confirmDelete: 确定删除PGF账号 {ids}？
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+      confirmUnbind: 是否确定解绑商户?
+      unbindSuccess: 解绑成功
+      unbindFail: 解绑失败
+    add:
+      title: 添加
+    edit:
+      title: 编辑
+    delete:
+      title: 删除PGF账号
+    unbind:
+      title: 解绑商户
+    form:
+      wallet_type: 钱包模式
+      type: 账号类型
+      currency_id: 选择币种
+      api_host: API 地址
+      token: Token值
+      key: API 秘钥
+      status: 状态
+      single: 单一模式
+      transfer: 转账模式
+      formal: 正式账号
+      test: 测试账号
+      open: 开启
+      close: 关闭
+      walletTypeRequired: 请选择钱包模式
+    export:
+      sheetName: PGF账号管理
+      fileName: PGF账号管理.xlsx
+      jsonFileName: PGF账号管理.json
+
+# 代理管理
+agent:
+  agentList:
+    search:
+      username: 代理账号
+      nickname: 昵称
+      email: 关联邮箱
+      merchant: 关联商户
+      whitelist_ip: 白名单IP
+      loginTime: 登录时间
+      createTime: 创建时间
+      status: 状态
+      all: 全部
+      normal: 正常
+      hidden: 隐藏
+    table:
+      username: 代理账号
+      nickname: 昵称
+      merchant_pro_num: 正式商户数
+      merchant_test_num: 测试商户数
+      email: 关联邮箱
+      google_verify: 谷歌验证
+      merchant: 关联商户
+      whitelist_ip: 白名单IP
+      last_login_time: 最近登录时间
+      createTime: 创建时间
+      status: 状态
+      action: 操作
+      normal: 正常
+      hidden: 隐藏
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 新增
+      edit: 编辑
+      confirm: 确认
+      cancel: 取消
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    statusSwitch:
+      title: 切换状态
+    export:
+      sheetName: 数据报表
+      fileName: 代理列表.xlsx
+      jsonFileName: 代理列表.json
+    message:
+      getListFail: 获取列表数据失败
+      dataNotFound: 操作失败：无法找到对应的数据
+      confirmSetNormal: 是否确定将代理{username}设置为正常状态?
+      confirmSetHidden: 是否确定将代理{username}设置为隐藏状态?
+      setNormalSuccess: 代理已设置为正常状态
+      setHiddenSuccess: 代理已设置为隐藏状态
+      statusSwitchFail: 代理状态切换失败
+      selectToExport: 请先选择要导出的数据！
+      addNotImplemented: 新增功能待实现
+      editNotImplemented: 编辑功能待实现
+
+# 文章管理
+article:
+  help:
+    search:
+      id: ID
+      title: 标题
+      createTime: 创建时间
+      updateTime: 更新时间
+    table:
+      id: ID
+      title: 标题
+      sort: 排序
+      createTime: 创建时间
+      updateTime: 更新时间
+      action: 操作
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 新增
+      edit: 编辑
+      delete: 删除
+      confirm: 确认
+      cancel: 取消
+      close: 关闭
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    add:
+      title: 新增帮助
+    edit:
+      title: 编辑帮助
+    delete:
+      title: 删除
+      batchTitle: 批量删除
+    form:
+      title: 标题
+      content: 内容
+      weigh: 排序
+      contentPlaceholder: 请输入内容
+      titleRequired: 请输入标题
+      contentRequired: 请输入内容
+      weighRequired: 请输入排序
+      weighMin: 排序必须大于等于0
+    message:
+      getListFail: 获取列表数据失败
+      selectOneToEdit: 请选择一条数据进行编辑
+      addSuccess: 新增成功
+      addFail: 新增失败
+      editSuccess: 编辑成功
+      editFail: 编辑失败
+      submitFail: 提交失败
+      selectToDelete: 请选择要删除的数据
+      confirmDelete: 确定删除标题为"{title}"的数据吗？
+      confirmBatchDelete: 确定删除选中的 {count} 条数据吗？
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+
+# 权限管理
+permission:
+  accountManagement:
+    search:
+      id: ID
+      username: 用户名
+      merchant_id: 商户ID
+      role_group: 角色组
+      superior: 上级
+      loginTime: 登录时间
+      createTime: 创建时间
+      status: 状态
+      all: 全部
+      none: 无
+      normal: 正常
+      disabled: 停用
+    table:
+      id: ID
+      username: 用户名
+      merchant_id: 商户ID
+      role_group: 角色组
+      superior: 上级
+      email: 关联邮箱
+      google_verify: 谷歌验证
+      whitelist_ip: 白名单IP
+      remark: 备注
+      loginTime: 登录时间
+      createTime: 创建时间
+      status: 状态
+      none: 无
+      normal: 正常
+      disabled: 停用
+      enabled: 启用
+      action: 操作
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 添加
+      edit: 编辑
+      delete: 删除
+      confirm: 确定
+      cancel: 取消
+      refresh: 刷新
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    add:
+      title: 添加账号
+    edit:
+      title: 编辑账号
+    delete:
+      title: 删除确认
+      batchTitle: 批量删除
+    form:
+      role_group: 角色组
+      superior: 上级
+      username: 用户名
+      nickname: 昵称
+      email: 关联邮箱
+      password: 密码
+      type: 账号类型
+      wallet_type: 钱包类型
+      version: API版本
+      currency: 币种
+      type_ids: 开通游戏
+      google_verify: 谷歌验证
+      whitelist_ip: API 白名单
+      remark: 备注
+      status: 状态
+      formal: 正式账号
+      test: 测试账号
+      single: 单一
+      transfer: 转账
+      enabled: 开启
+      disabled: 关闭
+      normal: 正常
+      secret: 密钥
+      type_idsPlaceholder: 请选择游戏品牌
+      roleGroupRequired: 请选择角色组
+      usernameRequired: 请输入用户名
+      nicknameRequired: 请输入昵称
+      emailFormat: 请输入正确的邮箱格式
+      passwordRequired: 请输入密码
+      passwordLength: 密码长度必须在6-30位之间
+      whitelistTip: 多个白名单以英文逗号隔开
+    message:
+      getListFail: 获取列表数据失败
+      selectOneToEdit: 请选择一条数据进行编辑
+      addSuccess: 新增成功
+      addFail: 新增失败
+      editSuccess: 编辑成功
+      editFail: 编辑失败
+      submitFail: 提交失败
+      selectToDelete: 请先选择要删除的数据！
+      onlyDeleteDisabled: 只能删除停用状态的账号
+      confirmDelete: 确定删除账号"{username}"吗？
+      confirmBatchDelete: 确定删除选中的 {count} 条账号数据？
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+      secretRefreshed: 密钥已刷新
+      qrCodeNotImplemented: 二维码功能待实现
+  roleManagement:
+    table:
+      id: ID
+      parent: 父级
+      name: 名称
+      status: 状态
+      none: 无
+      normal: 正常
+      disabled: 停用
+      action: 操作
+    buttons:
+      add: 新增
+      edit: 编辑
+      delete: 删除
+      confirm: 确定
+      cancel: 取消
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      export: 导出
+    add:
+      title: 添加角色
+    edit:
+      title: 编辑角色
+    delete:
+      title: 删除确认
+      batchTitle: 批量删除确认
+    form:
+      parent: 父级
+      name: 名称
+      permissions: 权限
+      none: 无
+      checkAll: 选中全部
+      expandAll: 展开全部
+      view: 查看
+      add: 添加
+      edit: 编辑
+      delete: 删除
+      nameRequired: 请输入名称
+    message:
+      getListFail: 获取列表数据失败
+      selectOneToEdit: 请选择一条数据进行编辑
+      addSuccess: 新增成功
+      addFail: 新增失败
+      editSuccess: 编辑成功
+      editFail: 编辑失败
+      submitFail: 提交失败
+      selectToDelete: 请选择要删除的数据
+      confirmDelete: 确定删除角色"{name}"吗？
+      confirmBatchDelete: 确定删除选中的 {count} 条数据吗？
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+      getMenuListFail: 获取菜单列表失败
+      getPermissionTreeFail: 获取权限树数据失败
+  operationLog:
+    search:
+      id: ID
+      username: 用户名
+      title: 标题
+      content: 内容
+      url: URL
+      ip: IP
+      createTime: 创建时间
+    table:
+      id: ID
+      username: 用户名
+      title: 标题
+      content: 详情
+      url: URL
+      ip: IP
+      browser: 浏览器
+      createTime: 创建时间
+      action: 操作
+    buttons:
+      search: 搜索
+      reset: 重置
+      detail: 详情
+      delete: 删除
+      confirm: 确定
+      cancel: 取消
+      close: 关闭
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    delete:
+      title: 删除
+      batchTitle: 批量删除
+    detail:
+      title: 操作日志详情
+      id: ID
+      username: 用户名
+      event: 事件
+      content: 内容
+      url: URL
+      ip: IP
+      browser: 浏览器
+      createTime: 创建时间
+    event:
+      addAccount: 添加账号
+      changePassword: 修改密码
+      changeGoogle: 修改谷歌验证
+      addMerchant: 增加商户
+      maintainGame: 维护游戏
+      disableGame: 停用游戏
+    message:
+      getListFail: 获取列表数据失败
+      selectToDelete: 请选择要删除的数据
+      confirmDelete: 确定删除ID为 {id} 的操作日志吗？
+      confirmBatchDelete: 确定删除选中的 {count} 条数据吗？
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+  gameTestLog:
+    search:
+      id: ID
+      shortname: 产品缩写
+      type_name: 产品名称
+      wallet_type: 钱包类型
+      currency: 币种
+      game_id: 游戏ID
+      merchant_id: 商户ID
+      username: 用户
+      createTime: 创建时间
+      status: 状态
+      all: 全部
+      single: 单一钱包
+      transfer: 转账钱包
+      normal: 正常
+      disabled: 停用
+    table:
+      id: ID
+      wallet_type: 钱包类型
+      currency: 币种
+      game_id: 游戏ID
+      error_message: API报错信息
+      type_id: 产品分类ID
+      type_name: 产品名称
+      shortname: 产品缩写
+      merchant_id: 商户ID
+      username: 用户
+      createTime: 创建时间
+      status: 状态
+      single: 单一钱包
+      transfer: 转账钱包
+      normal: 正常
+      disabled: 停用
+      action: 操作
+    buttons:
+      search: 搜索
+      reset: 重置
+      detail: 详情
+      close: 关闭
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    detail:
+      title: 测试日志详情
+      backendRequest: 后台请求信息
+      apiRequest: API请求信息
+      requestUrl: 请求地址
+      promptMessage: 提示信息
+      gameLink: 游戏链接
+      requestHeader: 请求头
+      requestBody: 请求体
+      requestResult: 请求结果
+      apiRequestUrl: API请求地址
+      apiRequestParams: API请求参数
+      apiRequestResult: API请求结果
+    message:
+      getListFail: 获取列表数据失败
+      getDetailFail: 获取详情失败
+  menuManagement:
+    search:
+      id: ID
+      title: 标题
+      name: 名称
+      status: 状态
+      ismenu: 菜单开关
+      all: 全部
+      normal: 正常
+      hidden: 隐藏
+      enabled: 开启
+      disabled: 关闭
+    table:
+      id: ID
+      title: 标题
+      icon: ICON
+      name: 名称
+      weigh: 排序
+      status: 状态
+      ismenu: 菜单开关
+      normal: 正常
+      hidden: 隐藏
+      enabled: 开启
+      disabled: 关闭
+      action: 操作
+    buttons:
+      search: 搜索
+      reset: 重置
+      add: 新增
+      edit: 编辑
+      delete: 删除
+      detail: 详情
+      confirm: 确定
+      cancel: 取消
+      close: 关闭
+      statusSwitch: 状态切换
+    toolbar:
+      density: 密度
+      columnSettings: 列设置
+      hideSearch: 隐藏搜索
+      showSearch: 显示搜索
+      export: 导出
+    add:
+      title: 新增菜单
+    edit:
+      title: 编辑菜单
+    delete:
+      title: 删除确认
+      batchTitle: 批量删除
+    detail:
+      title: 菜单详情
+      id: ID
+      # title: 标题
+      name: 名称
+      icon: 图标
+      url: URL
+      weigh: 排序
+      status: 状态
+      ismenu: 菜单开关
+      enabled: 开启
+      disabled: 关闭
+    statusSwitch:
+      title: 状态切换
+      status: 状态
+      normal: 正常
+      hidden: 隐藏
+    form:
+      ismenu: 菜单开关
+      remark: 备注
+      parent: 父级
+      name: 名称
+      title: 标题
+      url: URL
+      icon: 图标
+      condition: Condition
+      menutype: 菜单类型
+      extend: Extend
+      weigh: 排序
+      status: 状态
+      none: 无
+      enabled: 开启
+      disabled: 关闭
+      normal: 正常
+      hidden: 隐藏
+      select: 选择
+      addtabs: Add tabs
+      dialog: Dialog
+      ajax: Ajax
+      blank: Blank
+      nameRequired: 请输入名称
+      titleRequired: 请输入标题
+      weighRequired: 请输入排序
+    message:
+      getListFail: 获取列表数据失败
+      selectOneToEdit: 请选择一条数据进行编辑
+      addSuccess: 新增成功
+      addFail: 新增失败
+      editSuccess: 编辑成功
+      editFail: 编辑失败
+      submitFail: 提交失败
+      selectToDelete: 请先选择要删除的数据！
+      confirmDelete: 确定删除菜单"{title}"吗？
+      confirmBatchDelete: 确定删除选中的 {count} 条菜单数据？\n菜单：{titles}
+      deleteSuccess: 删除成功
+      deleteFail: 删除失败
+      selectToSwitchStatus: 请选择要切换状态的数据
+      statusSwitchSuccess: 状态切换成功
+      statusSwitchFail: 状态切换失败

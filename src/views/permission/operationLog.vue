@@ -6,7 +6,11 @@ defineOptions({
 });
 import { type PlusColumn, PlusSearch, PlusTable, PlusPagination } from "plus-pro-components";
 import { useTable } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
+
+// 国际化
+const { t } = useI18n();
 import { ElMessageBox, ElTooltip, ElButton, ElDialog, ElForm, ElFormItem, ElInput } from "element-plus";
 import {
   getOperationLogList,
@@ -38,65 +42,72 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("permission.operationLog.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: t("permission.operationLog.search.id")
     }))
   },
   {
     label: "用户名",
+    renderLabel: () => t("permission.operationLog.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入用户名"
+      placeholder: t("permission.operationLog.search.username")
     }))
   },
   {
     label: "标题",
+    renderLabel: () => t("permission.operationLog.search.title"),
     prop: "title",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入标题"
+      placeholder: t("permission.operationLog.search.title")
     }))
   },
   {
     label: "内容",
+    renderLabel: () => t("permission.operationLog.search.content"),
     prop: "content",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入内容（模糊匹配）"
+      placeholder: t("permission.operationLog.search.content")
     }))
   },
   {
     label: "URL",
+    renderLabel: () => t("permission.operationLog.search.url"),
     prop: "url",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入URL"
+      placeholder: t("permission.operationLog.search.url")
     }))
   },
   {
     label: "IP",
+    renderLabel: () => t("permission.operationLog.search.ip"),
     prop: "ip",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入IP"
+      placeholder: t("permission.operationLog.search.ip")
     }))
   },
   {
     label: "创建时间",
+    renderLabel: () => t("permission.operationLog.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -106,7 +117,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -116,7 +127,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -127,7 +138,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -138,7 +149,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -148,7 +159,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -197,12 +208,12 @@ const getEventName = (title: string | undefined): string => {
   if (!title) return "-";
   // 根据title判断事件类型
   const titleLower = title.toLowerCase();
-  if (titleLower.includes("添加账号") || titleLower.includes("新增账号")) return "添加账号";
-  if (titleLower.includes("修改密码")) return "修改密码";
-  if (titleLower.includes("修改谷歌") || titleLower.includes("谷歌验证")) return "修改谷歌验证";
-  if (titleLower.includes("增加商户") || titleLower.includes("新增商户")) return "增加商户";
-  if (titleLower.includes("维护游戏")) return "维护游戏";
-  if (titleLower.includes("停用游戏")) return "停用游戏";
+  if (titleLower.includes("添加账号") || titleLower.includes("新增账号")) return t("permission.operationLog.event.addAccount");
+  if (titleLower.includes("修改密码")) return t("permission.operationLog.event.changePassword");
+  if (titleLower.includes("修改谷歌") || titleLower.includes("谷歌验证")) return t("permission.operationLog.event.changeGoogle");
+  if (titleLower.includes("增加商户") || titleLower.includes("新增商户")) return t("permission.operationLog.event.addMerchant");
+  if (titleLower.includes("维护游戏")) return t("permission.operationLog.event.maintainGame");
+  if (titleLower.includes("停用游戏")) return t("permission.operationLog.event.disableGame");
   // 如果无法匹配，直接返回title
   return title;
 };
@@ -211,6 +222,7 @@ const getEventName = (title: string | undefined): string => {
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("permission.operationLog.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -219,6 +231,7 @@ const tableConfig: any = ref([
   },
   {
     label: "用户名",
+    renderHeader: () => t("permission.operationLog.table.username"),
     prop: "username",
     tableColumnProps: {
       align: "center"
@@ -227,6 +240,7 @@ const tableConfig: any = ref([
   },
   {
     label: "标题",
+    renderHeader: () => t("permission.operationLog.table.title"),
     prop: "title",
     render: (value: string) => {
       return getEventName(value);
@@ -238,6 +252,7 @@ const tableConfig: any = ref([
   },
   {
     label: "详情",
+    renderHeader: () => t("permission.operationLog.table.content"),
     prop: "content",
     render: (value: string) => {
       if (!value) return "-";
@@ -266,6 +281,7 @@ const tableConfig: any = ref([
   },
   {
     label: "URL",
+    renderHeader: () => t("permission.operationLog.table.url"),
     prop: "url",
     render: (value: string) => {
       if (!value) return "-";
@@ -293,6 +309,7 @@ const tableConfig: any = ref([
   },
   {
     label: "IP",
+    renderHeader: () => t("permission.operationLog.table.ip"),
     prop: "ip",
     tableColumnProps: {
       align: "center"
@@ -301,6 +318,7 @@ const tableConfig: any = ref([
   },
   {
     label: "浏览器",
+    renderHeader: () => t("permission.operationLog.table.browser"),
     prop: "useragent",
     render: (value: string) => {
       if (!value) return "-";
@@ -321,6 +339,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("permission.operationLog.table.createTime"),
     prop: "createtime",
     width: 160,
     tableColumnProps: {
@@ -332,7 +351,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "详情",
+    text: () => t("permission.operationLog.buttons.detail"),
     code: "detail",
     props: {
       type: "primary",
@@ -344,7 +363,7 @@ buttons.value = [
     }
   },
   {
-    text: "删除",
+    text: () => t("permission.operationLog.buttons.delete"),
     code: "delete",
     props: {
       type: "danger",
@@ -388,11 +407,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("permission.operationLog.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("permission.operationLog.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -457,11 +476,11 @@ const handleCloseDetailDialog = () => {
 const handleDeleteRow = async (row: TableRow) => {
   try {
     await ElMessageBox.confirm(
-      `确定删除ID为 ${row.id} 的操作日志吗？`,
-      "删除",
+      t("permission.operationLog.message.confirmDelete", { id: row.id }),
+      t("permission.operationLog.delete.title"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("permission.operationLog.buttons.confirm"),
+        cancelButtonText: t("permission.operationLog.buttons.cancel"),
         type: "warning"
       }
     );
@@ -473,12 +492,12 @@ const handleDeleteRow = async (row: TableRow) => {
     if (index !== -1) {
       tableData.value.splice(index, 1);
       total.value -= 1;
-      message("删除成功", { type: "success" });
+      message(t("permission.operationLog.message.deleteSuccess"), { type: "success" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("permission.operationLog.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -486,17 +505,17 @@ const handleDeleteRow = async (row: TableRow) => {
 // 批量删除
 const handleBatchDelete = async () => {
   if (multipleSelection.value.length === 0) {
-    message("请选择要删除的数据", { type: "warning" });
+    message(t("permission.operationLog.message.selectToDelete"), { type: "warning" });
     return;
   }
   
   try {
     await ElMessageBox.confirm(
-      `确定删除选中的 ${multipleSelection.value.length} 条数据吗？`,
-      "删除",
+      t("permission.operationLog.message.confirmBatchDelete", { count: multipleSelection.value.length }),
+      t("permission.operationLog.delete.batchTitle"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("permission.operationLog.buttons.confirm"),
+        cancelButtonText: t("permission.operationLog.buttons.cancel"),
         type: "warning"
       }
     );
@@ -508,11 +527,11 @@ const handleBatchDelete = async () => {
     tableData.value = tableData.value.filter(item => !ids.includes(item.id));
     total.value -= multipleSelection.value.length;
     multipleSelection.value = [];
-    message("删除成功", { type: "success" });
+    message(t("permission.operationLog.message.deleteSuccess"), { type: "success" });
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除失败:", error);
-      message(error?.message || "删除失败", { type: "error" });
+      message(error?.message || t("permission.operationLog.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -545,11 +564,11 @@ getList();
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="100"
         label-position="right"
         :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
+        :searchText="t('permission.operationLog.buttons.search')"
+        :resetText="t('permission.operationLog.buttons.reset')"
         @search="handleSearch"
         @reset="handleRest"
       />
@@ -567,7 +586,7 @@ getList();
         :action-bar="{
           buttons,
           width: '150px',
-          label: '操作'
+          label: t('permission.operationLog.table.action')
         }"
         @selection-change="handleSelectionChange"
         width="100%"
@@ -582,12 +601,12 @@ getList();
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t('permission.operationLog.buttons.delete') }}</span>
           </el-button>
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('permission.operationLog.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -598,7 +617,7 @@ getList();
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('permission.operationLog.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -611,7 +630,7 @@ getList();
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('permission.operationLog.toolbar.hideSearch') : t('permission.operationLog.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -631,7 +650,7 @@ getList();
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('permission.operationLog.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"
@@ -662,7 +681,7 @@ getList();
     <!-- 详情对话框 -->
     <el-dialog
       v-model="showDetailDialog"
-      title="操作日志详情"
+      :title="t('permission.operationLog.detail.title')"
       width="800px"
       :close-on-click-modal="false"
       @close="handleCloseDetailDialog"
@@ -672,35 +691,35 @@ getList();
         label-width="100px"
         label-position="right"
       >
-        <el-form-item label="ID">
+        <el-form-item :label="t('permission.operationLog.detail.id')">
           <el-input
             v-model="detailFormData.id"
             disabled
             placeholder="-"
           />
         </el-form-item>
-        <el-form-item label="用户名">
+        <el-form-item :label="t('permission.operationLog.detail.username')">
           <el-input
             v-model="detailFormData.username"
             disabled
             placeholder="-"
           />
         </el-form-item>
-        <el-form-item label="事件">
+        <el-form-item :label="t('permission.operationLog.detail.event')">
           <el-input
             v-model="detailFormData.event"
             disabled
             placeholder="-"
           />
         </el-form-item>
-        <el-form-item label="标题">
+        <el-form-item :label="t('permission.operationLog.detail.title')">
           <el-input
             v-model="detailFormData.title"
             disabled
             placeholder="-"
           />
         </el-form-item>
-        <el-form-item label="内容">
+        <el-form-item :label="t('permission.operationLog.detail.content')">
           <el-input
             v-model="detailFormData.content"
             type="textarea"
@@ -710,28 +729,28 @@ getList();
             style="white-space: pre-wrap; word-break: break-all;"
           />
         </el-form-item>
-        <el-form-item label="URL">
+        <el-form-item :label="t('permission.operationLog.detail.url')">
           <el-input
             v-model="detailFormData.url"
             disabled
             placeholder="-"
           />
         </el-form-item>
-        <el-form-item label="IP">
+        <el-form-item :label="t('permission.operationLog.detail.ip')">
           <el-input
             v-model="detailFormData.ip"
             disabled
             placeholder="-"
           />
         </el-form-item>
-        <el-form-item label="浏览器">
+        <el-form-item :label="t('permission.operationLog.detail.browser')">
           <el-input
             v-model="detailFormData.useragent"
             disabled
             placeholder="-"
           />
         </el-form-item>
-        <el-form-item label="创建时间">
+        <el-form-item :label="t('permission.operationLog.detail.createTime')">
           <el-input
             v-model="detailFormData.createtime"
             disabled
@@ -741,7 +760,7 @@ getList();
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseDetailDialog">关闭</el-button>
+          <el-button @click="handleCloseDetailDialog">{{ t('permission.operationLog.buttons.close') }}</el-button>
         </div>
       </template>
     </el-dialog>

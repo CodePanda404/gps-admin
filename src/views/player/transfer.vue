@@ -72,7 +72,7 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
-    renderLabel: () => t("player.search.id"),
+    renderLabel: () => t("player.transfer.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
@@ -81,7 +81,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "用户名",
-    renderLabel: () => t("player.search.username"),
+    renderLabel: () => t("player.transfer.search.username"),
     prop: "username",
     valueType: "copy",
     fieldProps: computed(() => ({
@@ -90,7 +90,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "商户ID",
-    renderLabel: () => t("player.search.admin_id"),
+    renderLabel: () => t("player.transfer.search.admin_id"),
     prop: "admin_id",
     valueType: "copy",
     fieldProps: computed(() => ({
@@ -99,7 +99,7 @@ const searchColumns: PlusColumn[] = [
   },
    {
     label: "币种",
-    renderLabel: () => t("player.search.currency"),
+    renderLabel: () => t("player.transfer.search.currency"),
     prop: "currency_id",
     valueType: "select",
     fieldProps: computed(() => ({
@@ -108,7 +108,7 @@ const searchColumns: PlusColumn[] = [
     })),
     options: computed(() => [
       {
-        label: t("player.search.all"),
+        label: t("player.transfer.search.all"),
         value: ""
       },
       ...currencyOptions.value.map(item => ({
@@ -119,7 +119,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "状态",
-    renderLabel: () => t("player.search.status"),
+    renderLabel: () => t("player.transfer.search.status"),
     prop: "status",
     valueType: "select",
     fieldProps: computed(() => ({
@@ -127,25 +127,25 @@ const searchColumns: PlusColumn[] = [
     })),
     options: [
       {
-        label: t("player.search.all"),
-        renderLabel: () => t("player.search.all"),
+        label: t("player.transfer.search.all"),
+        renderLabel: () => t("player.transfer.search.all"),
         value: ""
       },
       {
-        label: t("player.search.disabled"),
-        renderLabel: () => t("player.search.disabled"),
+        label: t("player.transfer.search.disabled"),
+        renderLabel: () => t("player.transfer.search.disabled"),
         value: "hidden"
       },
       {
-        label: t("player.search.normal"),
-        renderLabel: () => t("player.search.normal"),
+        label: t("player.transfer.search.normal"),
+        renderLabel: () => t("player.transfer.search.normal"),
         value: "normal"
       }
     ]
   },
   {
     label: "登录IP",
-    renderLabel: () => t("player.search.login_ip"),
+    renderLabel: () => t("player.transfer.search.login_ip"),
     prop: "login_ip",
     valueType: "copy",
     fieldProps: computed(() => ({
@@ -154,7 +154,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "注册IP",
-    renderLabel: () => t("player.search.register_ip"),
+    renderLabel: () => t("player.transfer.search.register_ip"),
     prop: "register_ip",
     valueType: "copy",
     fieldProps: computed(() => ({
@@ -163,7 +163,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "登录时间",
-    renderLabel: () => t("player.search.login_time"),
+    renderLabel: () => t("player.transfer.search.login_time"),
     prop: "loginTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
@@ -240,7 +240,7 @@ const searchColumns: PlusColumn[] = [
   },
   {
     label: "注册时间",
-    renderLabel: () => t("player.search.register_time"),
+    renderLabel: () => t("player.transfer.search.register_time"),
     prop: "registerTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
@@ -358,7 +358,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    renderHeader: () => t("player.table.id"),
+    renderHeader: () => t("player.transfer.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -366,7 +366,7 @@ const tableConfig: any = ref([
   },
   {
     label: "用户名",
-    renderHeader: () => t("player.table.username"),
+    renderHeader: () => t("player.transfer.table.username"),
     prop: "username",
     minWidth: "200",
     tableColumnProps: {
@@ -375,7 +375,7 @@ const tableConfig: any = ref([
   },
   {
     label: "余额",
-    renderHeader: () => t("player.table.balance"),
+    renderHeader: () => t("player.transfer.table.balance"),
     prop: "money",
     tableColumnProps: {
       align: "center"
@@ -383,7 +383,7 @@ const tableConfig: any = ref([
   },
   {
     label: "币种",
-    renderHeader: () => t("player.table.currency"),
+    renderHeader: () => t("player.transfer.table.currency"),
     prop: "currency",
     width: 100,
     tableColumnProps: {
@@ -392,7 +392,7 @@ const tableConfig: any = ref([
   },
   {
     label: "商户ID",
-    renderHeader: () => t("player.table.admin_id"),
+    renderHeader: () => t("player.transfer.table.admin_id"),
     prop: "admin_id",
     width: 130,
     tableColumnProps: {
@@ -401,7 +401,7 @@ const tableConfig: any = ref([
   },
   {
     label: "累计投注",
-    renderHeader: () => t("player.table.bet_all"),
+    renderHeader: () => t("player.transfer.table.bet_all"),
     prop: "bet_all",
     width: "100",
     tableColumnProps: {
@@ -410,16 +410,16 @@ const tableConfig: any = ref([
   },
   {
     label: "累计派彩",
-    renderHeader: () => t("player.table.win_all"),
+    renderHeader: () => t("player.transfer.table.win_all"),
     prop: "win_all",
-    width: "100",
+    width: "110",
     tableColumnProps: {
       align: "center"
     }
   },
   {
     label: "累计输赢",
-    renderHeader: () => t("player.table.company_win_all"),
+    renderHeader: () => t("player.transfer.table.company_win_all"),
     prop: "company_win_all",
     width: "130",
     tableColumnProps: {
@@ -428,7 +428,7 @@ const tableConfig: any = ref([
   },
   {
     label: "登录时间",
-    renderHeader: () => t("player.table.login_time"),
+    renderHeader: () => t("player.transfer.table.login_time"),
     prop: "logintime",
     minWidth: "160",
     tableColumnProps: {
@@ -437,7 +437,7 @@ const tableConfig: any = ref([
   },
   {
     label: "登录IP",
-    renderHeader: () => t("player.table.login_ip"),
+    renderHeader: () => t("player.transfer.table.login_ip"),
     prop: "loginip",
     minWidth: "140",
     tableColumnProps: {
@@ -446,7 +446,7 @@ const tableConfig: any = ref([
   },
   {
     label: "注册时间",
-    renderHeader: () => t("player.table.register_time"),
+    renderHeader: () => t("player.transfer.table.register_time"),
     prop: "jointime",
     width: "160",
     tableColumnProps: {
@@ -455,7 +455,7 @@ const tableConfig: any = ref([
   },
   {
     label: "注册IP",
-    renderHeader: () => t("player.table.register_ip"),
+    renderHeader: () => t("player.transfer.table.register_ip"),
     prop: "joinip",
     width: "140",
     tableColumnProps: {
@@ -464,7 +464,7 @@ const tableConfig: any = ref([
   },
   {
     label: "状态",
-    renderHeader: () => t("player.table.status"),
+    renderHeader: () => t("player.transfer.table.status"),
     prop: "status",
     valueType: "switch",
     editable: true,
@@ -482,7 +482,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: () => t("player.table.depWithDrawDetail"),
+    text: () => t("player.transfer.table.depWithDrawDetail"),
     code: "depWithDrawDetail",
     props: {
       type: "primary"
@@ -499,7 +499,7 @@ buttons.value = [
     }
   },
   {
-    text: () => t("player.table.betDetail"),
+    text: () => t("player.transfer.table.betDetail"),
     code: "betDetail",
     props: {
       type: "primary"
@@ -536,7 +536,7 @@ const handleStatusChange = async (params: {
   // 检查 row 是否存在
   if (!row) {
     console.error("行数据不存在");
-    message("操作失败：无法找到对应的数据", { type: "error" });
+    message(t("player.transfer.message.dataNotFound"), { type: "error" });
     return;
   }
 
@@ -549,21 +549,21 @@ const handleStatusChange = async (params: {
 
   // 提示文字
   const confirmMessage = value == 'normal'
-    ? `是否确定将玩家${row.username}解锁?`
-    : `是否确定将玩家${row.username}锁定?`
+    ? t("player.transfer.message.confirmUnlock", { username: row.username })
+    : t("player.transfer.message.confirmLock", { username: row.username })
 
   // 查找当前行在 tableData 中的索引
   const index = tableData.value.findIndex(item => item.id === row.id);
   if (index === -1) {
-    message("操作失败：无法找到对应的数据", { type: "error" });
+    message(t("player.transfer.message.dataNotFound"), { type: "error" });
     return;
   }
 
   try {
     // 弹出确认对话框
-    await ElMessageBox.confirm(confirmMessage, "切换状态", {
-      confirmButtonText: "确认",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("player.transfer.statusSwitch.title"), {
+      confirmButtonText: t("player.transfer.buttons.confirm"),
+      cancelButtonText: t("player.transfer.buttons.cancel"),
       draggable: true
     });
 
@@ -573,7 +573,7 @@ const handleStatusChange = async (params: {
     });
 
     if (res.code === 0) {
-      message(value == 'normal' ? "玩家已解锁" : "玩家已锁定", {
+      message(value == 'normal' ? t("player.transfer.message.unlockSuccess") : t("player.transfer.message.lockSuccess"), {
         type: "success"
       });
       // 更新本地数据 - 通过更新 tableData 中对应的项来触发响应式更新
@@ -587,7 +587,7 @@ const handleStatusChange = async (params: {
         ...tableData.value[index],
           status: originalStatus
         };
-      message(res.msg || "玩家状态切换失败", { type: "error" });
+      message(res.msg || t("player.transfer.message.statusSwitchFail"), { type: "error" });
     }
   } catch (error: any) {
     //取消或出错恢复 - 通过更新 tableData 中对应的项来触发响应式更新
@@ -597,7 +597,7 @@ const handleStatusChange = async (params: {
       };
     if (error !== "cancel") {
       console.error("状态切换失败:", error);
-      message(error?.message || "状态切换失败", { type: "error" });
+      message(error?.message || t("player.transfer.message.statusSwitchFail"), { type: "error" });
     }
   }
 };
@@ -640,7 +640,7 @@ const getList = async () => {
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("player.transfer.message.getListFail"), { type: "error" });
     tableData.value = [];
   } finally {
     loadingStatus.value = false;
@@ -659,7 +659,7 @@ const handlePageChange = (val: any) => {
 // 导出等功能暂未对接真实API
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("player.transfer.message.selectToExport"), { type: "warning" });
     return;
   }
   const exportTitles = tableConfig.value.map(col => col.renderHeader());
@@ -669,7 +669,7 @@ const exportExcel = () => {
     return exportProps.map(prop => {
       // 处理特殊字段
       if (prop === "status") {
-        return item.status === "normal" ? "正常" : "禁用";
+        return item.status === "normal" ? t("player.transfer.table.normal") : t("player.transfer.table.disabled");
       }
       return item[prop] ?? "";
     });
@@ -678,16 +678,16 @@ const exportExcel = () => {
   res.unshift(exportTitles);
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "数据报表";
+  const sheetName = t("player.transfer.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `转账模式玩家.xlsx`;
+  const fileName = t("player.transfer.export.fileName");
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("player.transfer.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -695,7 +695,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "转账模式玩家.json";
+  a.download = t("player.transfer.export.jsonFileName");
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -710,11 +710,11 @@ const exportJson = () => {
     <PlusSearch
       v-model="searchData"
       :columns="searchColumns"
-      label-width="80"
+      label-width="110"
       label-position="right"
       :has-unfold="false"
-      :searchText="t('player.buttons.search')"
-      :resetText="t('player.buttons.reset')"
+      :searchText="t('player.transfer.buttons.search')"
+      :resetText="t('player.transfer.buttons.reset')"
       @search="handleSearch"
       @reset="handleRest"
     />
@@ -729,8 +729,8 @@ const exportJson = () => {
       :is-selection="true"
       :action-bar="{
         buttons,
-        width: '220px',
-        label: t('player.table.action')
+        width: '230px',
+        label: t('player.transfer.table.action')
       }"
         width="100%"
         height="90%"
@@ -739,7 +739,7 @@ const exportJson = () => {
     >
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('player.transfer.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style="margin-right: 15px; cursor: pointer; outline: none"
@@ -750,7 +750,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('player.transfer.toolbar.columnSettings')" placement="top">
           <el-icon
               :size="18"
               style="margin-right: 5px; cursor: pointer; outline: none"
@@ -763,7 +763,7 @@ const exportJson = () => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('player.transfer.toolbar.hideSearch') : t('player.transfer.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -779,7 +779,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('player.transfer.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -795,10 +795,10 @@ const exportJson = () => {
           <template #dropdown>
             <el-dropdown-menu>
               <el-dropdown-item class="export-active" @click="exportJson"
-                >Json</el-dropdown-item
+                >{{ t("player.transfer.export.json") }}</el-dropdown-item
               >
                     <el-dropdown-item @click="exportExcel"
-                      >Excel</el-dropdown-item
+                      >{{ t("player.transfer.export.excel") }}</el-dropdown-item
                     >
             </el-dropdown-menu>
           </template>

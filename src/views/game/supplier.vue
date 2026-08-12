@@ -211,7 +211,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 const tableConfig: any = ref([
   {
     label: "ID",
-    renderHeader: () => t("player.table.id"),
+    renderHeader: () => t("game.supplier.table.id"),
     prop: "id",
     tableColumnProps: {
       align: "center"
@@ -292,7 +292,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: t("game.supplier.buttons.edit"),
+    text: () => t("game.supplier.buttons.edit"),
     code: "edit",
     props: {
       type: "primary"
@@ -318,30 +318,21 @@ const handleStatusChange = async (params: any) => {
     return;
   }
 
-  if (!typedRow) {
-    message("操作失败：无法找到对应的数据", { type: "error" });
-    return;
-  }
-
   // value 是切换后的状态值（"1" 或 "-1"）
   const originalStatus = value === "1" ? "-1" : "1";
   const isDisabling = value === "-1";
 
   const confirmMessage = isDisabling
-    ? `是否确定将供应商${typedRow.name}隐藏?`
-    : `是否确定将供应商${typedRow.name}恢复正常?`;
+    ? t("game.supplier.status.confirmHide", { name: typedRow.name })
+    : t("game.supplier.status.confirmRestore", { name: typedRow.name });
 
   // 查找当前行在 tableData 中的索引
   const index = tableData.value.findIndex(item => item.id === typedRow.id);
-  if (index === -1) {
-    message("操作失败：无法找到对应的数据", { type: "error" });
-    return;
-  }
 
   try {
-    await ElMessageBox.confirm(confirmMessage, "切换状态", {
-      confirmButtonText: "确认",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(confirmMessage, t("game.supplier.status.switchTitle"), {
+      confirmButtonText: t("game.supplier.buttons.confirm"),
+      cancelButtonText: t("game.supplier.buttons.cancel"),
       draggable: true
     });
 
@@ -349,11 +340,11 @@ const handleStatusChange = async (params: any) => {
     // const res = await updateSupplierStatus({ id: typedRow.id, status: value });
     const res = {
       code: 0,
-      msg: "状态切换成功"
+      msg: t("game.supplier.status.success")
     };
 
     if (res.code === 0) {
-      message(isDisabling ? "已隐藏" : "已恢复正常", {
+      message(isDisabling ? t("game.supplier.status.hidden") : t("game.supplier.status.restored"), {
         type: "success"
       });
       // 更新本地数据
@@ -367,7 +358,7 @@ const handleStatusChange = async (params: any) => {
         ...tableData.value[index],
         status: originalStatus
       };
-      message(res.msg || "状态切换失败", { type: "error" });
+      message(res.msg || t("game.supplier.status.fail"), { type: "error" });
     }
   } catch (error: any) {
     // 取消或出错恢复
@@ -376,8 +367,8 @@ const handleStatusChange = async (params: any) => {
       status: originalStatus
     };
     if (error !== "cancel") {
-      console.error("状态切换失败:", error);
-      message(error?.message || "状态切换失败", { type: "error" });
+      console.error(t("game.supplier.status.fail"), error);
+      message(error?.message || t("game.supplier.status.fail"), { type: "error" });
     }
   }
 };
@@ -413,11 +404,11 @@ const getList = async () => {
     } else {
       tableData.value = [];
       total.value = 0;
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("game.supplier.message.getListFail"), { type: "error" });
     }
   } catch (error: any) {
-    console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    console.error(t("game.supplier.message.getListFail"), error);
+    message(error?.message || t("game.supplier.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -446,7 +437,7 @@ const deleteLoading = ref(false);
 // 统一对话框相关（新增和编辑共用）
 const showDialog = ref(false);
 const isEdit = ref(false);
-const dialogTitle = computed(() => isEdit.value ? t("game.supplier.editTitle") : t("game.supplier.addTitle"));
+const dialogTitle = computed(() => isEdit.value ? t("game.supplier.edit.title") : t("game.supplier.add.title"));
 const formRef = ref();
 const formData = ref({
   id: 0,
@@ -456,11 +447,11 @@ const formData = ref({
   pic: "",
   status: "1"
 });
-const formRules = {
+const formRules = computed(() => ({
   name: [
-    { required: true, message: "请输入供应商名称", trigger: "blur" }
+    { required: true, message: t("game.supplier.form.nameRequired"), trigger: "blur" }
   ]
-};
+}));
 const imageUrl = ref("");
 const uploading = ref(false);
 const imageUploadRef = ref();
@@ -471,11 +462,11 @@ const beforeUpload = (file: File) => {
   const isLt2M = file.size / 1024 / 1024 < 2;
 
   if (!isImage) {
-    message("只能上传图片文件！", { type: "error" });
+    message(t("game.supplier.upload.onlyImage"), { type: "error" });
     return false;
   }
   if (!isLt2M) {
-    message("图片大小不能超过 2MB！", { type: "error" });
+    message(t("game.supplier.upload.sizeLimit"), { type: "error" });
     return false;
   }
   return true;
@@ -495,13 +486,13 @@ const handleImageUpload = async (options: any) => {
     if (res.code === 0) {
       imageUrl.value = res.data;
       formData.value.pic = res.data;
-      message("图片上传成功", { type: "success" });
+      message(t("game.supplier.upload.success"), { type: "success" });
     } else {
-      message(res.msg || "图片上传失败", { type: "error" });
+      message(res.msg || t("game.supplier.upload.fail"), { type: "error" });
     }
   } catch (error: any) {
-    console.error("图片上传失败:", error);
-    message(error?.message || "图片上传失败", { type: "error" });
+    console.error(t("game.supplier.upload.fail"), error);
+    message(error?.message || t("game.supplier.upload.fail"), { type: "error" });
   } finally {
     uploading.value = false;
   }
@@ -546,7 +537,7 @@ const handleAdd = () => {
 // 编辑（批量）- 只有一条选中时才能编辑
 const handleEdit = () => {
   if (multipleSelection.value.length !== 1) {
-    message("请选择一条数据进行编辑！", { type: "warning" });
+    message(t("game.supplier.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   // 调用编辑函数，与表格操作列的编辑按钮效果一致
@@ -633,8 +624,9 @@ const handleSubmit = async () => {
           }
         }
       } catch (error: any) {
-        console.error(`${isEdit.value ? "编辑" : "新增"}供应商失败:`, error);
-        message(error?.message || `${isEdit.value ? "编辑" : "新增"}供应商失败`, { type: "error" });
+        const errorMsg = isEdit.value ? t("game.supplier.editFail") : t("game.supplier.addFail");
+        console.error(errorMsg, error);
+        message(error?.message || errorMsg, { type: "error" });
       }
     }
   });
@@ -643,7 +635,7 @@ const handleSubmit = async () => {
 // 删除
 const handleDelete = async () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要删除的数据！", { type: "warning" });
+    message(t("game.supplier.message.selectToDelete"), { type: "warning" });
     return;
   }
 
@@ -690,13 +682,23 @@ const handleDelete = async () => {
 // 导出到excel
 const exportExcel = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("game.supplier.message.selectToExport"), { type: "warning" });
     return;
   }
 
   const exportTitles = tableConfig.value
     .filter((col: any) => col.prop !== "pic") // 排除Logo列
-    .map((col: any) => col.label);
+    .map((col: any) => {
+      // 使用国际化文本作为标题
+      if (col.prop === "id") return t("game.supplier.table.id");
+      if (col.prop === "name") return t("game.supplier.table.supplier");
+      if (col.prop === "remark") return t("game.supplier.table.remark");
+      if (col.prop === "sort_no") return t("game.supplier.table.sort_no");
+      if (col.prop === "createtime") return t("game.supplier.table.createTime");
+      if (col.prop === "updatetime") return t("game.supplier.table.updateTime");
+      if (col.prop === "status") return t("game.supplier.table.status");
+      return col.label;
+    });
   const exportProps = tableConfig.value
     .filter((col: any) => col.prop !== "pic") // 排除Logo列
     .map((col: any) => col.prop);
@@ -704,7 +706,7 @@ const exportExcel = () => {
   const res: string[][] = multipleSelection.value.map((item: TableRow) => {
     return exportProps.map(prop => {
       if (prop === "status") {
-        return item.status === "1" ? "正常" : "隐藏";
+        return item.status === "1" ? t("game.supplier.table.normal") : t("game.supplier.table.hidden");
       }
       return item[prop as keyof TableRow] ?? "";
     });
@@ -714,16 +716,16 @@ const exportExcel = () => {
 
   const workSheet = utils.aoa_to_sheet(res);
   const workBook = utils.book_new();
-  const sheetName = "供应商";
+  const sheetName = t("game.supplier.export.sheetName");
   utils.book_append_sheet(workBook, workSheet, sheetName);
-  const fileName = `供应商.xlsx`;
+  const fileName = `${t("game.supplier.export.fileName")}`;
   writeFile(workBook, fileName);
 };
 
 // 导出为JSON
 const exportJson = () => {
   if (!multipleSelection.value.length) {
-    message("请先选择要导出的数据！", { type: "warning" });
+    message(t("game.supplier.message.selectToExport"), { type: "warning" });
     return;
   }
   const dataStr = JSON.stringify(multipleSelection.value, null, 2);
@@ -731,7 +733,7 @@ const exportJson = () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "供应商.json";
+  a.download = `${t("game.supplier.export.sheetName")}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -746,7 +748,7 @@ const exportJson = () => {
       <PlusSearch
         v-model="searchData"
         :columns="searchColumns"
-        label-width="80"
+        label-width="100"
         label-position="right"
         :has-unfold="false"
         :searchText="t('game.supplier.buttons.search')"
@@ -803,7 +805,7 @@ const exportJson = () => {
         </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('game.supplier.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -814,7 +816,7 @@ const exportJson = () => {
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('game.supplier.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -827,7 +829,7 @@ const exportJson = () => {
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('game.supplier.toolbar.hideSearch') : t('game.supplier.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -847,7 +849,7 @@ const exportJson = () => {
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('game.supplier.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-dropdown
                 trigger="click"
@@ -889,7 +891,7 @@ const exportJson = () => {
       />
     </el-card>
 
-    <!-- 新增/编辑供应商对话框（共用） -->
+    <!-- 新增/编辑供应商对话框 -->
     <el-dialog
       v-model="showDialog"
       :title="dialogTitle"
@@ -920,7 +922,7 @@ const exportJson = () => {
               />
               <el-button type="primary" @click="triggerImageUpload" :loading="uploading">
                 <el-icon><Upload /></el-icon>
-                {{ t('game.supplier.upload') }}
+                {{ t('game.supplier.add.upload') }}
               </el-button>
             </div>
             <div class="image-upload-area">
@@ -941,7 +943,7 @@ const exportJson = () => {
                 @click="triggerImageSelect"
               >
                 <el-icon class="upload-icon"><Plus /></el-icon>
-                <div class="upload-text">{{ t('game.supplier.uploadTip') }}</div>
+                <div class="upload-text">{{ t('game.supplier.add.uploadTip') }}</div>
               </div>
               <div v-else class="image-preview">
                 <img :src="imageUrl" class="preview-image" />

@@ -12,6 +12,7 @@ import {
   PlusPagination,
   type PageInfo
 } from "plus-pro-components";
+import { useI18n } from "vue-i18n";
 import { message } from "@/utils/message";
 import { ElTag, ElTooltip, ElImage, ElDialog, ElForm, ElFormItem, ElSelect, ElOption, ElUpload, ElButton, ElInput, ElInputNumber, ElMessageBox } from "element-plus";
 import {
@@ -36,6 +37,9 @@ import Edit from "~icons/ep/edit";
 import Delete from "~icons/ep/delete";
 import Setting from "~icons/ep/setting";
 
+// 国际化
+const { t } = useI18n();
+
 /*  -----搜索表单相关-----  */
 // 搜索表单数据
 const searchData = ref({
@@ -55,83 +59,90 @@ const showSearch = ref(true);
 const searchColumns: PlusColumn[] = [
   {
     label: "ID",
+    renderLabel: () => t("systemSettings.attachment.search.id"),
     prop: "id",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入ID"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "分类管理",
+    renderLabel: () => t("systemSettings.attachment.search.category"),
     prop: "category",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择"
+      placeholder: t("placeholder.select")
     })),
     options: computed(() => categoryOptions.value)
   },
   {
     label: "文件名",
+    renderLabel: () => t("systemSettings.attachment.search.filename"),
     prop: "filename",
     valueType: "copy",
     fieldProps: computed(() => ({
-      placeholder: "请输入文件名"
+      placeholder: t("placeholder.input")
     }))
   },
   {
     label: "文件类型",
+    renderLabel: () => t("systemSettings.attachment.search.fileType"),
     prop: "fileType",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择文件类型"
+      placeholder: t("systemSettings.attachment.search.fileTypePlaceholder")
     })),
     options: computed(() => [
-      { label: "全部", value: "" },
+      { label: t("systemSettings.attachment.search.all"), value: "" },
       ...categoryOptions.value.filter(item => item.value !== "")
     ])
   },
   {
     label: "存储地",
+    renderLabel: () => t("systemSettings.attachment.search.storage"),
     prop: "storage",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择存储地"
+      placeholder: t("systemSettings.attachment.search.storagePlaceholder")
     })),
-    options: [
-      { label: "全部", value: "" },
-      { label: "本地", value: "local" },
-      { label: "OSS", value: "oss" },
-      { label: "COS", value: "cos" }
-    ]
+    options: computed(() => [
+      { label: t("systemSettings.attachment.search.all"), value: "" },
+      { label: t("systemSettings.attachment.search.local"), value: "local" },
+      { label: t("systemSettings.attachment.search.oss"), value: "oss" },
+      { label: t("systemSettings.attachment.search.cos"), value: "cos" }
+    ])
   },
   {
     label: "图片类型",
+    renderLabel: () => t("systemSettings.attachment.search.imageType"),
     prop: "imageType",
     valueType: "select",
     fieldProps: computed(() => ({
-      placeholder: "请选择图片类型"
+      placeholder: t("systemSettings.attachment.search.imageTypePlaceholder")
     })),
-    options: [
-      { label: "全部", value: "" },
-      { label: "JPG", value: "jpg" },
-      { label: "PNG", value: "png" },
-      { label: "GIF", value: "gif" },
-      { label: "WEBP", value: "webp" }
-    ]
+    options: computed(() => [
+      { label: t("systemSettings.attachment.search.all"), value: "" },
+      { label: t("systemSettings.attachment.search.jpg"), value: "jpg" },
+      { label: t("systemSettings.attachment.search.png"), value: "png" },
+      { label: t("systemSettings.attachment.search.gif"), value: "gif" },
+      { label: t("systemSettings.attachment.search.webp"), value: "webp" }
+    ])
   },
   {
     label: "创建时间",
+    renderLabel: () => t("systemSettings.attachment.search.createTime"),
     prop: "createTime",
     valueType: "date-picker",
     fieldProps: computed(() => ({
       type: "daterange",
       format: "YYYY-MM-DD HH:mm:ss",
       valueFormat: "YYYY-MM-DD HH:mm:ss",
-      startPlaceholder: "开始日期时间",
-      endPlaceholder: "结束日期时间",
+      startPlaceholder: t("placeholder.start_time"),
+      endPlaceholder: t("placeholder.end_time"),
       shortcuts: [
         {
-          text: "今天",
+          text: t("Time.today"),
           value: () => {
             const today = dayjs();
             return [
@@ -141,7 +152,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "昨天",
+          text: t("Time.yesterday"),
           value: () => {
             const yesterday = dayjs().subtract(1, "day");
             return [
@@ -151,7 +162,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近7天",
+          text: t("Time.last7Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(6, "day");
@@ -162,7 +173,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "最近30天",
+          text: t("Time.last30Days"),
           value: () => {
             const end = dayjs();
             const start = dayjs().subtract(29, "day");
@@ -173,7 +184,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "本月",
+          text: t("Time.thisMonth"),
           value: () => {
             const now = dayjs();
             return [
@@ -183,7 +194,7 @@ const searchColumns: PlusColumn[] = [
           }
         },
         {
-          text: "上月",
+          text: t("Time.lastMonth"),
           value: () => {
             const lastMonth = dayjs().subtract(1, "month");
             return [
@@ -231,7 +242,7 @@ const { tableData, buttons, pageInfo, total, loadingStatus } =
 
 // 附件分类选项
 const categoryOptions = ref<Array<{ label: string; value: string }>>([
-  { label: "全部", value: "" }
+  { label: t("systemSettings.attachment.search.all"), value: "" }
 ]);
 
 // 获取附件分类
@@ -253,7 +264,7 @@ const getCategoryList = async () => {
         }));
       }
       categoryOptions.value = [
-        { label: "全部", value: "" },
+        { label: t("systemSettings.attachment.search.all"), value: "" },
         ...categories
       ];
     }
@@ -266,6 +277,7 @@ const getCategoryList = async () => {
 const tableConfig: any = ref([
   {
     label: "ID",
+    renderHeader: () => t("systemSettings.attachment.table.id"),
     prop: "id",
     width: "100",
     tableColumnProps: {
@@ -274,6 +286,7 @@ const tableConfig: any = ref([
   },
   {
     label: "分类管理",
+    renderHeader: () => t("systemSettings.attachment.table.category"),
     prop: "category",
     width: "120",
     tableColumnProps: {
@@ -286,6 +299,7 @@ const tableConfig: any = ref([
   },
   {
     label: "预览",
+    renderHeader: () => t("systemSettings.attachment.table.preview"),
     prop: "url",
     width: "120",
     valueType: 'img',
@@ -298,6 +312,7 @@ const tableConfig: any = ref([
   },
   {
     label: "文件名",
+    renderHeader: () => t("systemSettings.attachment.table.filename"),
     prop: "filename",
     minWidth: "220",
     tableColumnProps: {
@@ -306,6 +321,7 @@ const tableConfig: any = ref([
   },
   {
     label: "文件类型",
+    renderHeader: () => t("systemSettings.attachment.table.fileType"),
     prop: "category",
     width: "120",
     tableColumnProps: {
@@ -314,6 +330,7 @@ const tableConfig: any = ref([
   },
   {
     label: "文件大小",
+    renderHeader: () => t("systemSettings.attachment.table.fileSize"),
     prop: "filesize",
     width: "120",
     tableColumnProps: {
@@ -322,6 +339,7 @@ const tableConfig: any = ref([
   },
   {
     label: "存储地",
+    renderHeader: () => t("systemSettings.attachment.table.storage"),
     prop: "storage",
     width: "120",
     tableColumnProps: {
@@ -330,6 +348,7 @@ const tableConfig: any = ref([
   },
   {
     label: "图片类型",
+    renderHeader: () => t("systemSettings.attachment.table.imageType"),
     prop: "imagetype",
     width: "120",
     tableColumnProps: {
@@ -338,6 +357,7 @@ const tableConfig: any = ref([
   },
   {
     label: "创建时间",
+    renderHeader: () => t("systemSettings.attachment.table.createTime"),
     prop: "createtime",
     width: "180",
     tableColumnProps: {
@@ -349,7 +369,7 @@ const tableConfig: any = ref([
 // 表格操作栏按钮定义
 buttons.value = [
   {
-    text: "编辑",
+    text: () => t("systemSettings.attachment.buttons.edit"),
     code: "edit",
     props: {
       type: "primary",
@@ -361,7 +381,7 @@ buttons.value = [
     }
   },
   {
-    text: "删除",
+    text: () => t("systemSettings.attachment.buttons.delete"),
     code: "delete",
     props: {
       type: "danger",
@@ -436,13 +456,13 @@ const getList = async () => {
       pageInfo.value.page = Number(res.data.pageNumber);
       pageInfo.value.pageSize = Number(res.data.pageSize);
     } else {
-      message(res.msg || "获取列表数据失败", { type: "error" });
+      message(res.msg || t("systemSettings.attachment.message.getListFail"), { type: "error" });
       tableData.value = [];
       total.value = 0;
     }
   } catch (error: any) {
     console.error("获取列表数据失败:", error);
-    message(error?.message || "获取列表数据失败", { type: "error" });
+    message(error?.message || t("systemSettings.attachment.message.getListFail"), { type: "error" });
     tableData.value = [];
     total.value = 0;
   } finally {
@@ -472,20 +492,20 @@ const editFormData = ref({
 });
 
 // 跳转类型选项
-const jumpTypeOptions = [
-  { label: "请选择", value: "" },
-  { label: "主页跳转", value: "1" },
-  { label: "子页跳转", value: "2" },
-  { label: "外部跳转", value: "3" },
-  { label: "空连接", value: "4" }
-];
+const jumpTypeOptions = computed(() => [
+  { label: t("systemSettings.attachment.select.pleaseSelect"), value: "" },
+  { label: t("systemSettings.attachment.select.homePage"), value: "1" },
+  { label: t("systemSettings.attachment.select.subPage"), value: "2" },
+  { label: t("systemSettings.attachment.select.external"), value: "3" },
+  { label: t("systemSettings.attachment.select.emptyLink"), value: "4" }
+]);
 
 // 存储地选项
-const storageOptions = [
-  { label: "本地", value: "local" },
-  { label: "OSS", value: "oss" },
-  { label: "COS", value: "cos" }
-];
+const storageOptions = computed(() => [
+  { label: t("systemSettings.attachment.search.local"), value: "local" },
+  { label: t("systemSettings.attachment.search.oss"), value: "oss" },
+  { label: t("systemSettings.attachment.search.cos"), value: "cos" }
+]);
 
 // 编辑图片上传相关
 const editImageUrl = ref("");
@@ -496,7 +516,7 @@ const editImageUploadRef = ref();
 const beforeEditImageUpload = (file: File) => {
   const isImage = file.type.startsWith("image/");
   if (!isImage) {
-    message("只能上传图片文件！", { type: "error" });
+    message(t("systemSettings.attachment.message.onlyImage"), { type: "error" });
     return false;
   }
   return true;
@@ -515,10 +535,10 @@ const handleEditImageUpload = async (options: any) => {
     const fileUrl = URL.createObjectURL(file);
     editImageUrl.value = fileUrl;
     editFormData.value.image = fileUrl;
-    message("图片上传成功", { type: "success" });
+    message(t("systemSettings.attachment.message.imageUploadSuccess"), { type: "success" });
   } catch (error: any) {
     console.error("图片上传失败:", error);
-    message(error?.message || "图片上传失败", { type: "error" });
+    message(error?.message || t("systemSettings.attachment.message.imageUploadFail"), { type: "error" });
   } finally {
     editUploading.value = false;
   }
@@ -600,16 +620,16 @@ const handleSubmitEdit = async () => {
     const res = await editAttachment(params);
 
     if (res.code === 0) {
-      message("编辑附件成功", { type: "success" });
+      message(t("systemSettings.attachment.message.editSuccess"), { type: "success" });
       handleCloseEditDialog();
       // 刷新列表
       getList();
     } else {
-      message(res.msg || "编辑附件失败", { type: "error" });
+      message(res.msg || t("systemSettings.attachment.message.editFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("编辑附件失败:", error);
-    message(error?.message || "编辑附件失败", { type: "error" });
+    message(error?.message || t("systemSettings.attachment.message.editFail"), { type: "error" });
   }
 };
 
@@ -617,11 +637,11 @@ const handleSubmitEdit = async () => {
 const handleDeleteRow = async (row: TableRow) => {
   try {
     await ElMessageBox.confirm(
-      `确定删除附件"${row.filename}"吗？`,
-      "删除确认",
+      t("systemSettings.attachment.message.confirmDelete", { filename: row.filename }),
+      t("systemSettings.attachment.delete.title"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("systemSettings.attachment.buttons.confirm"),
+        cancelButtonText: t("systemSettings.attachment.buttons.cancel"),
         type: "warning"
       }
     );
@@ -629,16 +649,16 @@ const handleDeleteRow = async (row: TableRow) => {
     const res = await deleteBatchAttachment({ ids: row.id.toString() });
 
     if (res.code === 0) {
-      message("删除附件成功", { type: "success" });
+      message(t("systemSettings.attachment.message.deleteSuccess"), { type: "success" });
       // 刷新列表
       getList();
     } else {
-      message(res.msg || "删除附件失败", { type: "error" });
+      message(res.msg || t("systemSettings.attachment.message.deleteFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("删除附件失败:", error);
-      message(error?.message || "删除附件失败", { type: "error" });
+      message(error?.message || t("systemSettings.attachment.message.deleteFail"), { type: "error" });
     }
   }
 };
@@ -671,7 +691,7 @@ const handleFileUpload = async (options: any) => {
   const { file } = options;
   
   if (!addFormData.value.fileType) {
-    message("请先选择附件类型", { type: "warning" });
+    message(t("systemSettings.attachment.message.selectFileType"), { type: "warning" });
     return;
   }
   
@@ -706,13 +726,13 @@ const handleFileUpload = async (options: any) => {
       };
       
       addFormData.value.files.push(fileItem);
-      message("文件上传成功", { type: "success" });
+      message(t("systemSettings.attachment.message.fileUploadSuccess"), { type: "success" });
     } else {
-      message(res.msg || "文件上传失败", { type: "error" });
+      message(res.msg || t("systemSettings.attachment.message.fileUploadFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("文件上传失败:", error);
-    message(error?.message || "文件上传失败", { type: "error" });
+    message(error?.message || t("systemSettings.attachment.message.fileUploadFail"), { type: "error" });
   } finally {
     uploading.value = false;
   }
@@ -758,36 +778,36 @@ const handleCloseAddDialog = () => {
 // 提交新增表单
 const handleSubmitAdd = async () => {
   if (!addFormData.value.fileType) {
-    message("请选择附件类型", { type: "warning" });
+    message(t("systemSettings.attachment.message.selectFileType"), { type: "warning" });
     return;
   }
   
   if (addFormData.value.files.length === 0) {
-    message("请至少上传一个文件", { type: "warning" });
+    message(t("systemSettings.attachment.message.uploadAtLeastOne"), { type: "warning" });
     return;
   }
   
   // 新增时文件已经通过 handleFileUpload 上传了
   // 这里只需要关闭对话框并刷新列表
   try {
-    message("新增附件成功", { type: "success" });
+    message(t("systemSettings.attachment.message.addSuccess"), { type: "success" });
     handleCloseAddDialog();
     // 刷新列表
     getList();
   } catch (error: any) {
     console.error("新增附件失败:", error);
-    message(error?.message || "新增附件失败", { type: "error" });
+    message(error?.message || t("systemSettings.attachment.message.addFail"), { type: "error" });
   }
 };
 
 // 编辑（批量）
 const handleEdit = () => {
   if (multipleSelection.value.length === 0) {
-    message("请选择要编辑的数据", { type: "warning" });
+    message(t("systemSettings.attachment.message.selectToEdit"), { type: "warning" });
     return;
   }
   if (multipleSelection.value.length > 1) {
-    message("请选择单条数据进行编辑", { type: "warning" });
+    message(t("systemSettings.attachment.message.selectOneToEdit"), { type: "warning" });
     return;
   }
   handleEditRow(multipleSelection.value[0]);
@@ -796,17 +816,17 @@ const handleEdit = () => {
 // 删除（批量）
 const handleDelete = async () => {
   if (multipleSelection.value.length === 0) {
-    message("请选择要删除的数据", { type: "warning" });
+    message(t("systemSettings.attachment.message.selectToDelete"), { type: "warning" });
     return;
   }
 
   try {
     await ElMessageBox.confirm(
-      `确定删除选中的 ${multipleSelection.value.length} 条数据吗？`,
-      "批量删除确认",
+      t("systemSettings.attachment.message.confirmBatchDelete", { count: multipleSelection.value.length }),
+      t("systemSettings.attachment.delete.batchTitle"),
       {
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
+        confirmButtonText: t("systemSettings.attachment.buttons.confirm"),
+        cancelButtonText: t("systemSettings.attachment.buttons.cancel"),
         type: "warning"
       }
     );
@@ -815,17 +835,17 @@ const handleDelete = async () => {
     const res = await deleteBatchAttachment({ ids });
 
     if (res.code === 0) {
-      message("批量删除附件成功", { type: "success" });
+      message(t("systemSettings.attachment.message.batchDeleteSuccess"), { type: "success" });
       multipleSelection.value = [];
       // 刷新列表
       getList();
     } else {
-      message(res.msg || "批量删除附件失败", { type: "error" });
+      message(res.msg || t("systemSettings.attachment.message.batchDeleteFail"), { type: "error" });
     }
   } catch (error: any) {
     if (error !== "cancel") {
       console.error("批量删除附件失败:", error);
-      message(error?.message || "批量删除附件失败", { type: "error" });
+      message(error?.message || t("systemSettings.attachment.message.batchDeleteFail"), { type: "error" });
     }
   }
 };
@@ -839,7 +859,7 @@ const classifyFormData = ref({
 // 打开分类对话框
 const handleCategory = () => {
   if (multipleSelection.value.length === 0) {
-    message("请选择要分类的数据", { type: "warning" });
+    message(t("systemSettings.attachment.message.selectToClassify"), { type: "warning" });
     return;
   }
   showClassifyDialog.value = true;
@@ -855,12 +875,12 @@ const handleCloseClassifyDialog = () => {
 // 提交分类
 const handleSubmitClassify = async () => {
   if (!classifyFormData.value.category) {
-    message("请选择附件分类", { type: "warning" });
+    message(t("systemSettings.attachment.message.selectCategory"), { type: "warning" });
     return;
   }
 
   if (multipleSelection.value.length === 0) {
-    message("请选择要分类的数据", { type: "warning" });
+    message(t("systemSettings.attachment.message.selectToClassify"), { type: "warning" });
     return;
   }
 
@@ -873,17 +893,17 @@ const handleSubmitClassify = async () => {
     const res = await classifyAttachment(params);
 
     if (res.code === 0) {
-      message("分类成功", { type: "success" });
+      message(t("systemSettings.attachment.message.classifySuccess"), { type: "success" });
       handleCloseClassifyDialog();
       multipleSelection.value = [];
       // 刷新列表
       getList();
     } else {
-      message(res.msg || "分类失败", { type: "error" });
+      message(res.msg || t("systemSettings.attachment.message.classifyFail"), { type: "error" });
     }
   } catch (error: any) {
     console.error("分类失败:", error);
-    message(error?.message || "分类失败", { type: "error" });
+    message(error?.message || t("systemSettings.attachment.message.classifyFail"), { type: "error" });
   }
 };
 
@@ -910,14 +930,14 @@ getList();
     <el-card v-show="showSearch" class="search-card" shadow="never">
         <PlusSearch
         v-model="searchData"
-          :columns="searchColumns"
-        label-width="80"
+        :columns="searchColumns"
+        label-width="110"
         label-position="right"
-          :has-unfold="false"
-        searchText="搜索"
-        resetText="重置"
-          @search="handleSearch"
-          @reset="handleReset"
+        :has-unfold="false"
+        :searchText="t('systemSettings.attachment.buttons.search')"
+        :resetText="t('systemSettings.attachment.buttons.reset')"
+        @search="handleSearch"
+        @reset="handleReset"
       />
     </el-card>
 
@@ -933,7 +953,7 @@ getList();
         :action-bar="{
           buttons,
           width: '120px',
-          label: '操作'
+          label: t('systemSettings.attachment.table.action')
         }"
         width="100%"
         height="90%"
@@ -943,7 +963,7 @@ getList();
         <template #title>
           <el-button type="primary" @click="handleAdd" size="default">
             <el-icon><component :is="Plus" /></el-icon>
-            <span style="margin-left: 3px;">新增</span>
+            <span style="margin-left: 3px;">{{ t("systemSettings.attachment.buttons.add") }}</span>
           </el-button>
           <el-button
             type="success"
@@ -952,7 +972,7 @@ getList();
             :disabled="multipleSelection.length !== 1"
           >
             <el-icon><component :is="Edit" /></el-icon>
-            <span style="margin-left: 3px;">编辑</span>
+            <span style="margin-left: 3px;">{{ t("systemSettings.attachment.buttons.edit") }}</span>
           </el-button>
           <el-button
             type="danger"
@@ -961,7 +981,7 @@ getList();
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">删除</span>
+            <span style="margin-left: 3px;">{{ t("systemSettings.attachment.buttons.delete") }}</span>
           </el-button>
           <el-button
             type="info"
@@ -970,12 +990,12 @@ getList();
             :disabled="multipleSelection.length === 0"
           >
             <el-icon><component :is="Delete" /></el-icon>
-            <span style="margin-left: 3px;">分类</span>
+            <span style="margin-left: 3px;">{{ t("systemSettings.attachment.buttons.classify") }}</span>
           </el-button>
           </template>
         <!-- 工具栏 -->
         <template #density-icon>
-          <el-tooltip content="密度" placement="top">
+          <el-tooltip :content="t('systemSettings.attachment.toolbar.density')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 15px;cursor: pointer; outline: none"
@@ -986,7 +1006,7 @@ getList();
           </el-tooltip>
         </template>
         <template #column-settings-icon>
-          <el-tooltip content="列设置" placement="top">
+          <el-tooltip :content="t('systemSettings.attachment.toolbar.columnSettings')" placement="top">
             <el-icon
               :size="18"
               style=" margin-right: 5px;cursor: pointer; outline: none"
@@ -999,7 +1019,7 @@ getList();
         <template #toolbar>
           <!-- 筛选：点击切换搜索表单显示/隐藏 -->
           <el-tooltip
-            :content="showSearch ? '隐藏搜索' : '显示搜索'"
+            :content="showSearch ? t('systemSettings.attachment.toolbar.hideSearch') : t('systemSettings.attachment.toolbar.showSearch')"
             placement="top"
             :trigger="'hover'"
           >
@@ -1019,7 +1039,7 @@ getList();
             </span>
           </el-tooltip>
           <!-- 导出下拉菜单 -->
-          <el-tooltip content="导出" placement="top" :trigger="'hover'">
+          <el-tooltip :content="t('systemSettings.attachment.toolbar.export')" placement="top" :trigger="'hover'">
             <span style="display: inline-block">
               <el-icon
                 :size="18"
@@ -1050,7 +1070,7 @@ getList();
     <!-- 新增附件对话框 -->
     <el-dialog
       v-model="showAddDialog"
-      title="添加"
+      :title="t('systemSettings.attachment.add.title')"
       width="600px"
       :close-on-click-modal="false"
       @close="handleCloseAddDialog"
@@ -1058,12 +1078,12 @@ getList();
       <el-form
         ref="addFormRef"
         :model="addFormData"
-        label-width="100px"
+        label-width="140px"
       >
-        <el-form-item label="附件类型" required>
+        <el-form-item :label="t('systemSettings.attachment.add.fileType')" required>
           <el-select
             v-model="addFormData.fileType"
-            placeholder="请选择"
+            :placeholder="t('systemSettings.attachment.select.pleaseSelect')"
             style="width: 100%"
           >
             <el-option
@@ -1075,7 +1095,7 @@ getList();
           </el-select>
         </el-form-item>
 
-        <el-form-item label="选择附件" required>
+        <el-form-item :label="t('systemSettings.attachment.add.selectFile')" required>
           <el-upload
             ref="uploadRef"
             :auto-upload="true"
@@ -1086,7 +1106,7 @@ getList();
           >
             <el-button type="primary" :loading="uploading">
               <el-icon><component :is="Upload" /></el-icon>
-              <span style="margin-left: 5px;">点击上传</span>
+              <span style="margin-left: 5px;">{{ t("systemSettings.attachment.add.clickUpload") }}</span>
             </el-button>
           </el-upload>
         </el-form-item>
@@ -1121,7 +1141,7 @@ getList();
                 @click="handleRemoveFile(file)"
                 style="color: #409eff;"
               >
-                删除
+                {{ t("systemSettings.attachment.buttons.delete") }}
               </el-button>
             </div>
           </div>
@@ -1130,8 +1150,8 @@ getList();
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseAddDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitAdd">确认</el-button>
+          <el-button @click="handleCloseAddDialog">{{ t("systemSettings.attachment.buttons.cancel") }}</el-button>
+          <el-button type="primary" @click="handleSubmitAdd">{{ t("systemSettings.attachment.buttons.confirm") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -1139,7 +1159,7 @@ getList();
     <!-- 编辑附件对话框 -->
     <el-dialog
       v-model="showEditDialog"
-      title="编辑附件"
+      :title="t('systemSettings.attachment.edit.title')"
       width="600px"
       :close-on-click-modal="false"
       @close="handleCloseEditDialog"
@@ -1149,10 +1169,10 @@ getList();
         :model="editFormData"
         label-width="100px"
       >
-        <el-form-item label="分类管理">
+        <el-form-item :label="t('systemSettings.attachment.edit.category')">
           <el-select
             v-model="editFormData.category"
-            placeholder="请选择"
+            :placeholder="t('systemSettings.attachment.select.pleaseSelect')"
             style="width: 100%"
           >
             <el-option
@@ -1164,11 +1184,11 @@ getList();
           </el-select>
         </el-form-item>
 
-        <el-form-item label="图片">
+        <el-form-item :label="t('systemSettings.attachment.edit.image')">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
             <el-input
               v-model="editFormData.image"
-              placeholder="请输入"
+              :placeholder="t('placeholder.input')"
               style="flex: 1"
             />
             <el-upload
@@ -1180,12 +1200,12 @@ getList();
             >
               <el-button type="primary" :loading="editUploading">
                 <el-icon><component :is="Upload" /></el-icon>
-                <span style="margin-left: 5px;">上传</span>
+                <span style="margin-left: 5px;">{{ t("systemSettings.attachment.edit.upload") }}</span>
               </el-button>
             </el-upload>
             <el-button type="primary">
               <el-icon><component :is="Setting" /></el-icon>
-              <span style="margin-left: 5px;">选择</span>
+              <span style="margin-left: 5px;">{{ t("systemSettings.attachment.edit.select") }}</span>
             </el-button>
           </div>
           <div style="position: relative; display: inline-block;">
@@ -1198,7 +1218,7 @@ getList();
             >
               <div v-if="!editImageUrl" class="upload-area">
                 <el-icon class="upload-icon"><component :is="Plus" /></el-icon>
-                <div class="upload-text">点击上传图片</div>
+                <div class="upload-text">{{ t("systemSettings.attachment.edit.clickUploadImage") }}</div>
               </div>
               <div v-else class="image-preview-wrapper">
                 <el-image
@@ -1216,15 +1236,15 @@ getList();
               @click="handleRemoveEditImage"
               class="delete-image-btn"
             >
-              删除
+              {{ t("systemSettings.attachment.buttons.delete") }}
             </el-button>
           </div>
         </el-form-item>
 
-        <el-form-item label="跳转类型">
+        <el-form-item :label="t('systemSettings.attachment.edit.jumpType')">
           <el-select
             v-model="editFormData.jumpType"
-            placeholder="请选择"
+            :placeholder="t('systemSettings.attachment.select.pleaseSelect')"
             style="width: 100%"
           >
             <el-option
@@ -1236,66 +1256,66 @@ getList();
           </el-select>
         </el-form-item>
 
-        <el-form-item label="跳转链接">
+        <el-form-item :label="t('systemSettings.attachment.edit.jumpLink')">
           <el-input
             v-model="editFormData.jumpLink"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
           />
         </el-form-item>
 
-        <el-form-item label="排序">
+        <el-form-item :label="t('systemSettings.attachment.edit.sort')">
           <el-input-number
             v-model="editFormData.sort"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             :min="0"
             style="width: 100%"
           />
         </el-form-item>
 
-        <el-form-item label="图片宽度">
+        <el-form-item :label="t('systemSettings.attachment.edit.imageWidth')">
           <el-input
             v-model="editFormData.imageWidth"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             disabled
           />
         </el-form-item>
 
-        <el-form-item label="图片高度">
+        <el-form-item :label="t('systemSettings.attachment.edit.imageHeight')">
           <el-input
             v-model="editFormData.imageHeight"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             disabled
           />
         </el-form-item>
 
-        <el-form-item label="图片类型">
+        <el-form-item :label="t('systemSettings.attachment.edit.imageType')">
           <el-input
             v-model="editFormData.imageType"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             disabled
           />
         </el-form-item>
 
-        <el-form-item label="文件大小">
+        <el-form-item :label="t('systemSettings.attachment.edit.fileSize')">
           <el-input
             v-model="editFormData.fileSize"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             disabled
           />
         </el-form-item>
 
-        <el-form-item label="上传时间">
+        <el-form-item :label="t('systemSettings.attachment.edit.uploadTime')">
           <el-input
             v-model="editFormData.uploadTime"
-            placeholder="请输入"
+            :placeholder="t('placeholder.input')"
             disabled
           />
         </el-form-item>
 
-        <el-form-item label="存储地">
+        <el-form-item :label="t('systemSettings.attachment.edit.storage')">
           <el-select
             v-model="editFormData.storage"
-            placeholder="请选择"
+            :placeholder="t('systemSettings.attachment.select.pleaseSelect')"
             style="width: 100%"
           >
             <el-option
@@ -1310,8 +1330,8 @@ getList();
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseEditDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitEdit">确认</el-button>
+          <el-button @click="handleCloseEditDialog">{{ t("systemSettings.attachment.buttons.cancel") }}</el-button>
+          <el-button type="primary" @click="handleSubmitEdit">{{ t("systemSettings.attachment.buttons.confirm") }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -1319,7 +1339,7 @@ getList();
     <!-- 分类对话框 -->
     <el-dialog
       v-model="showClassifyDialog"
-      title="分类"
+      :title="t('systemSettings.attachment.classify.title')"
       width="500px"
       :close-on-click-modal="false"
       @close="handleCloseClassifyDialog"
@@ -1328,10 +1348,10 @@ getList();
         :model="classifyFormData"
         label-width="100px"
       >
-        <el-form-item label="附件分类" required>
+        <el-form-item :label="t('systemSettings.attachment.classify.category')" required>
           <el-select
             v-model="classifyFormData.category"
-            placeholder="请选择"
+            :placeholder="t('systemSettings.attachment.select.pleaseSelect')"
             style="width: 100%"
           >
             <el-option
@@ -1347,8 +1367,8 @@ getList();
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleCloseClassifyDialog">取消</el-button>
-          <el-button type="primary" @click="handleSubmitClassify">确认</el-button>
+          <el-button @click="handleCloseClassifyDialog">{{ t("systemSettings.attachment.buttons.cancel") }}</el-button>
+          <el-button type="primary" @click="handleSubmitClassify">{{ t("systemSettings.attachment.buttons.confirm") }}</el-button>
         </div>
       </template>
     </el-dialog>
